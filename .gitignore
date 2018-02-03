@@ -108,7 +108,6 @@ ENV/
 !.vscode/extensions.json
 
 # ignore qt user setting
-*.pro.user*
 *.pro
 *.pro.user
 
