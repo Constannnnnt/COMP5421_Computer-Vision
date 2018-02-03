@@ -66,6 +66,8 @@ private:
     Ui::MainWindow *ui;
 
     Mat image;
+    Mat contour_image;
+    Mat mask_image;
 
     // int* xclick;
     // int* yclick;
