@@ -3,13 +3,14 @@
 ### Goal:
 ```
 1. allows a user to cut an object out of one image and paste it into another
-2.helps the user trace the object by providing a "live wire" that automatically snaps to and wraps around the object of interest```
+2.helps the user trace the object by providing a "live wire" that automatically snaps to and wraps around the object of interest
+```
 
 ### Features:
 * see the descriptions
 * question: how to copy and paste the selected objects?
 
-###Insights:
+### Insights:
 Click seed point: any pixel in the image => computes the a (shortest) path from the seed point to the mouse cursor that hugs the contours of the image as closly as possible.
 
 This path is computed by converting the image into a graph where pixels correspond to nodes. Each node is connected to its 8 immediate neighbors. Each link has a cost relating to the derivative of the images across the link.
