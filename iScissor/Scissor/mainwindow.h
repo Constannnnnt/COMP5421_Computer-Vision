@@ -7,6 +7,7 @@
 //#include <vector>
 
 #include <QMainWindow>
+#include <QScrollArea>
 #include <QImage>
 #include <QPoint>
 #include <QMouseEvent>
@@ -36,8 +37,6 @@ public:
 private slots:
     void on_actionOpen_triggered();
 
-    void on_actionSave_Image_triggered();
-
     void on_actionSave_Contour_triggered();
 
     void on_actionSave_Mask_triggered();
@@ -50,9 +49,15 @@ private slots:
 
     void on_actionHelp_triggered();
 
+
     void on_actionScissor_triggered(bool checked);
 
     void on_actionDisplay_Contour_triggered(bool checked);
+
+    void on_actionFinish_Contour_triggered();
+
+    void on_actionReset_Contour_triggered();
+
 
     void on_actionPixel_Node_triggered();
 
@@ -62,20 +67,32 @@ private slots:
 
     void on_actionMin_Path_triggered();
 
-    void on_actionFinish_Contour_triggered();
 
 private:
     Ui::MainWindow *ui;
 
     Mat image;
+    Mat contour;
     Mat contour_image;
     Mat mask_image;
 
-    // int* xclick;
-    // int* yclick;
-    // double scale;
+    // click list
+    int* x_list;
+    int* y_list;
+    int list_size;
 
+    bool scissor_enabled;
+    bool contour_enabled;
+
+    double img_scale;
+
+    void display_image(cv::Mat im);
+    QScrollArea* scrollArea;
 
 };
 
+
 #endif // MAINWINDOW_H
+
+
+
