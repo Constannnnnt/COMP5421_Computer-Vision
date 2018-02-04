@@ -7,6 +7,7 @@
 //#include <vector>
 
 #include <QMainWindow>
+#include <QScrollArea>
 #include <QImage>
 #include <QPoint>
 #include <QMouseEvent>
@@ -18,6 +19,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include "pixelnode.h"
 
 using namespace cv;
 
@@ -31,12 +33,15 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
+    bool eventFilter(QObject *watched, QEvent *event);
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
     ~MainWindow();
 
 private slots:
     void on_actionOpen_triggered();
 
-    void on_actionSave_Image_triggered();
+    void on_actionAdd_Image_triggered();
 
     void on_actionSave_Contour_triggered();
 
@@ -50,9 +55,15 @@ private slots:
 
     void on_actionHelp_triggered();
 
+
     void on_actionScissor_triggered(bool checked);
 
     void on_actionDisplay_Contour_triggered(bool checked);
+
+    void on_actionFinish_Contour_triggered();
+
+    void on_actionReset_Contour_triggered();
+
 
     void on_actionPixel_Node_triggered();
 
@@ -62,20 +73,36 @@ private slots:
 
     void on_actionMin_Path_triggered();
 
-    void on_actionFinish_Contour_triggered();
 
 private:
     Ui::MainWindow *ui;
 
     Mat image;
+    Mat contour;
     Mat contour_image;
     Mat mask_image;
 
-    // int* xclick;
-    // int* yclick;
-    // double scale;
+    pixelNode* node;
 
+    // click list
+    int* x_list;
+    int* y_list;
+    int list_size;
+
+    bool scissor_enabled;
+    bool contour_enabled;
+    bool ctrl_enabled;
+
+    double img_scale;
+    int idx; // mark the length of the nodes
+
+    void display_image(cv::Mat im);
+    QScrollArea* scrollArea;
 
 };
 
+
 #endif // MAINWINDOW_H
+
+
+
