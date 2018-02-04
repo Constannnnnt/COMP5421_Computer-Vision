@@ -56,7 +56,11 @@ void MainWindow::on_actionSave_Contour_triggered()
 
 void MainWindow::on_actionSave_Mask_triggered()
 {
+    QMessageBox::StandardButton reply = QMessageBox::question(this, "Save Contour", "Save image with contour marked?",
+                                                              QMessageBox::Yes|QMessageBox::No);
+    if(reply == QMessageBox::Yes){
 
+    }
 }
 
 
