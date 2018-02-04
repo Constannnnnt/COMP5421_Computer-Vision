@@ -36,6 +36,8 @@ public:
 private slots:
     void on_actionOpen_triggered();
 
+    void on_actionSave_Image_triggered();
+
     void on_actionSave_Contour_triggered();
 
     void on_actionSave_Mask_triggered();

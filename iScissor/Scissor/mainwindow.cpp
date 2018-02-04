@@ -29,8 +29,16 @@ void MainWindow::on_actionOpen_triggered()
     cv::cvtColor(image, image, CV_BGR2RGB);
     QImage img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
 
-    ui->label->setPixmap(QPixmap::fromImage(img));
-    ui->label->resize(ui->label->pixmap()->size());
+    int w = ui->label->width();
+    int h = ui->label->height();
+
+    ui->label->setPixmap(QPixmap::fromImage(img).scaled(w,h, Qt::KeepAspectRatio));
+    ui->label->setScaledContents( true );
+    ui->label->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
+}
+
+// save an imagen
+void MainWindow::on_actionSave_Image_triggered() {
 
 }
 
