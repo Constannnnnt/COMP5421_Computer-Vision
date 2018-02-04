@@ -195,6 +195,7 @@ void MainWindow::on_actionMin_Path_triggered()
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Control) {
         ctrl_enabled = true;
+        ctrl_count += 1;
     }
     return;
 }
@@ -208,8 +209,8 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event) {
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
-    // control + left click
-    if ((event->type() == QEvent::MouseButtonPress) && (ctrl_enabled) && (strcmp(watched->metaObject()->className(), "MainWindow")) == 0) {
+    // control + left click, only for the first click
+    if ((event->type() == QEvent::MouseButtonPress) && (ctrl_enabled) && (ctrl_count == 1) && (strcmp(watched->metaObject()->className(), "MainWindow")) == 0) {
         QMouseEvent* me = static_cast<QMouseEvent*> (event);
         QPoint p = ui->label->mapFrom(this, me->pos());
         cout << p.x() << " " << p.y() << endl;; // get the pos of the first seed
@@ -217,6 +218,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             cout << "scissor is not enabled" << endl;
             return false;
         }
+        p /= img_scale;
         node = new pixelNode(p.x(), p.y(), idx);
         idx += 1;
 
@@ -233,6 +235,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             cout << "scissor is not enabled" << endl;
             return false;
         }
+        p /= img_scale;
         pixelNode* px = new pixelNode(p.x(), p.y(), idx);
         px->setPrevNode(node[idx - 1]);
         idx += 1;

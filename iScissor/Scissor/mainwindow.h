@@ -92,6 +92,7 @@ private:
     bool scissor_enabled;
     bool contour_enabled;
     bool ctrl_enabled;
+    int ctrl_count = 0;
 
     double img_scale;
     int idx; // mark the length of the nodes
