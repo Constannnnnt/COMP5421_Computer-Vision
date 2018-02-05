@@ -33,15 +33,22 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-    bool eventFilter(QObject *watched, QEvent *event);
+
+    void addImage();
+
     void keyPressEvent(QKeyEvent *event);
+
     void keyReleaseEvent(QKeyEvent *event);
+
+    bool eventFilter(QObject *watched, QEvent *event);
+
+    // helper function
+    void print_node(pixelNode* n);
+
     ~MainWindow();
 
 private slots:
     void on_actionOpen_triggered();
-
-    void on_actionAdd_Image_triggered();
 
     void on_actionSave_Contour_triggered();
 
@@ -82,7 +89,8 @@ private:
     Mat contour_image;
     Mat mask_image;
 
-    pixelNode* node;
+    pixelNode* head_node;   // the head of node list, always the first seed
+    pixelNode* prev_node;   // store the address of prev_node, for setting parent during click
 
     // click list
     int* x_list;
@@ -92,7 +100,7 @@ private:
     bool scissor_enabled;
     bool contour_enabled;
     bool ctrl_enabled;
-    int ctrl_count = 0;
+    int ctrl_count;
 
     double img_scale;
     int idx; // mark the length of the nodes
