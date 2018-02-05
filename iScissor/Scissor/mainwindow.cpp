@@ -242,12 +242,12 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
         // draw the path based on the movement of the mouse
     }
-    return false;
 
     // enter
     // control enter
     // backspace when scissoring
     // backspace when not scissoring
+    return false;
 }
 
 
