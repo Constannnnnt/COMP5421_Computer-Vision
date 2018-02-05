@@ -12,6 +12,7 @@ class pixelNode
 {
 public:
     static cv::Mat img;
+
     pixelNode();
     pixelNode(int, int, int);
     ~pixelNode();
@@ -28,14 +29,14 @@ public:
     int getCol();
     int getRow();
 
-
 private:
     double* linkCost;       // cost of neighbors
-    STATE state = INITIAL;              // state in the dij algorithm
+    STATE state;            // state in the dij algorithm
     double totalCost;       // total cost to the seed
     pixelNode* parent;      // previous node
     int column, row;        // pos in the image
     int index;              // the index in the linked list
+
 };
 
 #endif // PIXELNODE_H

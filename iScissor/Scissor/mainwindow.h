@@ -23,8 +23,6 @@
 
 using namespace cv;
 
-//extern Mat image;
-
 namespace Ui {
 class MainWindow;
 }
@@ -36,11 +34,15 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
 
+    void addImage();
+
     void keyPressEvent(QKeyEvent *event);
 
     void keyReleaseEvent(QKeyEvent *event);
 
     bool eventFilter(QObject *watched, QEvent *event);
+
+    void Dijstras(pixelNode* p);
 
     // helper function
     void print_node(pixelNode* n);
@@ -49,8 +51,6 @@ public:
 
 private slots:
     void on_actionOpen_triggered();
-
-    void on_actionAdd_Image_triggered();
 
     void on_actionSave_Contour_triggered();
 
@@ -92,7 +92,7 @@ private:
     Mat mask_image;
 
     pixelNode* head_node;   // the head of node list, always the first seed
-    pixelNode* prev_node;   // store the address of prev_node, for setting parent during click
+    pixelNode* current_node;   // store the address of current_node, for setting parent during click
 
     // click list
     int* x_list;

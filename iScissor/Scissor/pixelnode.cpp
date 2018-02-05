@@ -1,6 +1,7 @@
 #include "pixelnode.h"
 
 cv::Mat pixelNode::img;
+
 // first seed initialization
 pixelNode::pixelNode(){
 
@@ -9,6 +10,7 @@ pixelNode::pixelNode(){
 pixelNode::pixelNode(int w, int h, int idx) {
     this->column = w;
     this->row = h;
+    this->state = INITIAL;
     this->totalCost = 0;
     this->parent = NULL;
     this->index = idx;
@@ -26,7 +28,9 @@ void pixelNode::setParent(pixelNode* p) {
 }
 
 void pixelNode::computeNeighborsCost() {
+
 }
+
 
 // Access private data member
 pixelNode* pixelNode::getParent(){
