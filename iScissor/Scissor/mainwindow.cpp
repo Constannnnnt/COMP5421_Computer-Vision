@@ -82,7 +82,7 @@ void MainWindow::on_actionOpen_triggered()
 }
 
 // Add image
-void MainWindow::addImage() {
+void MainWindow::on_actionAdd_Image_triggered() {
 
 }
 

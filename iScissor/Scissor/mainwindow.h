@@ -23,6 +23,8 @@
 
 using namespace cv;
 
+//extern Mat image;
+
 namespace Ui {
 class MainWindow;
 }
@@ -33,8 +35,6 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-
-    void addImage();
 
     void keyPressEvent(QKeyEvent *event);
 
@@ -49,6 +49,8 @@ public:
 
 private slots:
     void on_actionOpen_triggered();
+
+    void on_actionAdd_Image_triggered();
 
     void on_actionSave_Contour_triggered();
 

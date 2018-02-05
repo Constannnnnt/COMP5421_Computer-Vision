@@ -41,3 +41,8 @@ For visualization and debugging purposes, you should convert a pixel node array 
 4. Implement dynamic training, as described in Intelligent Scissors for Image Composition(level 2)
 5. Implement a seed snapping feature, where the seed is automatically moved to the closest edge (level 1)
 6. Implement a live wire with sub-pixel precision (level 3)
+
+
+### BUGS
+1. can not the get the accurate position when clicking at the image when the image is not aligned correctly
+2. will crash after closing the applications
