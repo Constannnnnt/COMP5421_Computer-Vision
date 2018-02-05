@@ -25,6 +25,10 @@ void pixelNode::setParent(pixelNode* p) {
     return;
 }
 
+void pixelNode::computeNeighborsCost() {
+
+}
+
 
 // Access private data member
 pixelNode* pixelNode::getParent(){
@@ -39,7 +43,17 @@ int pixelNode::getRow(){
     return this->row;
 }
 
+double pixelNode::getTotalCost(){
+    return this->totalCost;
+}
 
+STATE pixelNode::getState(){
+    return this->state;
+}
+
+int pixelNode::getIndex(){
+    return this->index;
+}
 
 
 

@@ -212,7 +212,7 @@ void MainWindow::on_actionMin_Path_triggered()
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Control) {
         ctrl_enabled = true;
-        ctrl_count += 1;
+        if (scissor_enabled) ctrl_count += 1;
     }
     return;
 }
@@ -228,10 +228,12 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
     // control + left click: first seed
     if ( (event->type() == QEvent::MouseButtonPress) && (ctrl_enabled) &&
-         (strcmp(watched->metaObject()->className(), "MainWindow")) == 0)
+         (strcmp(watched->metaObject()->className(), "MainWindow")) == 0
+         && (ctrl_count == 1))
     {
         QMouseEvent* me = static_cast<QMouseEvent*> (event);
         QPoint p = ui->label->mapFrom(this, me->pos());
+        p /= img_scale;
         cout << p.x() << " " << p.y() << endl; // get the pos of the first seed
         if (!scissor_enabled) {
             cout << "scissor is not enabled" << endl;
@@ -241,8 +243,11 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
         head_node = new pixelNode(p.x(), p.y(), idx);
         prev_node = head_node;
-        idx += 1;
+        idx += 1;    
 
+        /*test positions in the image*/
+//        QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+//        cout << "pixel at the pos" << Q_img.pixel(p.x(),p.y()) <<  endl;
         // draw the path based on the movement of the mouse
     }
 
@@ -252,6 +257,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
     {
         QMouseEvent* me = static_cast<QMouseEvent*> (event);
         QPoint p = ui->label->mapFrom(this, me->pos());
+        p /= img_scale;
         cout << p.x() << " " << p.y() << endl;
         if (!scissor_enabled) {
             cout << "scissor is not enabled" << endl;
@@ -263,6 +269,10 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         nod->setParent(prev_node);
         prev_node = nod;
         idx += 1;
+
+        /* test positions in the pixels*/
+//        QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+//        cout << "pixel at the pos" << Q_img.pixel(p.x(),p.y()) <<  endl;
 
         // draw the path based on the movement of the mouse
     }
