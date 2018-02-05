@@ -1,7 +1,7 @@
 #include "pixelnode.h"
 
-pixelNode::pixelNode()
-{
+// first seed initialization
+pixelNode::pixelNode(){
 
 }
 
@@ -10,18 +10,41 @@ pixelNode::pixelNode(int w, int h, int idx) {
     this->row = h;
     this->state = INITIAL;
     this->totalCost = 0;
-    this->prevNode = nullptr;
+    this->parent = NULL;
     this->index = idx;
     this->linkCost = new double[8];
 }
 
-pixelNode::~pixelNode()
-{
-    delete prevNode;
+pixelNode::~pixelNode(){
+    delete parent;
     delete[] linkCost;
 }
 
-void pixelNode::setPrevNode(pixelNode& p) {
-    this->prevNode = &p;
+void pixelNode::setParent(pixelNode* p) {
+    this->parent = p;
     return;
 }
+
+
+// Access private data member
+pixelNode* pixelNode::getParent(){
+    return this->parent;
+}
+
+int pixelNode::getCol(){
+    return this->column;
+}
+
+int pixelNode::getRow(){
+    return this->row;
+}
+
+
+
+
+
+
+
+
+
+
