@@ -74,6 +74,7 @@ void MainWindow::on_actionOpen_triggered()
                 this, tr("Open Image"), ".", tr("Image File(*.png *.jpg *.jpeg *.bmp)"));
     image = cv::imread(fileName.toLatin1().data());
     contour_image = cv::imread(fileName.toLatin1().data());
+    pixelNode::img = image.clone();  // init pixelNode static data member
 
     // convert cv::Mat to QImage
     cv::cvtColor(image, image, CV_BGR2RGB);
@@ -82,6 +83,8 @@ void MainWindow::on_actionOpen_triggered()
     QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
 
     ui->label->setPixmap(QPixmap::fromImage(Q_img));
+
+
 }
 
 // Add image
