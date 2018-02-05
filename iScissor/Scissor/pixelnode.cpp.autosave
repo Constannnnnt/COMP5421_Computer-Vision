@@ -26,6 +26,7 @@ void pixelNode::setParent(pixelNode* p) {
 }
 
 void pixelNode::computeNeighborsCost() {
+    
 }
 
 // Access private data member

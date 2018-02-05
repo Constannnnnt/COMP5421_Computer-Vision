@@ -242,6 +242,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         cout << "ctrl + left click" << endl;
 
         head_node = new pixelNode(p.x(), p.y(), idx);
+        head_node->img = image;
         prev_node = head_node;
         idx += 1;    
 
