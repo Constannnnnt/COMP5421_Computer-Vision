@@ -281,16 +281,31 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
     // enter: finish the current
 
-
-    // ctrl + enter
-
+    // ctrl + enter: not sure what it means
 
     // backspace when scissoring
 
-
     // backspace when not scissoring
 
+    if ( event->type() == QEvent::KeyPress){
+        QKeyEvent* event_key = static_cast<QKeyEvent*> (event);
 
+        if ( (event_key->key()==Qt::Key_Enter) && (!ctrl_enabled) ){
+            this->on_actionFinish_Contour_triggered();
+        }
+
+        if ( (event_key->key()==Qt::Key_Enter) && ctrl_enabled ){
+            this->on_actionFinish_Contour_triggered();
+        }
+
+        if ( (event_key->key()==Qt::Key_Backspace) && scissor_enabled ){
+
+        }
+
+        if ( (event_key->key()==Qt::Key_Backspace) && (!scissor_enabled) ){
+
+        }
+    }
 
     return false;
 }
