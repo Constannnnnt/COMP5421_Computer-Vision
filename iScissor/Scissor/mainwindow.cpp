@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     img_scale = 1.0;
 
-    ui->actionDisplay_Contour->setChecked(true);
+    // ui->actionDisplay_Contour->setChecked(true);
     contour_enabled = false;
     scissor_enabled = false;
 
@@ -37,7 +37,7 @@ MainWindow::~MainWindow()
     delete scrollArea;
 
     delete head_node;
-    delete prev_node;
+    delete current_node;
 }
 
 /* helper function starts here  */
@@ -46,8 +46,8 @@ void MainWindow::display_image(Mat im)
 {
     cv::Mat img_tmp = im.clone();
 
-    cv::cvtColor(img_tmp, img_tmp, CV_BGR2RGB);
-    QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+    // cv::cvtColor(img_tmp, img_tmp, CV_BGR2RGB);
+    QImage Q_img = QImage((const unsigned char*)(img_tmp.data),img_tmp.cols,img_tmp.rows,QImage::Format_RGB888);
 
     QPixmap p = QPixmap::fromImage(Q_img);
     ui->label->setPixmap( p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio) );
@@ -73,16 +73,22 @@ void MainWindow::on_actionOpen_triggered()
     QString fileName = QFileDialog::getOpenFileName(
                 this, tr("Open Image"), ".", tr("Image File(*.png *.jpg *.jpeg *.bmp)"));
     image = cv::imread(fileName.toLatin1().data());
+    contour_image = cv::imread(fileName.toLatin1().data());
+    pixelNode::img = image.clone();  // init pixelNode static data member
 
     // convert cv::Mat to QImage
     cv::cvtColor(image, image, CV_BGR2RGB);
+    cv::cvtColor(contour_image, contour_image, CV_BGR2RGB);
+
     QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
 
     ui->label->setPixmap(QPixmap::fromImage(Q_img));
+
+
 }
 
 // Add image
-void MainWindow::on_actionAdd_Image_triggered() {
+void MainWindow::addImage() {
 
 }
 
@@ -90,7 +96,7 @@ void MainWindow::on_actionAdd_Image_triggered() {
 // Save image
 void MainWindow::on_actionSave_Contour_triggered()
 {
-    QMessageBox::StandardButton reply = QMessageBox::question(this, "Save Contour", "Save image with contour marked?",
+    QMessageBox::StandardButton reply = QMessageBox::question(this, "Save ", "Save image with contour marked?",
                                                               QMessageBox::Yes|QMessageBox::No);
     if(reply == QMessageBox::Yes){
         cv::imwrite("/home/jguoaj/Desktop/contour_image.jpg", contour_image);
@@ -145,7 +151,7 @@ void MainWindow::on_actionZoom_Out_triggered()
 // display help message
 void MainWindow::on_actionHelp_triggered()
 {
-    this->print_node(prev_node);
+    this->print_node(current_node);
     // QString text = QString("Nothing for help !");
     // QMessageBox::about(this, "Help", text);
 }
@@ -242,13 +248,12 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         cout << "ctrl + left click" << endl;
 
         head_node = new pixelNode(p.x(), p.y(), idx);
-        head_node->img = image;
-        prev_node = head_node;
+        current_node = head_node;
         idx += 1;    
 
         /*test positions in the image*/
-//        QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
-//        cout << "pixel at the pos" << Q_img.pixel(p.x(),p.y()) <<  endl;
+        // QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+        // cout << "pixel at the pos" << Q_img.pixel(p.x(),p.y()) <<  endl;
         // draw the path based on the movement of the mouse
     }
 
@@ -267,22 +272,34 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         cout << "left click" << endl;
 
         pixelNode* nod = new pixelNode(p.x(), p.y(), idx);
-        nod->setParent(prev_node);
-        prev_node = nod;
+        nod->setParent(current_node);
+        current_node = nod;
         idx += 1;
-
-        /* test positions in the pixels*/
-//        QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
-//        cout << "pixel at the pos" << Q_img.pixel(p.x(),p.y()) <<  endl;
 
         // draw the path based on the movement of the mouse
     }
 
-    // enter
-    // control enter
+    // enter: finish the current
+
+
+    // ctrl + enter
+
+
     // backspace when scissoring
+
+
     // backspace when not scissoring
+
+
+
     return false;
+}
+
+// main algorithm
+// find shortest path from current_node to input_node p
+// update contour_image
+void MainWindow::Dijstras(pixelNode *p){
+
 }
 
 
