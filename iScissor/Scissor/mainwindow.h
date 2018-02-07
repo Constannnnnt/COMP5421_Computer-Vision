@@ -93,7 +93,13 @@ private:
     Mat contour;
     Mat contour_image;
     Mat mask_image;
+
+    // Dij algorithm
     Mat* costgraph_weight;
+    Mat visitedNode;
+    Mat activeNode;
+    Mat parentMap;
+    Mat graphCost;
 
     pixelNode* head_node;   // the head of node list, always the first seed
     pixelNode* current_node;   // store the address of current_node, for setting parent during click
@@ -114,6 +120,14 @@ private:
     void display_image(cv::Mat im);
     QScrollArea* scrollArea;
 
+};
+
+
+// compare function for priority queue
+struct compareQueue{
+    bool operator() ( pixelNode* a, pixelNode* b ){
+        return (a->getTotalCost() >= b->getTotalCost());
+    }
 };
 
 

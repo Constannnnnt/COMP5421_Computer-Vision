@@ -240,8 +240,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
     // control + left click: first seed
     if ( (event->type() == QEvent::MouseButtonPress) && (ctrl_enabled) &&
-         (strcmp(watched->metaObject()->className(), "MainWindow")) == 0
-         && (ctrl_count == 1))
+         (strcmp(watched->metaObject()->className(), "MainWindow")) == 0 )
     {
         QMouseEvent* me = static_cast<QMouseEvent*> (event);
         QPoint p = ui->label->mapFrom(this, me->pos());
@@ -256,6 +255,11 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         head_node = new pixelNode(p.x(), p.y(), idx);
         current_node = head_node;
         idx += 1;    
+
+        // draw a dot
+        cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(0,0,255), 1);
+        if(contour_enabled)
+            display_image(contour_image);
 
         // compute cost graph
         costgraph_init();
@@ -389,47 +393,84 @@ void MainWindow::costgraph_init(){
 
 
 // main algorithm
-// find shortest path from current_node to input_node p
+// find shortest path from current_node p
 // update contour_image
-void MainWindow::Dijstras(pixelNode *p){
+void MainWindow::Dijstras(pixelNode* seed){
 
-//Begin:
+    // initialize the priority queue pq to be empty;
+    priority_queue<pixelNode*, std::vector<pixelNode*>, compareQueue> pqueue;
 
-//    initialize the priority queue pq to be empty;
+    // initialize each node to the INITIAL state;
+    visitedNode = cv::Mat::zeros(image.size(), CV_8UC1);
+    activeNode = cv::Mat::zeros(image.size(), CV_8UC1);
+    parentMap = cv::Mat::zeros(image.size(), CV_8UC1);
 
-//    initialize each node to the INITIAL state;
+    // set the total cost of seed to be zero and make seed the root of the minimum path tree ( pointing to NULL ) ;
+    // parentMap stores the parent of each pixel, 255: root, others listed below
+    // 8, 5, 2
+    // 7, 4, 1
+    // 6, 3, 0
+    graphCost = cv::Mat::ones(image.size(), CV_32FC1);
+    graphCost *= 10000000;
+    graphCost.at<float>(cv::Point(seed->getRow(),seed->getCol())) = 0;
+    parentMap.at<uchar>(cv::Point(seed->getRow(),seed->getCol())) = 255;
 
-//    set the total cost of seed to be zero and make seed the root of the minimum path tree ( pointing to NULL ) ;
+    // insert seed into pq;
+    pqueue.push(seed);
 
-//    insert seed into pq;
+    // init
+    cv::Point r;
+    int costgraph_index;
+    cv::Mat costgraph_tmp;
 
-//    while pq is not empty
+    // while pq is not empty
+    while(!pqueue.empty()){
 
-//        extract the node q with the minimum total cost in pq;
+        // extract the node q with the minimum total cost in pq;
+        pixelNode* q = pqueue.top();
 
-//        mark q as EXPANDED;
+        // mark q as EXPANDED;
+        visitedNode.at<uchar>(cv::Point(q->getRow(),q->getCol())) = 1;
 
-//        for each neighbor node r of q
 
-//            if  r has not been EXPANDED
+        // for each neighbor node r of q
+        for(int i=-1; i<=1; i++){
 
-//                if  r is still INITIAL
+            for(int j=-1; j<=1; j++){
 
-//                    make q be the predecessor of r ( for the the minimum path tree );
+                r = cv::Point(q->getRow()+i,q->getCol()+j);
 
-//                    set the total cost of r to be the sum of the total cost of q and link cost from q to r as its total cost;
+                // if r has been EXPANDED
+                if (visitedNode.at<uchar>(r) == 1)
+                    continue;
 
-//                    insert r in pq and mark it as ACTIVE;
+                costgraph_index = (i+1)*3 + (j+1);
+                costgraph_tmp = costgraph_weight[costgraph_index];
 
-//                else if  r is ACTIVE, e.g., in already in the pq
+                // if  r is still INITIAL
+                if (activeNode.at<uchar>(r) == 0){
+                    // make q be the predecessor of r ( for the the minimum path tree );
+                    //parentMap.at<uchar>(r) =
 
-//                    if the sum of the total cost of q and link cost between q and r is less than the total cost of r
+                    // set the total cost of r to be the sum of the total cost of q and link cost from q to r as its total cost;
 
-//                        update q to be the predecessor of r ( for the minimum path tree );
 
-//                        update the total cost of r in pq;
+                    // insert r in pq and mark it as ACTIVE;
+                }
+                // else if  r is ACTIVE, e.g., in already in the pq
+                else if (activeNode.at<uchar>(r) == 1){
+                    // if the sum of the total cost of q and link cost between q and r is less than the total cost of r
 
-//End
+
+                        // update q to be the predecessor of r ( for the minimum path tree );
+
+
+                        // update the total cost of r in pq;
+                }
+            }
+        }
+
+    } // end of while loop
 }
 
 
