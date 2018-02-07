@@ -39,4 +39,5 @@ private:
 
 };
 
+
 #endif // PIXELNODE_H

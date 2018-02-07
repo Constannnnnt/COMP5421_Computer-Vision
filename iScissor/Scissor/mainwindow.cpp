@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // ui->scrollArea->setWidget(ui->label);
     // setCentralWidget(ui->scrollArea);
 
+    costgraph_weight = new cv::Mat[9];
     img_scale = 1.0;
 
     // ui->actionDisplay_Contour->setChecked(true);
@@ -28,6 +29,11 @@ MainWindow::MainWindow(QWidget *parent) :
     // head_node = new pixelNode();
     idx = 0;
     ctrl_count = 0;
+
+    // test
+    //Mat C = (Mat_<double>(2,2) << 0, 1, 2, 3);
+    //cout << C << endl << endl;
+    //cout << C.mul(C) << endl;
 }
 
 
@@ -83,7 +89,6 @@ void MainWindow::on_actionOpen_triggered()
     QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
 
     ui->label->setPixmap(QPixmap::fromImage(Q_img));
-
 
 }
 
@@ -152,6 +157,7 @@ void MainWindow::on_actionZoom_Out_triggered()
 void MainWindow::on_actionHelp_triggered()
 {
     this->print_node(current_node);
+
     // QString text = QString("Nothing for help !");
     // QMessageBox::about(this, "Help", text);
 }
@@ -251,10 +257,9 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         current_node = head_node;
         idx += 1;    
 
-        /*test positions in the image*/
-        // QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
-        // cout << "pixel at the pos" << Q_img.pixel(p.x(),p.y()) <<  endl;
-        // draw the path based on the movement of the mouse
+        // compute cost graph
+        costgraph_init();
+
     }
 
     // left click: follwing seeds
@@ -276,32 +281,31 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         current_node = nod;
         idx += 1;
 
+        /*test positions in the image*/
+        // QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+        // cout << "pixel at the pos" << Q_img.pixel(p.x(),p.y()) <<  endl;
         // draw the path based on the movement of the mouse
     }
-
-    // enter: finish the current
-
-    // ctrl + enter: not sure what it means
-
-    // backspace when scissoring
-
-    // backspace when not scissoring
 
     if ( event->type() == QEvent::KeyPress){
         QKeyEvent* event_key = static_cast<QKeyEvent*> (event);
 
+        // enter: finish the current
         if ( (event_key->key()==Qt::Key_Enter) && (!ctrl_enabled) ){
             this->on_actionFinish_Contour_triggered();
         }
 
+        // ctrl + enter: not sure what it means
         if ( (event_key->key()==Qt::Key_Enter) && ctrl_enabled ){
             this->on_actionFinish_Contour_triggered();
         }
 
+        // backspace when scissoring
         if ( (event_key->key()==Qt::Key_Backspace) && scissor_enabled ){
 
         }
 
+        // backspace when not scissoring
         if ( (event_key->key()==Qt::Key_Backspace) && (!scissor_enabled) ){
 
         }
@@ -310,11 +314,122 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
     return false;
 }
 
+
+// compute 8 number of link graph, which could be accessed separatelyss
+void MainWindow::costgraph_init(){
+    if( scissor_enabled == false){
+        cout << " scissor not enabled" << endl;
+        return;
+    }
+
+    // sequence number follow the website notation
+    // Kernel[8] specify self-loop to be inf cost
+    // this actualy could be ignored in the main while loop, since we only explore 8 neightbors.
+    cv::Mat Kernel[9];
+
+    Kernel[0] = ( cv::Mat_<float>(3,3) <<  0,   0.25,   0.25,
+                                           0,      0,      0,
+                                           0,  -0.25,  -0.25 );
+
+    Kernel[1] = ( cv::Mat_<float>(3,3) <<  0,  0.707,      0,
+                                           0,      0, -0.707,
+                                           0,      0,      0 );
+
+    Kernel[2] = ( cv::Mat_<float>(3,3) <<  0.25,   0,  -0.25,
+                                           0.25,   0,  -0.25,
+                                              0,   0,      0 );
+
+    Kernel[3] = ( cv::Mat_<float>(3,3) <<  0,  0.707,      0,
+                                      -0.707,      0,      0,
+                                           0,      0,      0 );
+
+    Kernel[4] = ( cv::Mat_<float>(3,3) <<   0.25,  0.25,   0,
+                                               0,     0,   0,
+                                           -0.25, -0.25,   0 );
+
+    Kernel[5] = ( cv::Mat_<float>(3,3) <<  0,      0,      0,
+                                       0.707,      0,      0,
+                                           0, -0.707,      0 );
+
+    Kernel[6] = ( cv::Mat_<float>(3,3) <<     0,   0,      0,
+                                           0.25,   0,  -0.25,
+                                           0.25,   0,  -0.25 );
+
+    Kernel[7] = ( cv::Mat_<float>(3,3) <<  0,      0,      0,
+                                           0,      0,  0.707,
+                                           0, -0.707,      0 );
+
+    Kernel[8] = ( cv::Mat_<float>(3,3) <<  0,      0,     0,
+                                           0, 100000,     0,
+                                           0,      0,     0 );
+
+    cv::Mat temp;
+
+    // compute 8 direction cost graphs separately
+    for(int i=0; i<=8; i++){
+        cv::filter2D(image, temp, CV_32FC3, Kernel[i]);
+
+        vector<cv::Mat> rgbChannels(3);
+        cv::split(temp, rgbChannels);
+
+        cv::Mat B = rgbChannels[0];
+        cv::Mat R = rgbChannels[0];
+        cv::Mat G = rgbChannels[0];
+
+        B = 255 - B;
+        R = 255 - R;
+        G = 255 - G;
+
+        // elementwise multiplication
+        costgraph_weight[i] = ( B.mul(B) + R.mul(R) + G.mul(G) )/3;
+    }
+
+
+}
+
+
 // main algorithm
 // find shortest path from current_node to input_node p
 // update contour_image
 void MainWindow::Dijstras(pixelNode *p){
 
+//Begin:
+
+//    initialize the priority queue pq to be empty;
+
+//    initialize each node to the INITIAL state;
+
+//    set the total cost of seed to be zero and make seed the root of the minimum path tree ( pointing to NULL ) ;
+
+//    insert seed into pq;
+
+//    while pq is not empty
+
+//        extract the node q with the minimum total cost in pq;
+
+//        mark q as EXPANDED;
+
+//        for each neighbor node r of q
+
+//            if  r has not been EXPANDED
+
+//                if  r is still INITIAL
+
+//                    make q be the predecessor of r ( for the the minimum path tree );
+
+//                    set the total cost of r to be the sum of the total cost of q and link cost from q to r as its total cost;
+
+//                    insert r in pq and mark it as ACTIVE;
+
+//                else if  r is ACTIVE, e.g., in already in the pq
+
+//                    if the sum of the total cost of q and link cost between q and r is less than the total cost of r
+
+//                        update q to be the predecessor of r ( for the minimum path tree );
+
+//                        update the total cost of r in pq;
+
+//End
 }
 
 

@@ -4,7 +4,8 @@
 #include <iostream>
 #include <fstream>
 #include <queue>
-//#include <vector>
+#include <math.h>
+#include <vector>
 
 #include <QMainWindow>
 #include <QScrollArea>
@@ -43,6 +44,8 @@ public:
     bool eventFilter(QObject *watched, QEvent *event);
 
     void Dijstras(pixelNode* p);
+
+    void costgraph_init();
 
     // helper function
     void print_node(pixelNode* n);
@@ -90,6 +93,7 @@ private:
     Mat contour;
     Mat contour_image;
     Mat mask_image;
+    Mat* costgraph_weight;
 
     pixelNode* head_node;   // the head of node list, always the first seed
     pixelNode* current_node;   // store the address of current_node, for setting parent during click
