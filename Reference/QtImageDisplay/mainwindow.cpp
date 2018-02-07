@@ -164,7 +164,7 @@ void MainWindow::computeGraphWeights()
 
 
         //now tmp is a 3-channel image. Need to combine channels like
-        // R^2 + G^2 + B^2
+        // R^2 + G^2 + B^2  
         cv::Mat dst = cv::Mat::zeros(im.rows,im.cols,CV_32FC1);
 
         float epsilon = 0 ;//1+((i+1)%2); //the '%' part is done to penalize diagonal edges.

@@ -75,13 +75,15 @@ void MainWindow::print_node(pixelNode* n)
 void MainWindow::draw_contour(int x, int y){
 
     int draw_value;
+    cv::Vec3b fill(0,255,0);
+
     while( this->parentMap.at<uchar>( cv::Point(x,y) ) != 255 ){
 
         draw_value = this->parentMap.at<uchar>( cv::Point(x,y) );
 
-        contour.at<uchar>( cv::Point(x,y) ) = 255;
+        contour_image.at<cv::Vec3b>( cv::Point(x,y) ) = fill;
 
-        cout << "draw value is: " << draw_value << endl;
+        // cout << "draw value is: " << draw_value << endl;
 
         // right is x (cols), down is y (rows)
         // 0, 3, 6
@@ -238,7 +240,7 @@ void MainWindow::on_actionDisplay_Contour_triggered(bool checked)
 void MainWindow::on_actionReset_Contour_triggered()
 {
     cout << "reset contour" << endl;
-    contour = cv::Mat::zeros(contour.size(), CV_8UC3);
+    contour = cv::Mat::zeros(image.size(), CV_8UC1);
 
 }
 
@@ -312,7 +314,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         current_node = head_node;
 
         // draw a dot
-        cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(0,0,255), 1);
+        cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(0,0,255), 2);
         if(contour_enabled)
             display_image(contour_image);
 
@@ -456,6 +458,8 @@ void MainWindow::costgraph_init(){
         vector<cv::Mat> rgbChannels(3);
         cv::split(temp, rgbChannels);
 
+        cv::Mat tmp = cv::Mat::zeros(image.rows,image.cols,CV_32FC1);
+
         cv::Mat B = rgbChannels[0];
         cv::Mat R = rgbChannels[0];
         cv::Mat G = rgbChannels[0];
@@ -465,7 +469,8 @@ void MainWindow::costgraph_init(){
         G = 255 - G;
 
         // elementwise multiplication
-        costgraph_weight[i] = ( B.mul(B) + R.mul(R) + G.mul(G) )/3;
+        tmp = ( B.mul(B) + R.mul(R) + G.mul(G) )/3;
+        tmp.copyTo(costgraph_weight[i]);
     }
 
 
@@ -493,8 +498,8 @@ void MainWindow::Dijstras(pixelNode* seed){
     // 0, 3, 6
     // 1, 4, 7
     // 2, 5, 8
-    graphCost = cv::Mat::ones(image.size(), CV_32FC1);
-    graphCost *= 10000000;
+    graphCost = cv::Mat::ones(image.size(), CV_32F);
+    graphCost *= 10000000.0;
     graphCost.at<float>(cv::Point(seed->getRow(),seed->getCol())) = 0;
     parentMap.at<uchar>(cv::Point(seed->getRow(),seed->getCol())) = 255;
 
@@ -512,6 +517,11 @@ void MainWindow::Dijstras(pixelNode* seed){
         // extract the node q with the minimum total cost in pq;
         pixelNode* q = pqueue.top();
         pqueue.pop();
+
+        if (pqueue.empty()){
+            cout << "every node explored 1" << endl;
+            break;
+        }
 
         // mark q as EXPANDED;
         visitedMap.at<uchar>(cv::Point(q->getRow(),q->getCol())) = 1;
@@ -536,6 +546,7 @@ void MainWindow::Dijstras(pixelNode* seed){
                                 + costgraph_tmp.at<float>(cv::Point(q->getRow(),q->getCol()));
 
                 if (newCost < oldCost){
+
                     graphCost.at<float>(r) = newCost;
 
                     parentMap.at<uchar>(r) = costgraph_index;
@@ -551,7 +562,7 @@ void MainWindow::Dijstras(pixelNode* seed){
 
         // satety check
         if (pqueue.empty()){
-            cout << "every node explored" << endl;
+            cout << "every node explored 2" << endl;
             break;
         }
 
