@@ -2,12 +2,30 @@
 #define PIXELNODE_H
 
 #include <stddef.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 
-enum STATE {INITIAL, ACTIVE, EXPANDED};
+class pixelNode
+{
+public:
 
+    pixelNode();
+    pixelNode(int row, int col, float total_cost);
+    ~pixelNode();
+    void setParent(pixelNode*);
+
+    // Access function
+    pixelNode* getParent();
+    float getTotalCost();
+    int getCol();
+    int getRow();
+
+private:
+    float totalCost;        // total cost to the seed
+    pixelNode* parent;      // parent node
+    int column, row;        // pos in the image
+
+};
+
+/*
 class pixelNode
 {
 public:
@@ -38,6 +56,6 @@ private:
     int index;              // the index in the linked list
 
 };
-
+*/
 
 #endif // PIXELNODE_H

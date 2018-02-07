@@ -1,34 +1,26 @@
 #include "pixelnode.h"
 
-cv::Mat pixelNode::img;
 
-// first seed initialization
 pixelNode::pixelNode(){
 
 }
 
-pixelNode::pixelNode(int w, int h, int idx) {
-    this->column = w;
-    this->row = h;
-    this->state = INITIAL;
-    this->totalCost = 0;
+pixelNode::pixelNode(int row, int col, float total_cost) {
+
+    this->row = row;
+    this->column = col;
+    this->totalCost = total_cost;
     this->parent = NULL;
-    this->index = idx;
-    this->linkCost = new double[8];
+
 }
 
 pixelNode::~pixelNode(){
     delete parent;
-    delete[] linkCost;
 }
 
 void pixelNode::setParent(pixelNode* p) {
     this->parent = p;
     return;
-}
-
-void pixelNode::computeNeighborsCost() {
-
 }
 
 
@@ -45,20 +37,9 @@ int pixelNode::getRow(){
     return this->row;
 }
 
-double pixelNode::getTotalCost(){
+float pixelNode::getTotalCost(){
     return this->totalCost;
 }
-
-STATE pixelNode::getState(){
-    return this->state;
-}
-
-int pixelNode::getIndex(){
-    return this->index;
-}
-
-
-
 
 
 

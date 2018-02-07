@@ -25,9 +25,10 @@ MainWindow::MainWindow(QWidget *parent) :
     // ui->actionDisplay_Contour->setChecked(true);
     contour_enabled = false;
     scissor_enabled = false;
+    first_seed_flag = false;
 
     // head_node = new pixelNode();
-    idx = 0;
+    // idx = 0;
     ctrl_count = 0;
 
     // test
@@ -66,8 +67,62 @@ void MainWindow::print_node(pixelNode* n)
 {
     pixelNode* p = n;
     while(p->getParent() != NULL){
-        cout << p->getCol() << '\t' << p->getRow() << endl;
+        cout << p->getRow() << '\t' << p->getCol() << endl;
         p = p->getParent();
+    }
+}
+
+void MainWindow::draw_contour(int x, int y){
+
+    int draw_value;
+    while( this->parentMap.at<uchar>( cv::Point(x,y) ) != 255 ){
+
+        draw_value = this->parentMap.at<uchar>( cv::Point(x,y) );
+
+        contour.at<uchar>( cv::Point(x,y) ) = 255;
+
+        cout << "draw value is: " << draw_value << endl;
+
+        // right is x (cols), down is y (rows)
+        // 0, 3, 6
+        // 1, 4, 7
+        // 2, 5, 8
+        switch (draw_value) {
+        case 0:
+            x += 1;
+            y += 1;
+            continue;
+        case 1:
+            x += 1;
+            continue;
+        case 2:
+            x += 1;
+            y -= 1;
+            continue;
+        case 3:
+            y += 1;
+            continue;
+        case 4:
+            cout << "self loop detected" << endl;
+            exit(1);
+            break;
+        case 5:
+            y -= 1;
+            continue;
+        case 6:
+            x -= 1;
+            y += 1;
+            continue;
+        case 7:
+            x -= 1;
+            continue;
+        case 8:
+            x -= 1;
+            y -= 1;
+            continue;
+        //default:
+        //    continue;
+        }
     }
 }
 
@@ -80,7 +135,7 @@ void MainWindow::on_actionOpen_triggered()
                 this, tr("Open Image"), ".", tr("Image File(*.png *.jpg *.jpeg *.bmp)"));
     image = cv::imread(fileName.toLatin1().data());
     contour_image = cv::imread(fileName.toLatin1().data());
-    pixelNode::img = image.clone();  // init pixelNode static data member
+    contour = cv::Mat::zeros(image.size(), CV_8UC1);
 
     // convert cv::Mat to QImage
     cv::cvtColor(image, image, CV_BGR2RGB);
@@ -191,7 +246,7 @@ void MainWindow::on_actionReset_Contour_triggered()
 void MainWindow::on_actionFinish_Contour_triggered()
 {
     // close the loop
-    cv::line(contour, cv::Point(x_list[0],y_list[0]), cv::Point(x_list[list_size-1], y_list[list_size-1]), Scalar(255,0,0));
+    // cv::line(contour, cv::Point(x_list[0],y_list[0]), cv::Point(x_list[list_size-1], y_list[list_size-1]), Scalar(255,0,0));
 }
 
 
@@ -224,7 +279,8 @@ void MainWindow::on_actionMin_Path_triggered()
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Control) {
         ctrl_enabled = true;
-        if (scissor_enabled) ctrl_count += 1;
+        if (scissor_enabled)
+            ctrl_count += 1;
     }
     return;
 }
@@ -252,9 +308,8 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         }
         cout << "ctrl + left click" << endl;
 
-        head_node = new pixelNode(p.x(), p.y(), idx);
+        head_node = new pixelNode(p.x(), p.y(), 0);
         current_node = head_node;
-        idx += 1;    
 
         // draw a dot
         cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(0,0,255), 1);
@@ -263,6 +318,32 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
         // compute cost graph
         costgraph_init();
+
+        // Dijkstra algorithm
+        Dijstras(head_node);
+
+        cout << "pass Dijkstra algorithm" << endl;
+        first_seed_flag = true;
+
+    }
+
+    // Mouse move event
+    if ( (event->type() == QEvent::MouseMove) && (first_seed_flag == true) ){
+        QMouseEvent* me = static_cast<QMouseEvent*> (event);
+        QPoint p = ui->label->mapFrom(this, me->pos());
+        p /= img_scale;
+
+        QString myText = QString("Intelligent Scissor ");
+        statusBar()->showMessage(QString("(%1, %2) ").arg(p.x()).arg(p.y()) + myText);
+
+        cout << "debug 2" << endl;
+
+        this->draw_contour(p.x(), p.y());
+        if (contour_enabled){
+            cout << "debug 3" << endl;
+            display_image(contour_image);
+            cout << "debug 4" << endl;
+        }
 
     }
 
@@ -280,10 +361,9 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         }
         cout << "left click" << endl;
 
-        pixelNode* nod = new pixelNode(p.x(), p.y(), idx);
+        pixelNode* nod = new pixelNode(p.x(), p.y(), 100000);
         nod->setParent(current_node);
         current_node = nod;
-        idx += 1;
 
         /*test positions in the image*/
         // QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
@@ -393,23 +473,26 @@ void MainWindow::costgraph_init(){
 
 
 // main algorithm
-// find shortest path from current_node p
-// update contour_image
+// find shortest path from current click seed
 void MainWindow::Dijstras(pixelNode* seed){
+
+    // Debug
+    // cout << "seed row " << seed->getRow() << endl;
+    // cout << "seed col " << seed->getCol() << endl;
 
     // initialize the priority queue pq to be empty;
     priority_queue<pixelNode*, std::vector<pixelNode*>, compareQueue> pqueue;
 
     // initialize each node to the INITIAL state;
-    visitedNode = cv::Mat::zeros(image.size(), CV_8UC1);
-    activeNode = cv::Mat::zeros(image.size(), CV_8UC1);
+    visitedMap = cv::Mat::zeros(image.size(), CV_8UC1);
     parentMap = cv::Mat::zeros(image.size(), CV_8UC1);
+    //activeMap = cv::Mat::zeros(image.size(), CV_8UC1);
 
     // set the total cost of seed to be zero and make seed the root of the minimum path tree ( pointing to NULL ) ;
     // parentMap stores the parent of each pixel, 255: root, others listed below
-    // 8, 5, 2
-    // 7, 4, 1
-    // 6, 3, 0
+    // 0, 3, 6
+    // 1, 4, 7
+    // 2, 5, 8
     graphCost = cv::Mat::ones(image.size(), CV_32FC1);
     graphCost *= 10000000;
     graphCost.at<float>(cv::Point(seed->getRow(),seed->getCol())) = 0;
@@ -428,9 +511,10 @@ void MainWindow::Dijstras(pixelNode* seed){
 
         // extract the node q with the minimum total cost in pq;
         pixelNode* q = pqueue.top();
+        pqueue.pop();
 
         // mark q as EXPANDED;
-        visitedNode.at<uchar>(cv::Point(q->getRow(),q->getCol())) = 1;
+        visitedMap.at<uchar>(cv::Point(q->getRow(),q->getCol())) = 1;
 
 
         // for each neighbor node r of q
@@ -441,37 +525,40 @@ void MainWindow::Dijstras(pixelNode* seed){
                 r = cv::Point(q->getRow()+i,q->getCol()+j);
 
                 // if r has been EXPANDED
-                if (visitedNode.at<uchar>(r) == 1)
+                if (visitedMap.at<uchar>(r) == 1)
                     continue;
 
                 costgraph_index = (i+1)*3 + (j+1);
                 costgraph_tmp = costgraph_weight[costgraph_index];
 
-                // if  r is still INITIAL
-                if (activeNode.at<uchar>(r) == 0){
-                    // make q be the predecessor of r ( for the the minimum path tree );
-                    //parentMap.at<uchar>(r) =
+                float oldCost = graphCost.at<float>(r);
+                float newCost = graphCost.at<float>(cv::Point(q->getRow(),q->getCol()))
+                                + costgraph_tmp.at<float>(cv::Point(q->getRow(),q->getCol()));
 
-                    // set the total cost of r to be the sum of the total cost of q and link cost from q to r as its total cost;
+                if (newCost < oldCost){
+                    graphCost.at<float>(r) = newCost;
 
+                    parentMap.at<uchar>(r) = costgraph_index;
 
-                    // insert r in pq and mark it as ACTIVE;
-                }
-                // else if  r is ACTIVE, e.g., in already in the pq
-                else if (activeNode.at<uchar>(r) == 1){
-                    // if the sum of the total cost of q and link cost between q and r is less than the total cost of r
-
-
-                        // update q to be the predecessor of r ( for the minimum path tree );
-
-
-                        // update the total cost of r in pq;
+                    // check boundary
+                    if ( (q->getRow()+i) > 1 && (q->getCol()+j) > 1 &&
+                         (q->getRow()+i) < (image.rows-1) && (q->getCol()+j) < (image.cols-1)) {
+                        pqueue.push(new pixelNode(r.x, r.y, graphCost.at<float>(r)) );
+                    }
                 }
             }
+        } // end of neightbor search loop
+
+        // satety check
+        if (pqueue.empty()){
+            cout << "every node explored" << endl;
+            break;
         }
 
     } // end of while loop
 }
+
+
 
 
 

@@ -50,6 +50,8 @@ public:
     // helper function
     void print_node(pixelNode* n);
 
+    void draw_contour(int x, int y);
+
     ~MainWindow();
 
 private slots:
@@ -96,8 +98,8 @@ private:
 
     // Dij algorithm
     Mat* costgraph_weight;
-    Mat visitedNode;
-    Mat activeNode;
+    Mat visitedMap;
+    //Mat activeMap;
     Mat parentMap;
     Mat graphCost;
 
@@ -112,6 +114,7 @@ private:
     bool scissor_enabled;
     bool contour_enabled;
     bool ctrl_enabled;
+    bool first_seed_flag;
     int ctrl_count;
 
     double img_scale;
