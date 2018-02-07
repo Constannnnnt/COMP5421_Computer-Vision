@@ -334,7 +334,9 @@ void MainWindow::doDijstras( int clickedX, int clickedY )
 
                     //push this value into min-priority-queue.
                     //   note that due to huge number of nodes, finding the minimum simplying by comparison is not feasible.
-                    if( (  isVisited.at<uchar>(cv::Point(currX+j,currY+i)) == 0  )  && ((currX+j)>0) && ((currX+j) < im.cols-1)  && (currY+i>0)  && (currY+i<im.rows-1)  )
+                    if( ( isVisited.at<uchar>(cv::Point(currX+j,currY+i)) == 0 )  && 
+                        ( (currX+j) > 0 ) && ( (currX+j) < im.cols-1 )  && ( currY+i > 0 )  && 
+                        ( currY+i < im.rows-1)  )
                         pqueue.push(SpecialType(newCost,currX+j,currY+i));
                 }
 
