@@ -50,6 +50,8 @@ public:
     // helper function
     void print_node(pixelNode* n);
 
+    void draw_contour(int x, int y);
+
     ~MainWindow();
 
 private slots:
@@ -93,7 +95,13 @@ private:
     Mat contour;
     Mat contour_image;
     Mat mask_image;
+
+    // Dij algorithm
     Mat* costgraph_weight;
+    Mat visitedMap;
+    //Mat activeMap;
+    Mat parentMap;
+    Mat graphCost;
 
     pixelNode* head_node;   // the head of node list, always the first seed
     pixelNode* current_node;   // store the address of current_node, for setting parent during click
@@ -106,6 +114,7 @@ private:
     bool scissor_enabled;
     bool contour_enabled;
     bool ctrl_enabled;
+    bool first_seed_flag;
     int ctrl_count;
 
     double img_scale;
@@ -114,6 +123,14 @@ private:
     void display_image(cv::Mat im);
     QScrollArea* scrollArea;
 
+};
+
+
+// compare function for priority queue
+struct compareQueue{
+    bool operator() ( pixelNode* a, pixelNode* b ){
+        return (a->getTotalCost() >= b->getTotalCost());
+    }
 };
 
 
