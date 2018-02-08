@@ -255,11 +255,12 @@ void MainWindow::doDijstras( int clickedX, int clickedY )
     // set isVisited to "not visited" for each node
     // set dijstrasCost to "inf" for each node
     isVisited = cv::Mat::zeros(im.size(),CV_8UC1);
+    previous = cv::Mat::zeros(im.size(),CV_8UC1);
     dijstrasCost = cv::Mat::ones(im.size(),CV_32F);
     //parentX = cv::Mat::zeros(im.size(), CV_32SC1);
     //parentY = cv::Mat::zeros(im.size(), CV_32SC1);
 
-    previous = cv::Mat::zeros(im.size(),CV_8UC1);
+    
 
     dijstrasCost = 1000000000000.0*dijstrasCost; //setting to "inf"
 

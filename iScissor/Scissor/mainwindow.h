@@ -88,6 +88,10 @@ private slots:
     void on_actionMin_Path_triggered();
 
 
+    void on_actionGuassian_3_triggered();
+
+    void on_actionGaussian_5_triggered();
+
 private:
     Ui::MainWindow *ui;
 

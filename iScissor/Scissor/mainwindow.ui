@@ -90,6 +90,9 @@
     </property>
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
+    <addaction name="separator"/>
+    <addaction name="actionGuassian_3"/>
+    <addaction name="actionGaussian_5"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -207,6 +210,16 @@
   <action name="actionAdd_Image">
    <property name="text">
     <string>Add Image</string>
+   </property>
+  </action>
+  <action name="actionGuassian_3">
+   <property name="text">
+    <string>Gaussian 3*3</string>
+   </property>
+  </action>
+  <action name="actionGaussian_5">
+   <property name="text">
+    <string>Gaussian 5*5</string>
    </property>
   </action>
  </widget>
