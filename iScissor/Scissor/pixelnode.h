@@ -8,20 +8,20 @@ class pixelNode
 public:
 
     pixelNode();
-    pixelNode(int row, int col, float total_cost);
+    pixelNode(int x, int y, float total_cost);
     ~pixelNode();
     void setParent(pixelNode*);
 
     // Access function
     pixelNode* getParent();
     float getTotalCost();
-    int getCol();
-    int getRow();
+    int getX();
+    int getY();
 
 private:
     float totalCost;        // total cost to the seed
     pixelNode* parent;      // parent node
-    int column, row;        // pos in the image
+    int x, y;               // pos in the image
 
 };
 

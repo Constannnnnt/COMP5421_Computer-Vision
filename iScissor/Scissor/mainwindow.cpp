@@ -67,7 +67,7 @@ void MainWindow::print_node(pixelNode* n)
 {
     pixelNode* p = n;
     while(p->getParent() != NULL){
-        cout << p->getRow() << '\t' << p->getCol() << endl;
+        cout << p->getX() << '\t' << p->getY() << endl;
         p = p->getParent();
     }
 }
@@ -86,44 +86,43 @@ void MainWindow::draw_contour(int x, int y){
         contour_image.at<cv::Vec3b>( cv::Point(x,y) ) = fill;
         //contour.at<cv::Vec3b>( cv::Point(x,y) ) = fill;
 
-        // cout << "draw value is: " << draw_value << endl;
+        //cout << "draw value is: " << draw_value << endl;
 
-        // right is x (rows), down is y (cols)
-        // 0, 3, 6
-        // 1, 4, 7
-        // 2, 5, 8
+        //  0   1   2
+        //  3   4   5
+        //  6   7   8
         switch (draw_value) {
         case 0:
-            y += 1;
-            x += 1;
-            continue;
-        case 1:
-            y += 1;
-            continue;
-        case 2:
-            y += 1;
+            y -= 1;
             x -= 1;
             continue;
-        case 3:
+        case 1:
+            y -= 1;
+            continue;
+        case 2:
+            y -= 1;
             x += 1;
+            continue;
+        case 3:
+            x -= 1;
             continue;
         case 4:
             cout << "self loop detected" << endl;
             exit(1);
             break;
         case 5:
-            x -= 1;
-            continue;
-        case 6:
-            y -= 1;
             x += 1;
             continue;
+        case 6:
+            y += 1;
+            x -= 1;
+            continue;
         case 7:
-            y -= 1;
+            y += 1;
             continue;
         case 8:
-            y -= 1;
-            x -= 1;
+            y += 1;
+            x += 1;
             continue;
         //default:
         //    continue;
@@ -216,7 +215,8 @@ void MainWindow::on_actionZoom_Out_triggered()
 // display help message
 void MainWindow::on_actionHelp_triggered()
 {
-    this->print_node(current_node);
+    // this->print_node(current_node);
+    cout << "Image size is: " << image.rows << '\t' << image.cols << endl;
 
     // QString text = QString("Nothing for help !");
     // QMessageBox::about(this, "Help", text);
@@ -340,9 +340,8 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         QPoint p = ui->label->mapFrom(this, me->pos());
         p /= img_scale;
 
-        //cout << "pos1: " << me->pos().x() << "\t" << me->pos().y() << endl;
-        //cout << "pos2: " << p.x() << "\t" << p.y() << endl;
-
+        // p.y() - image.rows - down direction
+        // p.x() - image.cols - right direction
         cout << p.x() << " " << p.y() << endl;
         if (!scissor_enabled) {
             cout << "scissor is not enabled" << endl;
@@ -370,12 +369,14 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         QString myText = QString("Intelligent Scissor ");
         statusBar()->showMessage(QString("(%1, %2) ").arg(p.x()).arg(p.y()) + myText);
 
-        //cout << "debug 2" << endl;
+        cout << "p pos is: " << p.x() << '\t' << p.y() << endl << endl;
+        // check boundary, this causes the crash
+        if ( (p.y() > 0) && (p.x() > 0) &&
+             (p.y() < image.rows-1) && (p.x() < image.cols-1)){
 
-        this->draw_contour(p.x(), p.y());
-        if (contour_enabled){
-            display_image(contour_image);
-
+            this->draw_contour(p.x(), p.y());
+            if (contour_enabled)
+                display_image(contour_image);
         }
 
     }
@@ -489,8 +490,8 @@ void MainWindow::costgraph_init(){
 void MainWindow::Dijstras(pixelNode* seed){
 
     // Debug
-    // cout << "seed row " << seed->getRow() << endl;
-    // cout << "seed col " << seed->getCol() << endl;
+    // cout << "seed row " << seed->getX() << endl;
+    // cout << "seed col " << seed->getY() << endl;
 
     // initialize the priority queue pq to be empty;
     priority_queue<pixelNode*, std::vector<pixelNode*>, compareQueue> pqueue;
@@ -502,13 +503,11 @@ void MainWindow::Dijstras(pixelNode* seed){
 
     // set the total cost of seed to be zero and make seed the root of the minimum path tree ( pointing to NULL ) ;
     // parentMap stores the parent of each pixel, 255: root, others listed below
-    // 0, 3, 6
-    // 1, 4, 7
-    // 2, 5, 8
+
     graphCost = cv::Mat::ones(image.size(), CV_32F);
     graphCost *= 100000000.0;
-    graphCost.at<float>(cv::Point(seed->getRow(),seed->getCol())) = 0.0;
-    parentMap.at<uchar>(cv::Point(seed->getRow(),seed->getCol())) = 255;
+    graphCost.at<float>(cv::Point(seed->getX(),seed->getY())) = 0.0;
+    parentMap.at<uchar>(cv::Point(seed->getX(),seed->getY())) = 255;
 
     // insert seed into pq;
     pqueue.push(seed);
@@ -527,7 +526,7 @@ void MainWindow::Dijstras(pixelNode* seed){
         pqueue.pop();
 
         // mark q as EXPANDED;
-        visitedMap.at<uchar>(cv::Point(q->getRow(),q->getCol())) = 1;
+        visitedMap.at<uchar>(cv::Point(q->getX(),q->getY())) = 1;
 
 
         // for each neighbor node r of q
@@ -539,7 +538,7 @@ void MainWindow::Dijstras(pixelNode* seed){
                     continue;
 
                 // note the i, j
-                r = cv::Point( q->getRow()+j, q->getCol()+i );
+                r = cv::Point( q->getX()+j, q->getY()+i );
 
                 // if r has been EXPANDED
                 if (visitedMap.at<uchar>(r) == 1)
@@ -549,8 +548,8 @@ void MainWindow::Dijstras(pixelNode* seed){
                 costgraph_tmp = costgraph_weight[costgraph_index];
 
                 float oldCost = graphCost.at<float>(r);
-                float newCost = graphCost.at<float>(cv::Point(q->getRow(),q->getCol()))
-                                + costgraph_tmp.at<float>(cv::Point(q->getRow(),q->getCol()));
+                float newCost = graphCost.at<float>(cv::Point(q->getX(),q->getY()))
+                                + costgraph_tmp.at<float>(cv::Point(q->getX(),q->getY()));
 
                 // cout << "newCost is: " << newCost << endl;
 
@@ -559,11 +558,11 @@ void MainWindow::Dijstras(pixelNode* seed){
 
                     graphCost.at<float>(r) = newCost;
 
-                    parentMap.at<uchar>(r) = costgraph_index;
+                    parentMap.at<uchar>(r) = (1-i)*3 + (1-j);
 
                     // check boundary
-                    if ( (q->getRow()+i) > 10 && (q->getCol()+j) > 10 &&
-                         (q->getRow()+i) < (image.rows-10) && (q->getCol()+j) < (image.cols-10)) {
+                    if ( (q->getX()+j) > 0 && (q->getY()+i) > 0 &&
+                         (q->getX()+j) < (image.cols-1) && (q->getY()+i) < (image.rows-1)) {
                         pqueue.push(new pixelNode(r.x, r.y, newCost) );
                     }
                 }
@@ -599,7 +598,7 @@ void MainWindow::on_actionGuassian_3_triggered(){
 void MainWindow::on_actionGaussian_5_triggered(){
 
     if (!image.empty()){
-        cv::GaussianBlur(image, image, cv::Size(5, 5), 4, 4);
+        cv::GaussianBlur(image, image, cv::Size(5, 5), 5, 5);
         contour_image = image.clone();
         display_image(image);
     }
