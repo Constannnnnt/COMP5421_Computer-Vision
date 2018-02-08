@@ -5,10 +5,10 @@ pixelNode::pixelNode(){
 
 }
 
-pixelNode::pixelNode(int row, int col, float total_cost) {
+pixelNode::pixelNode(int x, int y, float total_cost) {
 
-    this->row = row;
-    this->column = col;
+    this->x = x;
+    this->y = y;
     this->totalCost = total_cost;
     this->parent = NULL;
 
@@ -29,12 +29,12 @@ pixelNode* pixelNode::getParent(){
     return this->parent;
 }
 
-int pixelNode::getCol(){
-    return this->column;
+int pixelNode::getX(){
+    return this->x;
 }
 
-int pixelNode::getRow(){
-    return this->row;
+int pixelNode::getY(){
+    return this->y;
 }
 
 float pixelNode::getTotalCost(){
