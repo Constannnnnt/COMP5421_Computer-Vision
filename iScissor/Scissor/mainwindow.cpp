@@ -332,25 +332,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
     }
 
-    // Mouse move event
-    if ( (event->type() == QEvent::MouseMove) && (first_seed_flag == true) ){
-        QMouseEvent* me = static_cast<QMouseEvent*> (event);
-        QPoint p = ui->label->mapFrom(this, me->pos());
-        p /= img_scale;
-
-        QString myText = QString("Intelligent Scissor ");
-        statusBar()->showMessage(QString("(%1, %2) ").arg(p.x()).arg(p.y()) + myText);
-
-        //cout << "debug 2" << endl;
-
-        this->draw_contour(p.x(), p.y());
-        if (contour_enabled){ 
-            display_image(contour_image);
-
-        }
-
-    }
-
     // left click: follwing seeds
     if ( (event->type() == QEvent::MouseButtonPress) && (!ctrl_enabled) &&
          (strcmp(watched->metaObject()->className(), "MainWindow")) == 0)
@@ -358,6 +339,10 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         QMouseEvent* me = static_cast<QMouseEvent*> (event);
         QPoint p = ui->label->mapFrom(this, me->pos());
         p /= img_scale;
+
+        //cout << "pos1: " << me->pos().x() << "\t" << me->pos().y() << endl;
+        //cout << "pos2: " << p.x() << "\t" << p.y() << endl;
+
         cout << p.x() << " " << p.y() << endl;
         if (!scissor_enabled) {
             cout << "scissor is not enabled" << endl;
@@ -374,6 +359,27 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         // cout << "pixel at the pos" << Q_img.pixel(p.x(),p.y()) <<  endl;
         // draw the path based on the movement of the mouse
     }
+
+    // Mouse move event
+    if ( (event->type() == QEvent::MouseMove) && ui->label->underMouse() && (first_seed_flag == true) ){
+        QMouseEvent* me = static_cast<QMouseEvent*> (event);
+        //QPoint p = ui->label->mapFrom(this, me->pos());
+        QPoint p = me->pos();
+        p /= img_scale;
+
+        QString myText = QString("Intelligent Scissor ");
+        statusBar()->showMessage(QString("(%1, %2) ").arg(p.x()).arg(p.y()) + myText);
+
+        //cout << "debug 2" << endl;
+
+        this->draw_contour(p.x(), p.y());
+        if (contour_enabled){
+            display_image(contour_image);
+
+        }
+
+    }
+
 
     if ( event->type() == QEvent::KeyPress){
         QKeyEvent* event_key = static_cast<QKeyEvent*> (event);
@@ -471,6 +477,7 @@ void MainWindow::costgraph_init(){
         tmp.copyTo(costgraph_weight[i]);
 
         // cout << "tmp is: \n\n\n\n\n\n\n" << tmp << endl;
+        // cv::imshow("test", tmp);
     }
 
 
@@ -584,6 +591,7 @@ void MainWindow::on_actionGuassian_3_triggered(){
 
     if (!image.empty()){
         cv::GaussianBlur(image, image, cv::Size(3, 3), 3, 3);
+        contour_image = image.clone();
         display_image(image);
     }
 }
@@ -592,6 +600,7 @@ void MainWindow::on_actionGaussian_5_triggered(){
 
     if (!image.empty()){
         cv::GaussianBlur(image, image, cv::Size(5, 5), 4, 4);
+        contour_image = image.clone();
         display_image(image);
     }
 }
