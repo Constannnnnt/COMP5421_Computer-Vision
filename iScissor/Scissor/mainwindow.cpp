@@ -140,6 +140,8 @@ void MainWindow::on_actionOpen_triggered()
     image = cv::imread(fileName.toLatin1().data());
     contour_image = cv::imread(fileName.toLatin1().data());
     contour = cv::Mat::zeros(image.size(), CV_8UC3);
+    current_image = image;
+    previous_image = image;
 
     // convert cv::Mat to QImage
     cv::cvtColor(image, image, CV_BGR2RGB);
@@ -198,7 +200,7 @@ void MainWindow::on_actionZoom_In_triggered()
     if(contour_enabled == true)
         display_image(contour_image);
     else
-        display_image(image);
+        display_image(current_image);
 }
 
 
@@ -208,7 +210,7 @@ void MainWindow::on_actionZoom_Out_triggered()
     if(contour_enabled == true)
         display_image(contour_image);
     else
-        display_image(image);
+        display_image(current_image);
 }
 
 
@@ -236,7 +238,12 @@ void MainWindow::on_actionScissor_triggered(bool checked)
 void MainWindow::on_actionDisplay_Contour_triggered(bool checked)
 {
     contour_enabled = checked;
-    display_image(contour_image);
+    if (contour_enabled) {
+        display_image(contour_image);
+    }
+    else {
+        display_image(current_image);
+    }
 }
 
 
@@ -256,13 +263,26 @@ void MainWindow::on_actionFinish_Contour_triggered()
 
 
 // Debug Mode
-void MainWindow::on_actionPixel_Node_triggered()
+void MainWindow::on_actionPixel_Node_triggered(bool checked)
 {
-
+    if (checked) {
+        Mat pixelNodeGraph = cv::Mat::zeros(image.size() * 3, CV_32F);
+        for (int i = 0; i < image.cols; i ++) {
+            for (int j = 0; j < image.rows; j++) {
+                pixelNodeGraph.at<float>(cv::Point(3 * i + 1, 3 * j + 1)) = image.at<float>(cv::Point(i, j));
+            }
+        }
+        previous_image = current_image;
+        current_image = pixelNodeGraph;
+        display_image(current_image);
+    } else {
+        current_image = previous_image;
+        display_image(current_image);
+    }
 }
 
 
-void MainWindow::on_actionCost_Graph_triggered()
+void MainWindow::on_actionCost_Graph_triggered(bool checked)
 {
 
 }
@@ -301,7 +321,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
     // control + left click: first seed
     if ( (event->type() == QEvent::MouseButtonPress) && (ctrl_enabled) &&
-         (strcmp(watched->metaObject()->className(), "MainWindow")) == 0 )
+         (strcmp(watched->metaObject()->className(), "MainWindow")) == 0 && (ctrl_count == 1) )
     {
         QMouseEvent* me = static_cast<QMouseEvent*> (event);
         QPoint p = ui->label->mapFrom(this, me->pos());

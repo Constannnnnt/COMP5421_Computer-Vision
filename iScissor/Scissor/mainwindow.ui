@@ -57,7 +57,7 @@
      <x>0</x>
      <y>0</y>
      <width>889</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menufile">
@@ -183,11 +183,17 @@
    </property>
   </action>
   <action name="actionPixel_Node">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Pixel Node</string>
    </property>
   </action>
   <action name="actionCost_Graph">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Cost Graph</string>
    </property>

@@ -79,9 +79,9 @@ private slots:
     void on_actionReset_Contour_triggered();
 
 
-    void on_actionPixel_Node_triggered();
+    void on_actionPixel_Node_triggered(bool checked);
 
-    void on_actionCost_Graph_triggered();
+    void on_actionCost_Graph_triggered(bool checked);
 
     void on_actionPath_Tree_triggered();
 
@@ -99,6 +99,8 @@ private:
     Mat contour;
     Mat contour_image;
     Mat mask_image;
+    Mat current_image;
+    Mat previous_image;
 
     // Dij algorithm
     Mat* costgraph_weight;
