@@ -130,11 +130,29 @@ void MainWindow::draw_contour(int x, int y){
     }
 }
 
+void MainWindow::resetAll(){
+    ui->actionPixel_Node->setChecked(false);
+    ui->actionCost_Graph->setChecked(false);
+    ui->actionGaussian_5->setChecked(false);
+    ui->actionGuassian_3->setChecked(false);
+    ui->actionDisplay_Contour->setChecked(false);
+    ui->actionScissor->setChecked(false);
+    costgraph_weight = new cv::Mat[9];
+    img_scale = 1.0;
+    contour_enabled = false;
+    scissor_enabled = false;
+    first_seed_flag = false;
+    ctrl_count = 0;
+    return;
+}
+
 /* helper function ends here */
 
 // open a image
 void MainWindow::on_actionOpen_triggered()
 {
+    resetAll();
+
     QString fileName = QFileDialog::getOpenFileName(
                 this, tr("Open Image"), ".", tr("Image File(*.png *.jpg *.jpeg *.bmp)"));
     image = cv::imread(fileName.toLatin1().data());
@@ -266,6 +284,10 @@ void MainWindow::on_actionFinish_Contour_triggered()
 void MainWindow::on_actionPixel_Node_triggered(bool checked)
 {
     if (checked) {
+        cout << image.size() << endl;
+        cout << image.size() * 3 << endl;
+        cout << image.cols << endl;
+        cout << image.rows << endl;
         Mat pixelNodeGraph = cv::Mat::zeros(image.size() * 3, CV_32F);
         for (int i = 0; i < image.cols; i ++) {
             for (int j = 0; j < image.rows; j++) {
@@ -606,18 +628,18 @@ void MainWindow::Dijstras(pixelNode* seed){
 
 
 // Gaussian filter Smooth
-void MainWindow::on_actionGuassian_3_triggered(){
+void MainWindow::on_actionGuassian_3_triggered(bool checked){
 
-    if (!image.empty()){
+    if (!image.empty() && checked){
         cv::GaussianBlur(image, image, cv::Size(3, 3), 3, 3);
         contour_image = image.clone();
         display_image(image);
     }
 }
 
-void MainWindow::on_actionGaussian_5_triggered(){
+void MainWindow::on_actionGaussian_5_triggered(bool checked){
 
-    if (!image.empty()){
+    if (!image.empty() && checked){
         cv::GaussianBlur(image, image, cv::Size(5, 5), 5, 5);
         contour_image = image.clone();
         display_image(image);

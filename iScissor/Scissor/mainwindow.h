@@ -52,6 +52,8 @@ public:
 
     void draw_contour(int x, int y);
 
+    void resetAll();
+
     ~MainWindow();
 
 private slots:
@@ -88,9 +90,9 @@ private slots:
     void on_actionMin_Path_triggered();
 
 
-    void on_actionGuassian_3_triggered();
+    void on_actionGuassian_3_triggered(bool checked);
 
-    void on_actionGaussian_5_triggered();
+    void on_actionGaussian_5_triggered(bool checked);
 
 private:
     Ui::MainWindow *ui;
