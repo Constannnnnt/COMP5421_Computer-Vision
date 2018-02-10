@@ -45,6 +45,8 @@ MainWindow::~MainWindow()
 
     delete head_node;
     delete current_node;
+
+    delete[] costgraph_weight;
 }
 
 /* helper function starts here  */
@@ -58,9 +60,6 @@ void MainWindow::display_image(Mat im)
 
     QPixmap p = QPixmap::fromImage(Q_img);
     ui->label->setPixmap( p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio) );
-
-    scrollArea->setWidget(ui->label);
-    setCentralWidget(scrollArea);
 }
 
 void MainWindow::print_node(pixelNode* n)
@@ -137,7 +136,6 @@ void MainWindow::resetAll(){
     ui->actionGuassian_3->setChecked(false);
     ui->actionDisplay_Contour->setChecked(false);
     ui->actionScissor->setChecked(false);
-    costgraph_weight = new cv::Mat[9];
     img_scale = 1.0;
     contour_enabled = false;
     scissor_enabled = false;
@@ -283,21 +281,34 @@ void MainWindow::on_actionFinish_Contour_triggered()
 // Debug Mode
 void MainWindow::on_actionPixel_Node_triggered(bool checked)
 {
+    QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
     if (checked) {
-        cout << image.size() << endl;
-        cout << image.size() * 3 << endl;
-        cout << image.cols << endl;
-        cout << image.rows << endl;
-        Mat pixelNodeGraph = cv::Mat::zeros(image.size() * 3, CV_32F);
-        for (int i = 0; i < image.cols; i ++) {
-            for (int j = 0; j < image.rows; j++) {
-                pixelNodeGraph.at<float>(cv::Point(3 * i + 1, 3 * j + 1)) = image.at<float>(cv::Point(i, j));
-            }
-        }
+//        Mat pixelNodeGraph = cv::Mat::zeros(image.size() * 3, CV_8UC3);
+//        for (int i = 0; i < image.cols; i ++) {
+//            for (int j = 0; j < image.rows; j++) {
+//                pixelNodeGraph.at<uchar>(cv::Point(3 * i + 1, 3 * j + 1)) = image.at<uchar>(cv::Point(i, j));
+//            }
+//        }
+//        previous_image = current_image;
+//        current_image = pixelNodeGraph;
+//        display_image(current_image);
+        int w=Q_img->width(), h=Q_img->height();
+        QImage png(3*w,3*h,Q_img->format());
+        png.fill(qRgb(0,0,0));
+        for(int j=0;j<h;j++)
+            for(int i=0;i<w;i++)
+                png.setPixel(3*i+1,3*j+1,Q_img->pixel(i,j));
+        QPixmap p = QPixmap::fromImage(png);
+        ui->label->setPixmap(p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio));
+//        QImage Q_img_tmp = Q_img->rgbSwapped();
         previous_image = current_image;
-        current_image = pixelNodeGraph;
-        display_image(current_image);
+        current_image = cv::Mat( png.height(), png.width(),
+                                 CV_8UC3,
+                                 const_cast<uchar*>(png.bits()),
+                                 static_cast<size_t>(png.bytesPerLine())
+                                 ).clone();
     } else {
+        delete Q_img;
         current_image = previous_image;
         display_image(current_image);
     }

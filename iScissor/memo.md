@@ -45,4 +45,4 @@ For visualization and debugging purposes, you should convert a pixel node array 
 
 ### BUGS
 1. can not the get the accurate position when clicking at the image when the image is not aligned correctly
-2. will crash after closing the applications
+2. will crash after closing the applications, memory leak problems
