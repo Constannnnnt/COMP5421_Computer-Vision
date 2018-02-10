@@ -283,15 +283,6 @@ void MainWindow::on_actionPixel_Node_triggered(bool checked)
 {
     QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
     if (checked) {
-//        Mat pixelNodeGraph = cv::Mat::zeros(image.size() * 3, CV_8UC3);
-//        for (int i = 0; i < image.cols; i ++) {
-//            for (int j = 0; j < image.rows; j++) {
-//                pixelNodeGraph.at<uchar>(cv::Point(3 * i + 1, 3 * j + 1)) = image.at<uchar>(cv::Point(i, j));
-//            }
-//        }
-//        previous_image = current_image;
-//        current_image = pixelNodeGraph;
-//        display_image(current_image);
         int w=Q_img->width(), h=Q_img->height();
         QImage png(3*w,3*h,Q_img->format());
         png.fill(qRgb(0,0,0));
