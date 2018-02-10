@@ -281,8 +281,8 @@ void MainWindow::on_actionFinish_Contour_triggered()
 // Debug Mode
 void MainWindow::on_actionPixel_Node_triggered(bool checked)
 {
-    QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
     if (checked) {
+        QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
         int w=Q_img->width(), h=Q_img->height();
         QImage png(3*w,3*h,Q_img->format());
         png.fill(qRgb(0,0,0));
@@ -298,8 +298,8 @@ void MainWindow::on_actionPixel_Node_triggered(bool checked)
                                  const_cast<uchar*>(png.bits()),
                                  static_cast<size_t>(png.bytesPerLine())
                                  ).clone();
-    } else {
         delete Q_img;
+    } else {
         current_image = previous_image;
         display_image(current_image);
     }
@@ -328,8 +328,6 @@ void MainWindow::on_actionMin_Path_triggered()
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Control) {
         ctrl_enabled = true;
-        if (scissor_enabled)
-            ctrl_count += 1;
     }
     return;
 }
@@ -345,7 +343,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
     // control + left click: first seed
     if ( (event->type() == QEvent::MouseButtonPress) && (ctrl_enabled) &&
-         (strcmp(watched->metaObject()->className(), "MainWindow")) == 0 && (ctrl_count == 1) )
+         (strcmp(watched->metaObject()->className(), "MainWindow")) == 0 && !first_seed_flag)
     {
         QMouseEvent* me = static_cast<QMouseEvent*> (event);
         QPoint p = ui->label->mapFrom(this, me->pos());

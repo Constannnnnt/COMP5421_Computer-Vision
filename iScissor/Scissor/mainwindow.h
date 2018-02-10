@@ -123,7 +123,6 @@ private:
     bool contour_enabled;
     bool ctrl_enabled;
     bool first_seed_flag;
-    int ctrl_count;
 
     double img_scale;
     int idx; // mark the length of the nodes
