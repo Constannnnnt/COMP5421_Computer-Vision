@@ -27,10 +27,6 @@ MainWindow::MainWindow(QWidget *parent) :
     scissor_enabled = false;
     first_seed_flag = false;
 
-    // head_node = new pixelNode();
-    // idx = 0;
-    ctrl_count = 0;
-
     // test
     //Mat C = (Mat_<double>(2,2) << 0, 1, 2, 3);
     //cout << C << endl << endl;
@@ -140,7 +136,6 @@ void MainWindow::resetAll(){
     contour_enabled = false;
     scissor_enabled = false;
     first_seed_flag = false;
-    ctrl_count = 0;
     return;
 }
 
@@ -308,7 +303,31 @@ void MainWindow::on_actionPixel_Node_triggered(bool checked)
 
 void MainWindow::on_actionCost_Graph_triggered(bool checked)
 {
+    if (checked) {
+        QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+        int w=Q_img->width(), h=Q_img->height();
+        QImage png(3*w,3*h,Q_img->format());
+        png.fill(qRgb(0,0,0));
+        for(int j=0;j<h;j++) {
+            for(int i=0;i<w;i++) {
+                png.setPixel(3*i+1,3*j+1,Q_img->pixel(i,j));
+                png.setPixel(3*i+2,3*j+1,qRbg());
+            }
+        }
+        QPixmap p = QPixmap::fromImage(png);
+        ui->label->setPixmap(p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio));
+//        QImage Q_img_tmp = Q_img->rgbSwapped();
+        previous_image = current_image;
+        current_image = cv::Mat( png.height(), png.width(),
+                                 CV_8UC3,
+                                 const_cast<uchar*>(png.bits()),
+                                 static_cast<size_t>(png.bytesPerLine())
+                                 ).clone();
 
+    } else {
+        current_image = previous_image;
+        display_image(current_image);
+    }
 }
 
 
