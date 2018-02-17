@@ -138,6 +138,152 @@ void MainWindow::resetAll(){
     return;
 }
 
+QImage MainWindow::drawPathTree(){
+    int w=Qimg->width(),h=Qimg->height();
+    QImage qi(3*w,3*h,Qimg->format());
+    qi.fill(qRgb(0,0,0));
+    for(int j = 0; j < h; j++)
+        for(int i = 0; i < w; i++)
+        {
+                pixelNode *pn=pixelnodes[j][i];
+                qi.setPixel(3*i+1,3*j+1,Qimg->pixel(i,j));
+                pixelNode *prevpn=pn->prevNode;
+                if(prevpn!=NULL)
+                {
+                    int c = 3 * i + 1 + prevpn->getCol() - pn->getCol();
+                    int r = 3 * j + 1 + prevpn->getRow() - pn->getRow();
+                    qi.setPixel(c,r,qRgb(255,255,0));
+                    c=3 * prevpn->getCol() + 1 + pn->getCol()- prevpn->getCol();
+                    r=3 * prevpn->getRow() + 1 + pn->getRow() - prevpn->getRow();
+                    qi.setPixel(c,r,qRgb(127,127,0));
+                }
+        }
+    return qi;
+}
+
+void MainWindow::computeCostFunc(){
+    int w = Qimg->width(), h = Qimg->height();
+    double maxD = DBL_MAX;
+    for (int j = 0; j < h; j ++)
+        for (int i = 0; i < w; i++) {
+            pixelNode *pn=pixelnodes[j][i];
+            for(int k=0;k<8;k++)
+            {
+                pn->setLinkCost(k,getDLink(i,j,k));
+                if(pn->LinkCost(k)>maxD)
+                    maxD=pn->LinkCost(k);
+            }
+        }
+    for (int j = 0; j < h; j ++)
+        for (int i = 0; i < w; i ++) {
+            pixelNode *pn = pixelNode[j][i];
+            for (int k = 0; k < 8; k++) {
+                double length = k % 2 == 0 ? 1.0 : sqrt(2);
+                double DLink = pn->getLinkCost(k);
+                pn->setLinkCost(k, (maxD - DLink) * length);
+            }
+        }
+}
+
+void MainWindow::channelTransform(QRgb rgb, int color[3]) {
+    color[0] = qRed(rgb);
+    color[1] = qGreen(rgb);
+    color[2] = qBlue(rgb);
+}
+
+double MainWindow::getDLink(int i, int j, int k) {
+    double DLink;
+    double D[3];
+    switch (k) {
+    case 0:
+        if(j == 0 || j == Qimg->height() - 1 || i == Qimg->width() - 1) return -1.0; // boundary exceed;
+        int c0[3], c1[3], c2[3], c3[3];
+        channelTransform(Qimg->pixel(i, j - 1), c0);
+        channelTransform(Qimg->pixel(i + 1, j - 1), c1);
+        channelTransform(Qimg->pixel(i, j + 1), c2);
+        channelTransform(Qimg->pixel(i + 1, j + 1), c3);
+        for (int t = 0; t <3; t ++) {
+            D[t]=fabs((c0[t] + c1[t]) / 2.0-(c2[t] + c3[t]) / 2.0) / 2.0;
+        }
+        break;
+    case 1:
+        if (j == 0 || i == Qimg->width() - 1) return -1.0;
+        int c0[3], c1[3];
+        channelTransform(Qimg->pixel(i + 1, j), c0);
+        channelTransform(Qimg->pixel(i, j - 1), c1);
+        for (int t = 0; t <3; t ++) {
+            D[t]=fabs(1.0 * (c0[t] - c1[t])) / sqrt(2);
+        }
+        break;
+    case 2:
+        if (i ==0 || i == Qimg->width() - 1 || j == 0) return -1.0;
+        int c0[3], c1[3], c2[3], c3[3];
+        channelTransform(Qimg->pixel(i - 1, j), c0);
+        channelTransform(Qimg->pixel(i - 1, j - 1), c1);
+        channelTransform(Qimg->pixel(i + 1, j), c2);
+        channelTransform(Qimg->pixel(i + 1, j - 1), c3);
+        for (int t = 0; t <3; t ++) {
+            D[t]=fabs((c0[t] + c1[t]) / 2.0 - (c2[t] + c3[t]) / 2.0) / 2.0;
+        }
+        break;
+    case 3:
+        if (i == 0 || j == 0) return -1.0;
+        int c0[3], c1[3];
+        channelTransform(Qimg->pixel(i - 1, j), c0);
+        channelTransform(Qimg->pixel(i, j - 1), c1);
+        for (int t = 0; t <3; t ++) {
+            D[t]=fabs(1.0 * (c0[t] - c1[t])) / sqrt(2);
+        }
+        break;
+    case 4:
+        if (i == 0 || j == 0 || j == Qimg->height() -1) return -1.0;
+        int c0[3], c1[3], c2[3], c3[3];
+        channelTransform(Qimg->pixel(i, j - 1), c0);
+        channelTransform(Qimg->pixel(i - 1, j - 1), c1);
+        channelTransform(Qimg->pixel(i - 1, j + 1), c2);
+        channelTransform(Qimg->pixel(i, j + 1), c3);
+        for (int t = 0; t <3; t ++) {
+            D[t]=fabs((c0[t] + c1[t]) / 2.0 - (c2[t] + c3[t]) / 2.0) / 2.0;
+        }
+        break;
+    case 5:
+        if (i == 0 || j == Qimg->height() - 1) return -1.0;
+        int c0[3], c1[3];
+        channelTransform(Qimg->pixel(i - 1, j), c0);
+        channelTransform(Qimg->pixel(i, j + 1), c1);
+        for (int t = 0; t <3; t ++) {
+            D[t]=fabs(1.0 * (c0[t] - c1[t])) / sqrt(2);
+        }
+        break;
+    case 6:
+        if (i == 0 || i == Qimg->width() - 1 || j == Qimg->height() -1) return -1.0;
+        int c0[3], c1[3], c2[3], c3[3];
+        channelTransform(Qimg->pixel(i - 1, j), c0);
+        channelTransform(Qimg->pixel(i - 1, j + 1), c1);
+        channelTransform(Qimg->pixel(i + 1, j), c2);
+        channelTransform(Qimg->pixel(i + 1, j + 1), c3);
+        for (int t = 0; t <3; t ++) {
+            D[t]=fabs((c0[t] + c1[t]) / 2.0 - (c2[t] + c3[t]) / 2.0) / 2.0;
+        }
+        break;
+    case 7:
+        if (i == Qimg->width() - 1 || j == Qimg->height() - 1) return -1.0;
+        int c0[3], c1[3];
+        channelTransform(Qimg->pixel(i + 1, j), c0);
+        channelTransform(Qimg->pixel(i, j + 1), c1);
+        for (int t = 0; t <3; t ++) {
+            D[t]=fabs(1.0 * (c0[t] - c1[t])) / sqrt(2);
+        }
+        break;
+    default:
+        return - 1.0;
+    }
+    for (int t = 0; t < 3; t ++)
+        DLink += D[t] * D[t];
+    DLink = sqrt(DLink) / 3;
+    return DLink;
+}
+
 /* helper function ends here */
 
 // open a image
@@ -158,6 +304,18 @@ void MainWindow::on_actionOpen_triggered()
     cv::cvtColor(contour_image, contour_image, CV_BGR2RGB);
 
     QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+
+    Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+    pixelnodes.resize(Q_img.height());
+    for(int i=0;i<Q_img.height();i++)
+        for(int j=0;j<Q_img.width();j++)
+            pixelnodes[i].push_back(new pixelNode(j,i));
+    QImage mask(Qimg->width(),Qimg->height(),Qimg->format());
+    mask.fill(qRgb(255, 255, 255));
+    Mask = mask;
+    head_node = NULL;
+    pathTree = new QImage(drawPathTree());
+    computeCostFunc();
 
     ui->label->setPixmap(QPixmap::fromImage(Q_img));
 
@@ -311,36 +469,35 @@ void MainWindow::on_actionCost_Graph_triggered(bool checked)
         QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
         int w=Q_img->width(), h=Q_img->height();
         QImage png(3*w,3*h,Q_img->format());
-        cout << graphCost.at<float>(cv::Point( 1, 0)) * 1.5 << endl;
-        cout << int(graphCost.at<float>(cv::Point(1, 0)) * 1.5) <<endl;
         png.fill(qRgb(255,255,255));
         for(int j=0;j<h;j++) {
             for(int i=0;i<w;i++) {
+                pixelNode *pn=pixelnodes[j][i];
                 png.setPixel(3*i+1,3*j+1,Q_img->pixel(i,j)); // i, j
-                if (i + 1 < w) png.setPixel(3*i+2,3*j+1,qRgb(int(graphCost.at<float>(cv::Point(i + 1, j)) * 1.5),
-                                                             int(graphCost.at<float>(cv::Point(i + 1, j)) * 1.5),
-                                                             int(graphCost.at<float>(cv::Point(i + 1, j)) * 1.5))); // link 0
-                if (i + 1 < w && j - 1 >=0) png.setPixel(3*i+2,3*j,qRgb(graphCost.at<float>(cv::Point(i + 1, j - 1)) * 1.5,
-                                                                        graphCost.at<float>(cv::Point(i + 1, j - 1)) * 1.5,
-                                                                        graphCost.at<float>(cv::Point(i + 1, j - 1)) * 1.5)); // link 1
-                if (j - 1 >= 0) png.setPixel(3*i+1,3*j,qRgb(graphCost.at<float>(cv::Point(i, j - 1)) * 1.5,
-                                                            graphCost.at<float>(cv::Point(i, j - 1)) * 1.5,
-                                                            graphCost.at<float>(cv::Point(i, j - 1)) * 1.5)); // link 2
-                if (i - 1 >=0 && j - 1 >=0) png.setPixel(3*i,3*j,qRgb(graphCost.at<float>(cv::Point(i- 1, j - 1)) * 1.5,
-                                                                       graphCost.at<float>(cv::Point(i - 1, j - 1)) * 1.5,
-                                                                       graphCost.at<float>(cv::Point(i - 1, j - 1)) * 1.5)); // link 3
-                if (i - 1 >= 0) png.setPixel(3*i,3*j+1,qRgb(graphCost.at<float>(cv::Point(i - 1, j)) * 1.5,
-                                                            graphCost.at<float>(cv::Point(i - 1, j)) * 1.5,
-                                                            graphCost.at<float>(cv::Point(i - 1, j)) * 1.5)); // link 4
-                if (i - 1 >= 0 && j + 1 < h) png.setPixel(3*i,3*j+2,qRgb(graphCost.at<float>(cv::Point(i - 1, j + 1)) * 1.5,
-                                                                         graphCost.at<float>(cv::Point(i - 1, j + 1)) * 1.5,
-                                                                         graphCost.at<float>(cv::Point(i - 1, j + 1)) * 1.5)); // link 5
-                if (j + 1 < h) png.setPixel(3*i+1,3*j+2,qRgb(graphCost.at<float>(cv::Point(i, j + 1)) * 1.5,
-                                                             graphCost.at<float>(cv::Point(i, j + 1)) * 1.5,
-                                                             graphCost.at<float>(cv::Point(i, j + 1)) * 1.5)); // link 6
-                if (i + 1 < w && j + 1 < h) png.setPixel(3*i+2,3*j+2,qRgb(graphCost.at<float>(cv::Point(i + 1, j + 1)) * 1.5,
-                                                                          graphCost.at<float>(cv::Point(i + 1, j + 1)) * 1.5,
-                                                                          graphCost.at<float>(cv::Point(i + 1, j + 1)) * 1.5)); // link 7
+                if (i + 1 < w) png.setPixel(3*i+2,3*j+1,qRgb(pn->getLinkCost(0) * 1.5,
+                                                             pn->getLinkCost(0) * 1.5,
+                                                             pn->getLinkCost(0) * 1.5); // link 0
+                if (i + 1 < w && j - 1 >=0) png.setPixel(3*i+2,3*j,qRgb(pn->getLinkCost(1) * 1.5,
+                                                                        pn->getLinkCost(1) * 1.5,
+                                                                        pn->getLinkCost(1) * 1.5)); // link 1
+                if (j - 1 >= 0) png.setPixel(3*i+1,3*j,qRgb(pn->getLinkCost(2) * 1.5,
+                                                            pn->getLinkCost(2) * 1.5,
+                                                            pn->getLinkCost(2) * 1.5)); // link 2
+                if (i - 1 >=0 && j - 1 >=0) png.setPixel(3*i,3*j,qRgb(pn->getLinkCost(3) * 1.5,
+                                                                      pn->getLinkCost(3) * 1.5,
+                                                                      pn->getLinkCost(3) * 1.5)); // link 3
+                if (i - 1 >= 0) png.setPixel(3*i,3*j+1,qRgb(pn->getLinkCost(4) * 1.5,
+                                                            pn->getLinkCost(4) * 1.5,
+                                                            pn->getLinkCost(4) * 1.5)); // link 4
+                if (i - 1 >= 0 && j + 1 < h) png.setPixel(3*i,3*j+2,qRgb(pn->getLinkCost(5) * 1.5,
+                                                                         pn->getLinkCost(5) * 1.5,
+                                                                         pn->getLinkCost(5) * 1.5)); // link 5
+                if (j + 1 < h) png.setPixel(3*i+1,3*j+2,qRgb(pn->getLinkCost(6) * 1.5,
+                                                             pn->getLinkCost(6) * 1.5,
+                                                             pn->getLinkCost(6) * 1.5)); // link 6
+                if (i + 1 < w && j + 1 < h) png.setPixel(3*i+2,3*j+2,qRgb(pn->getLinkCost(7) * 1.5,
+                                                                          pn->getLinkCost(7) * 1.5,
+                                                                          pn->getLinkCost(7) * 1.5)); // link 7
             }
         }
         QPixmap p = QPixmap::fromImage(png);
@@ -403,7 +560,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         }
         cout << "ctrl + left click" << endl;
 
-        head_node = new pixelNode(p.x(), p.y(), 0.0);
+        head_node = pixelnodes[p.x()][p.y()];
         current_node = head_node;
 
         // draw a dot
@@ -411,11 +568,12 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         if(contour_enabled)
             display_image(contour_image);
 
-        // compute cost graph
-        costgraph_init();
+//        // compute cost graph
+//        costgraph_init();
 
-        // Dijkstra algorithm
-        Dijstras(head_node);
+//        // Dijkstra algorithm
+//        Dijstras(head_node);
+        updatePathTree();
 
         cout << "pass Dijkstra algorithm" << endl;
         first_seed_flag = true;
@@ -439,9 +597,13 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         }
         cout << "left click" << endl;
 
-        pixelNode* nod = new pixelNode(p.x(), p.y(), 100000);
-        nod->setParent(current_node);
-        current_node = nod;
+//        pixelNode* nod = new pixelNode(p.x(), p.y(), 100000);
+//        nod->setParent(current_node);
+//        current_node = nod;
+
+        current_node = pixelnodes[p.x()][p.y()];
+
+        updatePathTree();
 
         /*test positions in the image*/
         // QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
@@ -499,6 +661,36 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
     return false;
 }
 
+void MainWindow::updatePathTree()
+{
+    int h=Qimg->height(),w=Qimg->width();
+    for(int j=0;j<h;j++)
+        for(int i=0;i<w;i++)
+        {
+                pixelnodes[j][i]->totalCost=DBL_MAX;
+                pixelnodes[j][i]->state=PixelNode::INITIAL;
+        }
+     current_node->resetTotalCost(0);
+     current_node->resetPrevNode();
+     FibHeap heap;
+     heap.Insert(current_node);
+     pixelNode * q;
+     while (heap.Minimum() != NULL) {
+         q = (pixelNode*) heap.ExtractMin();
+         q->state = pixelNode::EXPANDED;
+         int c, r;
+         for (int i = 0; i < 8 ;i ++) {
+             q->Neighbor(i, c, r);
+             if (c >= 0  && c < Qimg->width()
+                     && r >= 0 && r < Qimg->height()
+                     && Mask->pixel(c,r) != qRgb(0, 0, 0)) {
+                 pixelNode* pn = pixelnodes[r][c];
+
+             }
+         }
+     }
+}
+
 
 // compute 8 number of link graph, which could be accessed separatelyss
 void MainWindow::costgraph_init(){
@@ -543,8 +735,7 @@ void MainWindow::costgraph_init(){
                                                0, -0.707,      0  );
 
     cv::Mat temp;
-
-    // cout << "image size is: \n\n\n\n" << image.cols << '\t' << image.rows << endl;
+    float maxD = -1.0;
 
     // compute 8 direction cost graphs separately
     for(int i=0; i<=8; i++){
@@ -571,6 +762,22 @@ void MainWindow::costgraph_init(){
         // cv::imshow("test", tmp);
     }
 
+    for (int i = 0; i < costgraph_weight->rows; i ++) {
+        for (int j = 0; j < costgraph_weight->cols; j ++) {
+            if (costgraph_weight->at<float>(cv::Point(i,j)) > maxD) {
+                maxD = costgraph_weight->at<float>(cv::Point(i,j));
+            }
+        }
+    }
+
+
+    for (int i = 0; i < costgraph_weight->rows; i ++) {
+        for (int j = 0; j < costgraph_weight->cols; j ++) {
+            cout << costgraph_weight->at<float>(cv::Point(i,j)) << endl;
+            costgraph_weight->at<float>(cv::Point(i,j)) = maxD - costgraph_weight->at<float>(cv::Point(i,j));
+            cout << costgraph_weight->at<float>(cv::Point(i,j)) << endl;
+        }
+    }
 
 }
 

@@ -21,8 +21,10 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include "pixelnode.h"
+#include "math.h"
 
 using namespace cv;
+using namespace  std;
 
 namespace Ui {
 class MainWindow;
@@ -47,10 +49,20 @@ public:
 
     void costgraph_init();
 
+    void updatePathTree();
+
     // helper function
     void print_node(pixelNode* n);
 
     void draw_contour(int x, int y);
+
+    void computeCostFunc();
+
+    void channelTransform(QRgb rgb, int color[3]);
+
+    double getDLink(int, int, int);
+
+    QImage drawPathTree();
 
     void resetAll();
 
@@ -103,6 +115,9 @@ private:
     Mat mask_image;
     Mat current_image;
     Mat previous_image;
+    QImage* Qimg;
+    QImage* pathTree;
+    QImage* Mask;
 
     // Dij algorithm
     Mat* costgraph_weight;
@@ -113,6 +128,7 @@ private:
 
     pixelNode* head_node;   // the head of node list, always the first seed
     pixelNode* current_node;   // store the address of current_node, for setting parent during click
+    vector<vector<PixelNode*> > pixelnodes;
 
     // click list
     int* x_list;
