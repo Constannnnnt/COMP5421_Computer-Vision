@@ -61,7 +61,7 @@ void MainWindow::print_node(pixelNode* n)
 {
     pixelNode* p = n;
     while(p->getParent() != NULL){
-        cout << p->getX() << '\t' << p->getY() << endl;
+        cout << p->getCol() << '\t' << p->getRow() << endl;
         p = p->getParent();
     }
 }
@@ -170,13 +170,13 @@ void MainWindow::computeCostFunc(){
             for(int k=0;k<8;k++)
             {
                 pn->setLinkCost(k,getDLink(i,j,k));
-                if(pn->LinkCost(k)>maxD)
-                    maxD=pn->LinkCost(k);
+                if(pn->getLinkCost(k)>maxD)
+                    maxD=pn->getLinkCost(k);
             }
         }
     for (int j = 0; j < h; j ++)
         for (int i = 0; i < w; i ++) {
-            pixelNode *pn = pixelNode[j][i];
+            pixelNode *pn = pixelnodes[j][i];
             for (int k = 0; k < 8; k++) {
                 double length = k % 2 == 0 ? 1.0 : sqrt(2);
                 double DLink = pn->getLinkCost(k);
@@ -192,12 +192,12 @@ void MainWindow::channelTransform(QRgb rgb, int color[3]) {
 }
 
 double MainWindow::getDLink(int i, int j, int k) {
-    double DLink;
+    double DLink = 0;
     double D[3];
+    int c0[3], c1[3], c2[3], c3[3];
     switch (k) {
     case 0:
         if(j == 0 || j == Qimg->height() - 1 || i == Qimg->width() - 1) return -1.0; // boundary exceed;
-        int c0[3], c1[3], c2[3], c3[3];
         channelTransform(Qimg->pixel(i, j - 1), c0);
         channelTransform(Qimg->pixel(i + 1, j - 1), c1);
         channelTransform(Qimg->pixel(i, j + 1), c2);
@@ -208,7 +208,6 @@ double MainWindow::getDLink(int i, int j, int k) {
         break;
     case 1:
         if (j == 0 || i == Qimg->width() - 1) return -1.0;
-        int c0[3], c1[3];
         channelTransform(Qimg->pixel(i + 1, j), c0);
         channelTransform(Qimg->pixel(i, j - 1), c1);
         for (int t = 0; t <3; t ++) {
@@ -217,7 +216,6 @@ double MainWindow::getDLink(int i, int j, int k) {
         break;
     case 2:
         if (i ==0 || i == Qimg->width() - 1 || j == 0) return -1.0;
-        int c0[3], c1[3], c2[3], c3[3];
         channelTransform(Qimg->pixel(i - 1, j), c0);
         channelTransform(Qimg->pixel(i - 1, j - 1), c1);
         channelTransform(Qimg->pixel(i + 1, j), c2);
@@ -228,7 +226,6 @@ double MainWindow::getDLink(int i, int j, int k) {
         break;
     case 3:
         if (i == 0 || j == 0) return -1.0;
-        int c0[3], c1[3];
         channelTransform(Qimg->pixel(i - 1, j), c0);
         channelTransform(Qimg->pixel(i, j - 1), c1);
         for (int t = 0; t <3; t ++) {
@@ -237,7 +234,6 @@ double MainWindow::getDLink(int i, int j, int k) {
         break;
     case 4:
         if (i == 0 || j == 0 || j == Qimg->height() -1) return -1.0;
-        int c0[3], c1[3], c2[3], c3[3];
         channelTransform(Qimg->pixel(i, j - 1), c0);
         channelTransform(Qimg->pixel(i - 1, j - 1), c1);
         channelTransform(Qimg->pixel(i - 1, j + 1), c2);
@@ -248,7 +244,6 @@ double MainWindow::getDLink(int i, int j, int k) {
         break;
     case 5:
         if (i == 0 || j == Qimg->height() - 1) return -1.0;
-        int c0[3], c1[3];
         channelTransform(Qimg->pixel(i - 1, j), c0);
         channelTransform(Qimg->pixel(i, j + 1), c1);
         for (int t = 0; t <3; t ++) {
@@ -257,7 +252,6 @@ double MainWindow::getDLink(int i, int j, int k) {
         break;
     case 6:
         if (i == 0 || i == Qimg->width() - 1 || j == Qimg->height() -1) return -1.0;
-        int c0[3], c1[3], c2[3], c3[3];
         channelTransform(Qimg->pixel(i - 1, j), c0);
         channelTransform(Qimg->pixel(i - 1, j + 1), c1);
         channelTransform(Qimg->pixel(i + 1, j), c2);
@@ -268,7 +262,6 @@ double MainWindow::getDLink(int i, int j, int k) {
         break;
     case 7:
         if (i == Qimg->width() - 1 || j == Qimg->height() - 1) return -1.0;
-        int c0[3], c1[3];
         channelTransform(Qimg->pixel(i + 1, j), c0);
         channelTransform(Qimg->pixel(i, j + 1), c1);
         for (int t = 0; t <3; t ++) {
@@ -312,7 +305,7 @@ void MainWindow::on_actionOpen_triggered()
             pixelnodes[i].push_back(new pixelNode(j,i));
     QImage mask(Qimg->width(),Qimg->height(),Qimg->format());
     mask.fill(qRgb(255, 255, 255));
-    Mask = mask;
+    Mask = &mask;
     head_node = NULL;
     pathTree = new QImage(drawPathTree());
     computeCostFunc();
@@ -476,7 +469,7 @@ void MainWindow::on_actionCost_Graph_triggered(bool checked)
                 png.setPixel(3*i+1,3*j+1,Q_img->pixel(i,j)); // i, j
                 if (i + 1 < w) png.setPixel(3*i+2,3*j+1,qRgb(pn->getLinkCost(0) * 1.5,
                                                              pn->getLinkCost(0) * 1.5,
-                                                             pn->getLinkCost(0) * 1.5); // link 0
+                                                             pn->getLinkCost(0) * 1.5)); // link 0
                 if (i + 1 < w && j - 1 >=0) png.setPixel(3*i+2,3*j,qRgb(pn->getLinkCost(1) * 1.5,
                                                                         pn->getLinkCost(1) * 1.5,
                                                                         pn->getLinkCost(1) * 1.5)); // link 1
@@ -668,7 +661,7 @@ void MainWindow::updatePathTree()
         for(int i=0;i<w;i++)
         {
                 pixelnodes[j][i]->totalCost=DBL_MAX;
-                pixelnodes[j][i]->state=PixelNode::INITIAL;
+                pixelnodes[j][i]->state=pixelNode::INITIAL;
         }
      current_node->resetTotalCost(0);
      current_node->resetPrevNode();
@@ -685,7 +678,22 @@ void MainWindow::updatePathTree()
                      && r >= 0 && r < Qimg->height()
                      && Mask->pixel(c,r) != qRgb(0, 0, 0)) {
                  pixelNode* pn = pixelnodes[r][c];
-
+                 if (pn->state != pixelNode::EXPANDED) {
+                     double cost = q->getLinkCost(i);
+                     if (pn->state == pixelNode::INITIAL) {
+                         pn->setParent(q);
+                         pn->totalCost = cost + q->totalCost;
+                         pn->state = pixelNode::ACTIVE;
+                         heap.Insert(pn);
+                     } else if (pn->state == pixelNode::ACTIVE) {
+                         if (cost + q->totalCost < pn -> totalCost) {
+                             pn->setParent(q);
+                             pixelNode newpn = pixelNode(pn->getCol(), pn->getRow());
+                             newpn.totalCost = cost + q->totalCost;
+                             heap.DecreaseKey(pn, newpn);
+                         }
+                     }
+                 }
              }
          }
      }
@@ -799,8 +807,8 @@ void MainWindow::Dijstras(pixelNode* seed){
 
     graphCost = cv::Mat::ones(image.size(), CV_32F);
     graphCost *= 100000000.0;
-    graphCost.at<float>(cv::Point(seed->getX(),seed->getY())) = 0.0;
-    parentMap.at<uchar>(cv::Point(seed->getX(),seed->getY())) = 255;
+    graphCost.at<float>(cv::Point(seed->getCol(),seed->getRow())) = 0.0;
+    parentMap.at<uchar>(cv::Point(seed->getCol(),seed->getRow())) = 255;
 
     // insert seed into pq;
     pqueue.push(seed);
@@ -818,7 +826,7 @@ void MainWindow::Dijstras(pixelNode* seed){
         pixelNode* q = pqueue.top();
         pqueue.pop();
 
-        while (visitedMap.at<uchar>(cv::Point(q->getX(), q->getY())) == 1) {
+        while (visitedMap.at<uchar>(cv::Point(q->getCol(), q->getRow())) == 1) {
             q = pqueue.top();
             pqueue.pop();
             if (pqueue.empty()){
@@ -828,7 +836,7 @@ void MainWindow::Dijstras(pixelNode* seed){
         }
 
         // mark q as EXPANDED;
-        visitedMap.at<uchar>(cv::Point(q->getX(),q->getY())) = 1;
+        visitedMap.at<uchar>(cv::Point(q->getCol(),q->getRow())) = 1;
 
 
         // for each neighbor node r of q
@@ -840,7 +848,7 @@ void MainWindow::Dijstras(pixelNode* seed){
                     continue;
 
                 // note the i, j
-                r = cv::Point( q->getX()+j, q->getY()+i );
+                r = cv::Point( q->getCol()+j, q->getRow()+i );
 
                 // if r has been EXPANDED
                 if (visitedMap.at<uchar>(r) == 1)
@@ -850,8 +858,8 @@ void MainWindow::Dijstras(pixelNode* seed){
                 costgraph_tmp = costgraph_weight[costgraph_index];
 
                 float oldCost = graphCost.at<float>(r);
-                float newCost = graphCost.at<float>(cv::Point(q->getX(),q->getY()))
-                                + costgraph_tmp.at<float>(cv::Point(q->getX(),q->getY()));
+                float newCost = graphCost.at<float>(cv::Point(q->getCol(),q->getRow()))
+                                + costgraph_tmp.at<float>(cv::Point(q->getCol(),q->getRow()));
 
                 // cout << "newCost is: " << newCost << endl;
 
@@ -863,9 +871,9 @@ void MainWindow::Dijstras(pixelNode* seed){
                     parentMap.at<uchar>(r) = (1-i)*3 + (1-j);
 
                     // check boundary
-                    if ( (q->getX()+j) > 0 && (q->getY()+i) > 0 &&
-                         (q->getX()+j) < (image.cols-1) && (q->getY()+i) < (image.rows-1)) {
-                        pqueue.push(new pixelNode(r.x, r.y, newCost) );
+                    if ( (q->getCol()+j) > 0 && (q->getRow()+i) > 0 &&
+                         (q->getCol()+j) < (image.cols-1) && (q->getRow()+i) < (image.rows-1)) {
+                        pqueue.push(new pixelNode(r.x, r.y) );
                     }
                 }
             }

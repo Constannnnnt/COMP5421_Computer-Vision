@@ -128,7 +128,7 @@ private:
 
     pixelNode* head_node;   // the head of node list, always the first seed
     pixelNode* current_node;   // store the address of current_node, for setting parent during click
-    vector<vector<PixelNode*> > pixelnodes;
+    vector<vector<pixelNode*> > pixelnodes;
 
     // click list
     int* x_list;

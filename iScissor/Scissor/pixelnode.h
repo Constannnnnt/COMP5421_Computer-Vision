@@ -25,7 +25,7 @@ public:
     void resetPrevNode();
 
     //return linkcost between this and pn, return -1 if they are not neighbor;this is not used now
-    double LinkCost(PixelNode *pn);
+    double LinkCost(pixelNode *pn);
 
     //return column and row of neighbor in link direction
     void Neighbor(int link,int &col,int &row);

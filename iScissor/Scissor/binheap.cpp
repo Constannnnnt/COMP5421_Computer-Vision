@@ -6,7 +6,7 @@
 //***************************************************************************
 
 // #include <mem.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 #include "binheap.h"
 

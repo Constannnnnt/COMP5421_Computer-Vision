@@ -33,7 +33,7 @@ class FibHeapNode
 friend class FibHeap;
 
      FibHeapNode *Left, *Right, *Parent, *Child;
-     short Degree, Mark, NegInfinityFlag;
+     short Degree, Mark;
 
 protected:
 
@@ -50,6 +50,7 @@ public:
      virtual int  operator <(FibHeapNode& RHS);
 
      virtual void Print();
+     short NegInfinityFlag;
 };
 
 //========================================================================

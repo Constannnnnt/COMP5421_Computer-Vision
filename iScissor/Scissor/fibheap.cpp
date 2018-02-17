@@ -45,9 +45,10 @@
 //***************************************************************************
 
 #include <stdlib.h>
-#include <iostream.h>
+#include <iostream>
 #include <stdio.h>
 // #include <conio.h>
+using namespace std;
 
 #include "fibheap.h"
 

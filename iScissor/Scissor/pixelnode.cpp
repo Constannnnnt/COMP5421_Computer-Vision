@@ -4,7 +4,7 @@ pixelNode::pixelNode(){
 
 }
 
-pixelNode::pixelNode(int col, int row):FiibHeapNode() {
+pixelNode::pixelNode(int col, int row):FibHeapNode() {
 
     this->col = col;
     this->row = row;
@@ -21,23 +21,23 @@ void pixelNode::setLinkCost(int link, double value) {
     this->linkcost[link] = value;
 }
 
-void pixelNode::LinkCost(pixelNode *pn) {
+double pixelNode::LinkCost(pixelNode *pn) {
     if(pn->getCol() == this->col + 1 && pn->getRow() == this->row)
-        return linkCost[0];
+        return linkcost[0];
     if(pn->getCol() == this->col + 1 && pn->getRow() == this->row - 1)
-        return linkCost[1];
+        return linkcost[1];
     if(pn->getCol() == this->col && pn->getRow() == this->row - 1)
-        return linkCost[2];
+        return linkcost[2];
     if(pn->getCol() == this->col - 1 && pn->getRow() == this->row-1)
-        return linkCost[3];
+        return linkcost[3];
     if(pn->getCol() == this->col - 1 && pn->getRow() == this->row)
-        return linkCost[4];
+        return linkcost[4];
     if(pn->getCol() == this->col - 1 && pn->getRow() == this->row + 1)
-        return linkCost[5];
+        return linkcost[5];
     if(pn->getCol() == this->col && pn->getRow() == this->row + 1)
-        return linkCost[6];
+        return linkcost[6];
     if(pn->getCol() == this->col + 1 &&pn->getRow() == this->row + 1)
-        return linkCost[7];
+        return linkcost[7];
     return -1.0;
 }
 
@@ -63,7 +63,7 @@ void pixelNode:: operator =(FibHeapNode& RHS) {
     this->totalCost = pRHS.totalCost;
 }
 
-int  pixelNode:: operator ==(FibHeapNode& RHS) {
+int  pixelNode:: operator == (FibHeapNode& RHS) {
     pixelNode& pRHS=(pixelNode&)RHS;
     if (FHN_Cmp(RHS)) return 0;
     // Key compare goes here in derived classes
@@ -115,7 +115,7 @@ float pixelNode::getTotalCost(){
     return this->totalCost;
 }
 
-void pixelNode::getLinkCost(int link) {
+double pixelNode::getLinkCost(int link) {
     return this->linkcost[link];
 }
 
