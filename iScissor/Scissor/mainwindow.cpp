@@ -40,7 +40,6 @@ MainWindow::~MainWindow()
     delete scrollArea;
 
     delete head_node;
-    delete current_node;
 
     delete[] costgraph_weight;
 }
@@ -304,14 +303,44 @@ void MainWindow::on_actionPixel_Node_triggered(bool checked)
 void MainWindow::on_actionCost_Graph_triggered(bool checked)
 {
     if (checked) {
+        if (graphCost.empty()) {
+            cout << "No dijkstra' algorithm completed" << endl;
+            ui->actionCost_Graph->setChecked(false);
+            return;
+        }
         QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
         int w=Q_img->width(), h=Q_img->height();
         QImage png(3*w,3*h,Q_img->format());
-        png.fill(qRgb(0,0,0));
+        cout << graphCost.at<float>(cv::Point( 1, 0)) * 1.5 << endl;
+        cout << int(graphCost.at<float>(cv::Point(1, 0)) * 1.5) <<endl;
+        png.fill(qRgb(255,255,255));
         for(int j=0;j<h;j++) {
             for(int i=0;i<w;i++) {
-                png.setPixel(3*i+1,3*j+1,Q_img->pixel(i,j));
-                png.setPixel(3*i+2,3*j+1,qRbg());
+                png.setPixel(3*i+1,3*j+1,Q_img->pixel(i,j)); // i, j
+                if (i + 1 < w) png.setPixel(3*i+2,3*j+1,qRgb(int(graphCost.at<float>(cv::Point(i + 1, j)) * 1.5),
+                                                             int(graphCost.at<float>(cv::Point(i + 1, j)) * 1.5),
+                                                             int(graphCost.at<float>(cv::Point(i + 1, j)) * 1.5))); // link 0
+                if (i + 1 < w && j - 1 >=0) png.setPixel(3*i+2,3*j,qRgb(graphCost.at<float>(cv::Point(i + 1, j - 1)) * 1.5,
+                                                                        graphCost.at<float>(cv::Point(i + 1, j - 1)) * 1.5,
+                                                                        graphCost.at<float>(cv::Point(i + 1, j - 1)) * 1.5)); // link 1
+                if (j - 1 >= 0) png.setPixel(3*i+1,3*j,qRgb(graphCost.at<float>(cv::Point(i, j - 1)) * 1.5,
+                                                            graphCost.at<float>(cv::Point(i, j - 1)) * 1.5,
+                                                            graphCost.at<float>(cv::Point(i, j - 1)) * 1.5)); // link 2
+                if (i - 1 >=0 && j - 1 >=0) png.setPixel(3*i,3*j,qRgb(graphCost.at<float>(cv::Point(i- 1, j - 1)) * 1.5,
+                                                                       graphCost.at<float>(cv::Point(i - 1, j - 1)) * 1.5,
+                                                                       graphCost.at<float>(cv::Point(i - 1, j - 1)) * 1.5)); // link 3
+                if (i - 1 >= 0) png.setPixel(3*i,3*j+1,qRgb(graphCost.at<float>(cv::Point(i - 1, j)) * 1.5,
+                                                            graphCost.at<float>(cv::Point(i - 1, j)) * 1.5,
+                                                            graphCost.at<float>(cv::Point(i - 1, j)) * 1.5)); // link 4
+                if (i - 1 >= 0 && j + 1 < h) png.setPixel(3*i,3*j+2,qRgb(graphCost.at<float>(cv::Point(i - 1, j + 1)) * 1.5,
+                                                                         graphCost.at<float>(cv::Point(i - 1, j + 1)) * 1.5,
+                                                                         graphCost.at<float>(cv::Point(i - 1, j + 1)) * 1.5)); // link 5
+                if (j + 1 < h) png.setPixel(3*i+1,3*j+2,qRgb(graphCost.at<float>(cv::Point(i, j + 1)) * 1.5,
+                                                             graphCost.at<float>(cv::Point(i, j + 1)) * 1.5,
+                                                             graphCost.at<float>(cv::Point(i, j + 1)) * 1.5)); // link 6
+                if (i + 1 < w && j + 1 < h) png.setPixel(3*i+2,3*j+2,qRgb(graphCost.at<float>(cv::Point(i + 1, j + 1)) * 1.5,
+                                                                          graphCost.at<float>(cv::Point(i + 1, j + 1)) * 1.5,
+                                                                          graphCost.at<float>(cv::Point(i + 1, j + 1)) * 1.5)); // link 7
             }
         }
         QPixmap p = QPixmap::fromImage(png);
@@ -430,7 +459,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         QString myText = QString("Intelligent Scissor ");
         statusBar()->showMessage(QString("(%1, %2) ").arg(p.x()).arg(p.y()) + myText);
 
-        cout << "p pos is: " << p.x() << '\t' << p.y() << endl << endl;
+        // cout << "p pos is: " << p.x() << '\t' << p.y() << endl << endl;
         // check boundary, this causes the crash
         if ( (p.y() > 0) && (p.x() > 0) &&
              (p.y() < image.rows-1) && (p.x() < image.cols-1)){
@@ -550,10 +579,6 @@ void MainWindow::costgraph_init(){
 // find shortest path from current click seed
 void MainWindow::Dijstras(pixelNode* seed){
 
-    // Debug
-    // cout << "seed row " << seed->getX() << endl;
-    // cout << "seed col " << seed->getY() << endl;
-
     // initialize the priority queue pq to be empty;
     priority_queue<pixelNode*, std::vector<pixelNode*>, compareQueue> pqueue;
 
@@ -585,6 +610,15 @@ void MainWindow::Dijstras(pixelNode* seed){
         // extract the node q with the minimum total cost in pq;
         pixelNode* q = pqueue.top();
         pqueue.pop();
+
+        while (visitedMap.at<uchar>(cv::Point(q->getX(), q->getY())) == 1) {
+            q = pqueue.top();
+            pqueue.pop();
+            if (pqueue.empty()){
+                cout << "every node explored" << endl;
+                break;
+            }
+        }
 
         // mark q as EXPANDED;
         visitedMap.at<uchar>(cv::Point(q->getX(),q->getY())) = 1;
@@ -632,17 +666,12 @@ void MainWindow::Dijstras(pixelNode* seed){
 
         // satety check
         if (pqueue.empty()){
-            cout << "every node explored 2" << endl;
+            cout << "every node explored" << endl;
             break;
         }
 
     } // end of while loop
 
-    //cout << "debug parentMap" << endl;
-    //cout << parentMap << endl;
-    //cout << "debug graphCost" << endl;
-    //cout << graphCost << endl;
-    //cout << "num is:      " << num << endl;   ok
 }
 
 
