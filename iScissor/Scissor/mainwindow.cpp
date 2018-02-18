@@ -163,7 +163,7 @@ QImage MainWindow::drawPathTree(){
 
 void MainWindow::computeCostFunc(){
     int w = Qimg->width(), h = Qimg->height();
-    double maxD = DBL_MAX;
+    double maxD = -1.0;
     for (int j = 0; j < h; j ++)
         for (int i = 0; i < w; i++) {
             pixelNode *pn=pixelnodes[j][i];
@@ -192,7 +192,7 @@ void MainWindow::channelTransform(QRgb rgb, int color[3]) {
 }
 
 double MainWindow::getDLink(int i, int j, int k) {
-    double DLink = 0;
+    double DLink = 0.0;
     double D[3];
     int c0[3], c1[3], c2[3], c3[3];
     switch (k) {
@@ -455,11 +455,11 @@ void MainWindow::on_actionPixel_Node_triggered(bool checked)
 void MainWindow::on_actionCost_Graph_triggered(bool checked)
 {
     if (checked) {
-        if (graphCost.empty()) {
-            cout << "No dijkstra' algorithm completed" << endl;
-            ui->actionCost_Graph->setChecked(false);
-            return;
-        }
+//        if (graphCost.empty()) {
+//            cout << "No dijkstra' algorithm completed" << endl;
+//            ui->actionCost_Graph->setChecked(false);
+//            return;
+//        }
         QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
         int w=Q_img->width(), h=Q_img->height();
         QImage png(3*w,3*h,Q_img->format());
@@ -620,9 +620,9 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         if ( (p.y() > 0) && (p.x() > 0) &&
              (p.y() < image.rows-1) && (p.x() < image.cols-1)){
 
-            this->draw_contour(p.x(), p.y());
-            if (contour_enabled)
-                display_image(contour_image);
+//            this->draw_contour(p.x(), p.y());
+//            if (contour_enabled)
+//                display_image(contour_image);
         }
 
     }
@@ -677,7 +677,7 @@ void MainWindow::updatePathTree()
              q->Neighbor(i, c, r);
              if (c >= 0  && c < Qimg->width()
                      && r >= 0 && r < Qimg->height()
-                     && Mask->pixel(c,r) != qRgb(0, 0, 0)) {
+                     ) {
                  pixelNode* pn = pixelnodes[r][c];
                  if (pn->state != pixelNode::EXPANDED) {
                      double cost = q->getLinkCost(i);
