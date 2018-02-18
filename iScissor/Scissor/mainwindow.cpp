@@ -309,6 +309,7 @@ void MainWindow::on_actionOpen_triggered()
     head_node = NULL;
     pathTree = new QImage(drawPathTree());
     computeCostFunc();
+    cout << "cost finished" << endl;
 
     ui->label->setPixmap(QPixmap::fromImage(Q_img));
 
