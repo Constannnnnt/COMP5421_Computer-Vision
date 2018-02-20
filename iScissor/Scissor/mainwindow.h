@@ -93,8 +93,6 @@ private slots:
 
     void on_actionDisplay_Contour_triggered(bool checked);
 
-    void on_actionFinish_Contour_triggered();
-
     void on_actionReset_Contour_triggered();
 
 
@@ -150,6 +148,7 @@ private:
     bool contour_enabled;
     bool ctrl_enabled;
     bool first_seed_flag;
+    bool finished_flag;
 
     double img_scale;
     int idx; // mark the length of the nodes

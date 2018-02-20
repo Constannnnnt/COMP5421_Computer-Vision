@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     contour_enabled = false;
     scissor_enabled = false;
     first_seed_flag = false;
+    finished_flag = false;
 
 }
 
@@ -131,6 +132,8 @@ void MainWindow::draw_contour(int x, int y){
 void MainWindow::resetAll(){
     ui->actionPixel_Node->setChecked(false);
     ui->actionCost_Graph->setChecked(false);
+    ui->actionMin_Path->setChecked(false);
+    ui->actionPath_Tree->setChecked(false);
     ui->actionGaussian_5->setChecked(false);
     ui->actionGuassian_3->setChecked(false);
     ui->actionDisplay_Contour->setChecked(false);
@@ -139,6 +142,7 @@ void MainWindow::resetAll(){
     contour_enabled = false;
     scissor_enabled = false;
     first_seed_flag = false;
+    finished_flag = false;
     return;
 }
 
@@ -304,8 +308,8 @@ void MainWindow::on_actionOpen_triggered()
     image = cv::imread(fileName.toLatin1().data());
     contour_image = cv::imread(fileName.toLatin1().data());
     contour = cv::Mat::zeros(image.size(), CV_8UC3);
-    current_image = image;
-    previous_image = image;
+    current_image = image.clone();
+    previous_image = image.clone();
 
     // convert cv::Mat to QImage
     cv::cvtColor(image, image, CV_BGR2RGB);
@@ -409,9 +413,6 @@ void MainWindow::on_actionHelp_triggered()
 void MainWindow::on_actionScissor_triggered(bool checked)
 {
     scissor_enabled = checked;
-    if (scissor_enabled) {
-
-    }
 }
 
 
@@ -433,14 +434,8 @@ void MainWindow::on_actionReset_Contour_triggered()
 {
     cout << "reset contour" << endl;
     contour_image = image.clone();
-
-}
-
-
-void MainWindow::on_actionFinish_Contour_triggered()
-{
-    // close the loop
-    // cv::line(contour, cv::Point(x_list[0],y_list[0]), cv::Point(x_list[list_size-1], y_list[list_size-1]), Scalar(255,0,0));
+    resetAll();;
+    display_image(image);
 }
 
 
@@ -623,6 +618,15 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             cout << "scissor is not enabled" << endl;
             return false;
         }
+        if (first_seed_flag) {
+            cout << "the first seed has been selected" << endl;
+            return false;
+        }
+
+        if (finished_flag) {
+            cout << "already finished, reset or save" << endl;
+            return false;
+        }
         cout << "ctrl + left click" << endl;
         left_clicked = true;
 
@@ -635,7 +639,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         if(contour_enabled) {
             display_image(contour_image);
         }
-
 
         updatePathTree();
 
@@ -664,6 +667,11 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         }
         if (!first_seed_flag) {
             cout << "please click the first seed!" << endl;
+            return false;
+        }
+
+        if (finished_flag) {
+            cout << "already finished, reset or save" << endl;
             return false;
         }
         cout << "left click" << endl;
@@ -695,14 +703,23 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
     }
 
     // Mouse move event
-    if ( (event->type() == QEvent::MouseMove) && ui->label->underMouse() && (first_seed_flag == true) ){
+    if ( (event->type() == QEvent::MouseMove) && ui->label->underMouse() && (first_seed_flag == true)){
         QMouseEvent* me = static_cast<QMouseEvent*> (event);
-        //QPoint p = ui->label->mapFrom(this, me->pos());
         QPoint p = me->pos();
         p /= img_scale;
 
         QString myText = QString("Intelligent Scissor ");
         statusBar()->showMessage(QString("(%1, %2) ").arg(p.x()).arg(p.y()) + myText);
+
+        if (!scissor_enabled) {
+            cout << "scissor not enabled" << endl;
+            return false;
+        }
+
+        if (finished_flag) {
+            cout << "already finished, reset or save" << endl;
+            return false;
+        }
 
         // check boundary, this causes the crash
         if ( (p.y() > 0) && (p.x() > 0) &&
@@ -723,16 +740,30 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
 
     if ( event->type() == QEvent::KeyPress){
+        cout << "key press" << endl;
         QKeyEvent* event_key = static_cast<QKeyEvent*> (event);
 
         // enter: finish the current
-        if ( (event_key->key()==Qt::Key_Enter) && (!ctrl_enabled) ){
-            this->on_actionFinish_Contour_triggered();
+        if ( (event_key->key()==Qt::Key_Enter || event_key->key() == Qt::Key_Return) && (!ctrl_enabled) ){
+            cout << "enter" << endl;
+            ui->actionScissor->setChecked(false);
+            finished_flag = true;
         }
 
         // ctrl + enter: not sure what it means
-        if ( (event_key->key()==Qt::Key_Enter) && ctrl_enabled ){
-            this->on_actionFinish_Contour_triggered();
+        if ( (event_key->key()==Qt::Key_Enter || event_key->key() == Qt::Key_Return) && ctrl_enabled ){
+            finished_flag = true;
+            cout << "enter + ctrl" << endl;
+            vector<QPoint> path;
+            getPath(head_node->getCol(), head_node->getRow(), path);
+            for (int i = 0; i < path.size() - 1; i ++) {
+                cv::line(contour_image, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 3);
+            }
+            left_clicked = true;
+            if (contour_enabled) {
+                display_image(contour_image);
+            }
+            left_clicked = false;
         }
 
         // backspace when scissoring

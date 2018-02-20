@@ -77,7 +77,6 @@
     <addaction name="actionScissor"/>
     <addaction name="actionDisplay_Contour"/>
     <addaction name="actionReset_Contour"/>
-    <addaction name="actionFinish_Contour"/>
     <addaction name="separator"/>
     <addaction name="actionPixel_Node"/>
     <addaction name="actionCost_Graph"/>
