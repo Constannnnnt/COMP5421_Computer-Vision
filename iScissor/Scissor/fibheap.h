@@ -74,7 +74,7 @@ public:
      void Insert(FibHeapNode *NewNode);
      void Union(FibHeap *OtherHeap);
 
-     inline FibHeapNode *Minimum();
+     FibHeapNode *Minimum();
      FibHeapNode *ExtractMin();
 
      int DecreaseKey(FibHeapNode *theNode, FibHeapNode& NewKey);

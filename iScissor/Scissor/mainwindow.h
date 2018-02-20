@@ -117,6 +117,7 @@ private:
     Mat image;
     Mat contour;
     Mat contour_image;
+    Mat tmp_contour;
     Mat mask_image;
     Mat current_image;
     Mat previous_image;
@@ -127,6 +128,7 @@ private:
     vector<QPoint>* dots;
     vector<vector<QPoint>>* paths;
     QPainter* painter;
+    bool left_clicked = false;
 
     // Dij algorithm
     Mat* costgraph_weight;

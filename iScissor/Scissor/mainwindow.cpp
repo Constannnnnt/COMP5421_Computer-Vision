@@ -27,10 +27,6 @@ MainWindow::MainWindow(QWidget *parent) :
     scissor_enabled = false;
     first_seed_flag = false;
 
-    // test
-    //Mat C = (Mat_<double>(2,2) << 0, 1, 2, 3);
-    //cout << C << endl << endl;
-    //cout << C.mul(C) << endl;
 }
 
 
@@ -48,16 +44,22 @@ MainWindow::~MainWindow()
 // display the image
 void MainWindow::display_image(Mat im)
 {
-    cv::Mat img_tmp = im.clone();
-    if (contour_enabled) {
-        img_tmp = contour_image;
+    // cv::Mat img_tmp = im.clone();
+    if (workstates == image_only_contour && left_clicked) {
+        // cv::cvtColor(img_tmp, img_tmp, CV_BGR2RGB);
+        QImage Q_img = QImage((const unsigned char*)(contour_image.data),contour_image.cols,contour_image.rows,QImage::Format_RGB888);
+
+        QPixmap p = QPixmap::fromImage(Q_img);
+        ui->label->setPixmap( p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio) );
+    } else {
+        // cv::cvtColor(img_tmp, img_tmp, CV_BGR2RGB);
+        QImage Q_img = QImage((const unsigned char*)(im.data),im.cols,im.rows,QImage::Format_RGB888);
+
+        QPixmap p = QPixmap::fromImage(Q_img);
+        ui->label->setPixmap( p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio) );
     }
 
-    // cv::cvtColor(img_tmp, img_tmp, CV_BGR2RGB);
-    QImage Q_img = QImage((const unsigned char*)(img_tmp.data),img_tmp.cols,img_tmp.rows,QImage::Format_RGB888);
 
-    QPixmap p = QPixmap::fromImage(Q_img);
-    ui->label->setPixmap( p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio) );
 }
 
 void MainWindow::print_node(pixelNode* n)
@@ -281,9 +283,8 @@ double MainWindow::getDLink(int i, int j, int k) {
 }
 
 void MainWindow::getPath(int x, int y, vector<QPoint> & path) {
-    pixelNode* pn = pixelnodes[dots->back().x()][dots->back().y()];
     pixelNode* npn = pixelnodes[x][y];
-    while (npn->getParent() != pn) {
+    while (npn->getParent() != NULL) {
         path.push_back(QPoint(npn->getCol(), npn->getRow()));
         npn = npn->getParent();
     }
@@ -624,6 +625,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             return false;
         }
         cout << "ctrl + left click" << endl;
+        left_clicked = true;
 
         head_node = pixelnodes[p.x()][p.y()];
         current_node = head_node;
@@ -641,6 +643,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         cout << "updated path tree" << endl;
 
         first_seed_flag = true;
+        left_clicked = false;
         delete pathTree;
         pathTree = new QImage(drawPathTree());
 
@@ -665,6 +668,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             return false;
         }
         cout << "left click" << endl;
+        left_clicked = true;
 
         current_node = pixelnodes[p.x()][p.y()];
 
@@ -673,12 +677,13 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         dots->push_back(QPoint(p.x(), p.y()));
         // draw the path on the contour image
         cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(0,0,255), 2);
-        for (int i = 0; i < path.size() - 1; i ++) {
+        for (unsigned long i = 0; i < path.size() - 1; i ++) {
             cv::line(contour_image, cv::Point(path[i].y(), path[i].x()), cv::Point(path[i+1].y(), path[i+1].x()), CV_RGB(173,255,47), 3);
         }
         if (contour_enabled) {
             display_image(contour_image);
         }
+        left_clicked = false;
 
         paths->push_back(path);
 
@@ -700,14 +705,19 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         QString myText = QString("Intelligent Scissor ");
         statusBar()->showMessage(QString("(%1, %2) ").arg(p.x()).arg(p.y()) + myText);
 
-        // cout << "p pos is: " << p.x() << '\t' << p.y() << endl << endl;
         // check boundary, this causes the crash
-        if ( (p.y() > 0) && (p.x() > 0) &&
-             (p.y() < image.rows-1) && (p.x() < image.cols-1)){
+//        if ( (p.y() > 0) && (p.x() > 0) &&
+//             (p.y() < image.rows-1) && (p.x() < image.cols-1)){
 
-//            this->draw_contour(p.x(), p.y());
-//            if (contour_enabled)
-//                display_image(contour_image);
+//        }
+        vector<QPoint> path;
+        getPath(p.x(), p.y(), path);
+        tmp_contour = contour_image.clone();
+        for (unsigned long i = 0; i < path.size() - 1; i ++) {
+            cv::line(tmp_contour, cv::Point(path[i].y(), path[i].x()), cv::Point(path[i+1].y(), path[i+1].x()), CV_RGB(173,255,47), 3);
+        }
+        if (contour_enabled) {
+            display_image(tmp_contour);
         }
 
     }
