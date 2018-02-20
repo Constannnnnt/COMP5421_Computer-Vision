@@ -22,6 +22,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include "pixelnode.h"
 #include "math.h"
+#include "workstates.h"
 
 using namespace cv;
 using namespace  std;
@@ -36,6 +37,8 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
+
+    int workstates;
 
     void addImage();
 
@@ -97,9 +100,9 @@ private slots:
 
     void on_actionCost_Graph_triggered(bool checked);
 
-    void on_actionPath_Tree_triggered();
+    void on_actionPath_Tree_triggered(bool checked);
 
-    void on_actionMin_Path_triggered();
+    void on_actionMin_Path_triggered(bool checked);
 
 
     void on_actionGuassian_3_triggered(bool checked);

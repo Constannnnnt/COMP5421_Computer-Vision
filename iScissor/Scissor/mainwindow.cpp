@@ -140,22 +140,22 @@ void MainWindow::resetAll(){
 
 QImage MainWindow::drawPathTree(){
     int w=Qimg->width(),h=Qimg->height();
-    QImage qi(3*w,3*h,Qimg->format());
+    QImage qi(3 * w,3 * h,Qimg->format());
     qi.fill(qRgb(0,0,0));
     for(int j = 0; j < h; j++)
         for(int i = 0; i < w; i++)
         {
                 pixelNode *pn=pixelnodes[j][i];
-                qi.setPixel(3*i+1,3*j+1,Qimg->pixel(i,j));
+                // qi.setPixel(3 * i + 1, 3 * j + 1, Qimg->pixel(i,j));
                 pixelNode *prevpn=pn->prevNode;
                 if(prevpn!=NULL)
                 {
                     int c = 3 * i + 1 + prevpn->getCol() - pn->getCol();
                     int r = 3 * j + 1 + prevpn->getRow() - pn->getRow();
-                    qi.setPixel(c,r,qRgb(255,255,0));
+                    qi.setPixel(c,r,qRgb(255,255,153));
                     c=3 * prevpn->getCol() + 1 + pn->getCol()- prevpn->getCol();
                     r=3 * prevpn->getRow() + 1 + pn->getRow() - prevpn->getRow();
-                    qi.setPixel(c,r,qRgb(127,127,0));
+                    qi.setPixel(c,r,qRgb(204,204,0));
                 }
         }
     return qi;
@@ -284,6 +284,8 @@ void MainWindow::on_actionOpen_triggered()
 {
     resetAll();
 
+    workstates = image_only;
+
     QString fileName = QFileDialog::getOpenFileName(
                 this, tr("Open Image"), ".", tr("Image File(*.png *.jpg *.jpeg *.bmp)"));
     image = cv::imread(fileName.toLatin1().data());
@@ -298,18 +300,19 @@ void MainWindow::on_actionOpen_triggered()
 
     QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
 
-    Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
     pixelnodes.resize(Q_img.height());
     for(int i=0;i<Q_img.height();i++)
         for(int j=0;j<Q_img.width();j++)
             pixelnodes[i].push_back(new pixelNode(j,i));
-    QImage mask(Qimg->width(),Qimg->height(),Qimg->format());
-    mask.fill(qRgb(255, 255, 255));
-    Mask = &mask;
-    head_node = NULL;
-    pathTree = new QImage(drawPathTree());
+
+    Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
     computeCostFunc();
     cout << "cost finished" << endl;
+
+    Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
+    Mask->fill(qRgb(255, 255, 255));
+    head_node = NULL;
+    pathTree = new QImage(drawPathTree());
 
     ui->label->setPixmap(QPixmap::fromImage(Q_img));
 
@@ -401,9 +404,11 @@ void MainWindow::on_actionDisplay_Contour_triggered(bool checked)
 {
     contour_enabled = checked;
     if (contour_enabled) {
+        workstates = image_only_contour;
         display_image(contour_image);
     }
     else {
+        workstates = image_only;
         display_image(current_image);
     }
 }
@@ -428,6 +433,7 @@ void MainWindow::on_actionFinish_Contour_triggered()
 void MainWindow::on_actionPixel_Node_triggered(bool checked)
 {
     if (checked) {
+        workstates = pixel_node;
         QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
         int w=Q_img->width(), h=Q_img->height();
         QImage png(3*w,3*h,Q_img->format());
@@ -438,7 +444,18 @@ void MainWindow::on_actionPixel_Node_triggered(bool checked)
         QPixmap p = QPixmap::fromImage(png);
         ui->label->setPixmap(p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio));
 //        QImage Q_img_tmp = Q_img->rgbSwapped();
-        previous_image = current_image;
+        if (ui->actionCost_Graph->isChecked()) {
+            ui->actionCost_Graph->setChecked(false);
+            previous_image = image;
+        } else if (ui->actionPath_Tree->isChecked()) {
+            ui->actionPath_Tree->setChecked(false);
+            previous_image = image;
+        } else if (ui->actionMin_Path->isChecked()) {
+            ui->actionMin_Path->setChecked(false);
+            previous_image = image;
+        } else {
+            previous_image = current_image;
+        }
         current_image = cv::Mat( png.height(), png.width(),
                                  CV_8UC3,
                                  const_cast<uchar*>(png.bits()),
@@ -455,11 +472,7 @@ void MainWindow::on_actionPixel_Node_triggered(bool checked)
 void MainWindow::on_actionCost_Graph_triggered(bool checked)
 {
     if (checked) {
-//        if (graphCost.empty()) {
-//            cout << "No dijkstra' algorithm completed" << endl;
-//            ui->actionCost_Graph->setChecked(false);
-//            return;
-//        }
+        workstates = cost_graph;
         QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
         int w=Q_img->width(), h=Q_img->height();
         QImage png(3*w,3*h,Q_img->format());
@@ -497,13 +510,24 @@ void MainWindow::on_actionCost_Graph_triggered(bool checked)
         QPixmap p = QPixmap::fromImage(png);
         ui->label->setPixmap(p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio));
 //        QImage Q_img_tmp = Q_img->rgbSwapped();
-        previous_image = current_image;
+        if (ui->actionPixel_Node->isChecked()) {
+            ui->actionPixel_Node->setChecked(false);
+            previous_image = image;
+        } else if (ui->actionPath_Tree->isChecked()) {
+            ui->actionPath_Tree->setChecked(false);
+            previous_image = image;
+        } else if (ui->actionMin_Path->isChecked()) {
+            ui->actionMin_Path->setChecked(false);
+            previous_image = image;
+        } else {
+            previous_image = current_image;
+        }
         current_image = cv::Mat( png.height(), png.width(),
                                  CV_8UC3,
                                  const_cast<uchar*>(png.bits()),
                                  static_cast<size_t>(png.bytesPerLine())
                                  ).clone();
-
+        delete Q_img;
     } else {
         current_image = previous_image;
         display_image(current_image);
@@ -511,14 +535,45 @@ void MainWindow::on_actionCost_Graph_triggered(bool checked)
 }
 
 
-void MainWindow::on_actionPath_Tree_triggered()
+void MainWindow::on_actionPath_Tree_triggered(bool checked)
 {
+    if (checked) {
+        workstates = path_tree;
+        delete pathTree;
+        pathTree = new QImage(drawPathTree());
+        QPixmap p = QPixmap::fromImage(*pathTree);
+        ui->label->setPixmap(p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio));
+        if (ui->actionPixel_Node->isChecked()) {
+            ui->actionPixel_Node->setChecked(false);
+            previous_image = image;
+        } else if (ui->actionCost_Graph->isChecked()) {
+            ui->actionCost_Graph->setChecked(false);
+            previous_image = image;
+        } else if (ui->actionMin_Path->isChecked()) {
+            ui->actionMin_Path->setChecked(false);
+            previous_image = image;
+        } else {
+            previous_image = current_image;
+        }        current_image = cv::Mat( pathTree->height(), pathTree->width(),
+                                 CV_8UC3,
+                                 const_cast<uchar*>(pathTree->bits()),
+                                 static_cast<size_t>(pathTree->bytesPerLine())
+                                 ).clone();
+    } else {
+        current_image = previous_image;
+        display_image(current_image);
+    }
 
 }
 
 
-void MainWindow::on_actionMin_Path_triggered()
+void MainWindow::on_actionMin_Path_triggered(bool checked)
 {
+    if (checked) {
+
+    } else {
+
+    }
 
 }
 
@@ -569,8 +624,11 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 //        Dijstras(head_node);
         updatePathTree();
 
-        cout << "pass Dijkstra algorithm" << endl;
+        cout << "updated path tree" << endl;
+
         first_seed_flag = true;
+        delete pathTree;
+        pathTree = new QImage(drawPathTree());
 
     }
 
@@ -598,6 +656,10 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         current_node = pixelnodes[p.x()][p.y()];
 
         updatePathTree();
+
+        cout << "updated path tree" << endl;
+        delete pathTree;
+        pathTree = new QImage(drawPathTree());
 
         /*test positions in the image*/
         // QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
@@ -895,17 +957,71 @@ void MainWindow::Dijstras(pixelNode* seed){
 void MainWindow::on_actionGuassian_3_triggered(bool checked){
 
     if (!image.empty() && checked){
+        if (!ui->actionGaussian_5->isChecked()) {
+            previous_image = image.clone();
+        } else {
+            ui->actionGaussian_5->setChecked(false);
+            image = previous_image.clone();
+        }
         cv::GaussianBlur(image, image, cv::Size(3, 3), 3, 3);
+        current_image = image.clone();
         contour_image = image.clone();
+        delete Qimg;
+        Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+        computeCostFunc();
+        cout << "cost finished" << endl;
+        delete pathTree;
+        pathTree = new QImage(drawPathTree());
+        delete Mask;
+        Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
+        Mask->fill(qRgb(255, 255, 255));
         display_image(image);
+    } else if (!image.empty() && !checked) {
+        image = previous_image.clone();
+        current_image = previous_image.clone();
+        delete Qimg;
+        Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+        computeCostFunc();
+        cout << "cost finished" << endl;
+        delete pathTree;
+        pathTree = new QImage(drawPathTree());
+        delete Mask;
+        Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
+        Mask->fill(qRgb(255, 255, 255));
+        display_image(current_image);
     }
 }
 
 void MainWindow::on_actionGaussian_5_triggered(bool checked){
 
     if (!image.empty() && checked){
+        if (!ui->actionGuassian_3->isChecked()) {
+            previous_image = image.clone();
+        } else {
+            ui->actionGuassian_3->setChecked(false);
+            image = previous_image.clone();
+        }
         cv::GaussianBlur(image, image, cv::Size(5, 5), 5, 5);
         contour_image = image.clone();
+        current_image = image;
+        computeCostFunc();
+        cout << "cost finished" << endl;
+        delete pathTree;
+        pathTree = new QImage(drawPathTree());
+        delete Mask;
+        Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
+        Mask->fill(qRgb(255, 255, 255));
         display_image(image);
+    } else if (!image.empty() && !checked) {
+        image = previous_image;
+        current_image = previous_image;
+        computeCostFunc();
+        cout << "cost finished" << endl;
+        delete pathTree;
+        pathTree = new QImage(drawPathTree());
+        delete Mask;
+        Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
+        Mask->fill(qRgb(255, 255, 255));
+        display_image(current_image);
     }
 }
