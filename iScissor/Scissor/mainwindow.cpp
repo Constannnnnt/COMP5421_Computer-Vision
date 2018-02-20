@@ -49,6 +49,9 @@ MainWindow::~MainWindow()
 void MainWindow::display_image(Mat im)
 {
     cv::Mat img_tmp = im.clone();
+    if (contour_enabled) {
+        img_tmp = contour_image;
+    }
 
     // cv::cvtColor(img_tmp, img_tmp, CV_BGR2RGB);
     QImage Q_img = QImage((const unsigned char*)(img_tmp.data),img_tmp.cols,img_tmp.rows,QImage::Format_RGB888);
@@ -277,6 +280,16 @@ double MainWindow::getDLink(int i, int j, int k) {
     return DLink;
 }
 
+void MainWindow::getPath(int x, int y, vector<QPoint> & path) {
+    pixelNode* pn = pixelnodes[dots->back().x()][dots->back().y()];
+    pixelNode* npn = pixelnodes[x][y];
+    while (npn->getParent() != pn) {
+        path.push_back(QPoint(npn->getCol(), npn->getRow()));
+        npn = npn->getParent();
+    }
+    reverse(path.begin(), path.end());
+}
+
 /* helper function ends here */
 
 // open a image
@@ -313,6 +326,8 @@ void MainWindow::on_actionOpen_triggered()
     Mask->fill(qRgb(255, 255, 255));
     head_node = NULL;
     pathTree = new QImage(drawPathTree());
+    dots = new vector<QPoint>;
+    paths = new vector<vector<QPoint>>;
 
     ui->label->setPixmap(QPixmap::fromImage(Q_img));
 
@@ -330,7 +345,7 @@ void MainWindow::on_actionSave_Contour_triggered()
     QMessageBox::StandardButton reply = QMessageBox::question(this, "Save ", "Save image with contour marked?",
                                                               QMessageBox::Yes|QMessageBox::No);
     if(reply == QMessageBox::Yes){
-        cv::imwrite("/home/jguoaj/Desktop/contour_image.jpg", contour_image);
+//        cv::imwrite("/home/jguoaj/Desktop/contour_image.jpg", contour_image);
         // cv::imwrite("/home/jguoaj/contour_image.jpg", image);
     }
 }
@@ -554,7 +569,8 @@ void MainWindow::on_actionPath_Tree_triggered(bool checked)
             previous_image = image;
         } else {
             previous_image = current_image;
-        }        current_image = cv::Mat( pathTree->height(), pathTree->width(),
+        }
+        current_image = cv::Mat( pathTree->height(), pathTree->width(),
                                  CV_8UC3,
                                  const_cast<uchar*>(pathTree->bits()),
                                  static_cast<size_t>(pathTree->bytesPerLine())
@@ -613,15 +629,13 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         current_node = head_node;
 
         // draw a dot
+        dots->push_back(QPoint(p.x(), p.y()));
         cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(0,0,255), 2);
-        if(contour_enabled)
+        if(contour_enabled) {
             display_image(contour_image);
+        }
 
-//        // compute cost graph
-//        costgraph_init();
 
-//        // Dijkstra algorithm
-//        Dijstras(head_node);
         updatePathTree();
 
         cout << "updated path tree" << endl;
@@ -639,7 +653,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         QMouseEvent* me = static_cast<QMouseEvent*> (event);
         QPoint p = ui->label->mapFrom(this, me->pos());
         p /= img_scale;
-
         // p.y() - image.rows - down direction
         // p.x() - image.cols - right direction
         cout << p.x() << " " << p.y() << endl;
@@ -647,13 +660,27 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             cout << "scissor is not enabled" << endl;
             return false;
         }
+        if (!first_seed_flag) {
+            cout << "please click the first seed!" << endl;
+            return false;
+        }
         cout << "left click" << endl;
 
-//        pixelNode* nod = new pixelNode(p.x(), p.y(), 100000);
-//        nod->setParent(current_node);
-//        current_node = nod;
-
         current_node = pixelnodes[p.x()][p.y()];
+
+        vector<QPoint> path;
+        getPath(p.x(), p.y(), path);
+        dots->push_back(QPoint(p.x(), p.y()));
+        // draw the path on the contour image
+        cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(0,0,255), 2);
+        for (int i = 0; i < path.size() - 1; i ++) {
+            cv::line(contour_image, cv::Point(path[i].y(), path[i].x()), cv::Point(path[i+1].y(), path[i+1].x()), CV_RGB(173,255,47), 3);
+        }
+        if (contour_enabled) {
+            display_image(contour_image);
+        }
+
+        paths->push_back(path);
 
         updatePathTree();
 
@@ -661,10 +688,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         delete pathTree;
         pathTree = new QImage(drawPathTree());
 
-        /*test positions in the image*/
-        // QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
-        // cout << "pixel at the pos" << Q_img.pixel(p.x(),p.y()) <<  endl;
-        // draw the path based on the movement of the mouse
     }
 
     // Mouse move event

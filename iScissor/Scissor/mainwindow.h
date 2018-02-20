@@ -65,6 +65,8 @@ public:
 
     double getDLink(int, int, int);
 
+    void getPath(int, int, vector<QPoint>&);
+
     QImage drawPathTree();
 
     void resetAll();
@@ -121,6 +123,10 @@ private:
     QImage* Qimg;
     QImage* pathTree;
     QImage* Mask;
+    int path_id;
+    vector<QPoint>* dots;
+    vector<vector<QPoint>>* paths;
+    QPainter* painter;
 
     // Dij algorithm
     Mat* costgraph_weight;
