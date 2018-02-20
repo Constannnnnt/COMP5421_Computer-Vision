@@ -676,7 +676,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         dots->push_back(QPoint(p.x(), p.y()));
         // draw the path on the contour image
         cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(0,0,255), 2);
-        for (unsigned long i = 0; i < path.size() - 1; i ++) {
+        for (int i = 0; i < path.size() - 1; i ++) {
             cv::line(contour_image, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 3);
         }
         if (contour_enabled) {
@@ -713,7 +713,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         getPath(p.x(), p.y(), path);
         tmp_contour = contour_image.clone();
         if (path.size() < 1) return false;
-        for (unsigned long i = 0; i < path.size() - 1; i ++) {
+        for (int i = 0; i < path.size() - 1; i ++) {
             cv::line(tmp_contour, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 3);
         }
         if (contour_enabled) {
