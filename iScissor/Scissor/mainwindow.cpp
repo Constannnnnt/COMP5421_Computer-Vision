@@ -705,19 +705,18 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         statusBar()->showMessage(QString("(%1, %2) ").arg(p.x()).arg(p.y()) + myText);
 
         // check boundary, this causes the crash
-//        if ( (p.y() > 0) && (p.x() > 0) &&
-//             (p.y() < image.rows-1) && (p.x() < image.cols-1)){
-
-//        }
-        vector<QPoint> path;
-        getPath(p.x(), p.y(), path);
-        tmp_contour = contour_image.clone();
-        if (path.size() < 1) return false;
-        for (int i = 0; i < path.size() - 1; i ++) {
-            cv::line(tmp_contour, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 3);
-        }
-        if (contour_enabled) {
-            display_image(tmp_contour);
+        if ( (p.y() > 0) && (p.x() > 0) &&
+             (p.y() < image.rows-1) && (p.x() < image.cols-1)){
+            vector<QPoint> path;
+            getPath(p.x(), p.y(), path);
+            tmp_contour = contour_image.clone();
+            if (path.size() < 1) return false;
+            for (int i = 0; i < path.size() - 1; i ++) {
+                cv::line(tmp_contour, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 3);
+            }
+            if (contour_enabled) {
+                display_image(tmp_contour);
+            }
         }
 
     }
