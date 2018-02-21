@@ -28,6 +28,10 @@ MainWindow::MainWindow(QWidget *parent) :
     first_seed_flag = false;
     finished_flag = false;
     dots_deleted = false;
+    finished_asclosed = false;
+    Qimg = NULL;
+    pathTree = NULL;
+    Mask = NULL;
 }
 
 
@@ -83,12 +87,14 @@ void MainWindow::resetAll(){
     ui->actionDisplay_Contour->setChecked(false);
     ui->actionScissor->setChecked(false);
 
+
     img_scale = 1.0;
     contour_enabled = false;
     scissor_enabled = false;
     first_seed_flag = false;
     finished_flag = false;
     dots_deleted = false;
+    finished_asclosed = false;
     return;
 }
 
@@ -255,17 +261,23 @@ void MainWindow::on_actionOpen_triggered()
 
     workstates = image_only;
 
+    if (Qimg != NULL) delete Qimg;
+    if (pathTree != NULL) delete pathTree;
+    if (Mask != NULL) delete Mask;
+    if (dots != NULL) delete dots;
+    if (paths != NULL) delete paths;
+
     QString fileName = QFileDialog::getOpenFileName(
                 this, tr("Open Image"), ".", tr("Image File(*.png *.jpg *.jpeg *.bmp)"));
     image = cv::imread(fileName.toLatin1().data());
     contour_image = cv::imread(fileName.toLatin1().data());
     contour = cv::Mat::zeros(image.size(), CV_8UC3);
-    current_image = image.clone();
-    previous_image = image.clone();
 
     // convert cv::Mat to QImage
     cv::cvtColor(image, image, CV_BGR2RGB);
     cv::cvtColor(contour_image, contour_image, CV_BGR2RGB);
+    current_image = image.clone();
+    previous_image = image.clone();
 
     QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
 
@@ -279,10 +291,9 @@ void MainWindow::on_actionOpen_triggered()
     Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
 
     computeCostFunc();
-    cout << "cost finished" << endl;
 
     Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
-    Mask->fill(qRgb(255, 255, 255));
+    Mask->fill(qRgb(0, 0, 0));
     head_node = NULL;
     pathTree = new QImage(drawPathTree());
     dots = new vector<QPoint>;
@@ -299,7 +310,20 @@ void MainWindow::on_actionSave_Contour_triggered()
     QMessageBox::StandardButton reply = QMessageBox::question(this, "Save ", "Save image with contour marked?",
                                                               QMessageBox::Yes|QMessageBox::No);
     if(reply == QMessageBox::Yes){
-        // cv::imwrite("/home/jguoaj/contour_image.jpg", image);
+        time_t rawtime;
+        struct tm * timeinfo;
+        char buffer[80];
+
+        time (&rawtime);
+        timeinfo = localtime(&rawtime);
+
+        strftime(buffer,sizeof(buffer),"%d-%m-%Y %I:%M:%S",timeinfo);
+        std::string str(buffer);
+        QImage conImg = QImage((const unsigned char*)(contour_image.data),contour_image.cols,contour_image.rows,QImage::Format_RGB888);
+        QImageWriter writer;
+        writer.setFileName(QString::fromStdString("contour_"+str+".png"));
+        writer.setFormat("png");
+        writer.write(conImg);
     }
 }
 
@@ -310,8 +334,81 @@ void MainWindow::on_actionSave_Mask_triggered()
     QMessageBox::StandardButton reply = QMessageBox::question(this, "Save Mask", "Save compositing mask for PhotoShop?",
                                                               QMessageBox::Yes|QMessageBox::No);
     if(reply == QMessageBox::Yes) {
-        // cv::imwrite("/home/jguoaj/Desktop/mask_image.jpg", mask_image);
+        if (finished_asclosed) {
+            if (paths->size() < 1) return;
+            for (int i = 0; i < paths->size(); i ++) {
+                vector<QPoint> path = paths->at(i);
+                for (int j = 0; j < path.size(); j++)
+                    Mask->setPixel(path[j], qRgb(255, 255, 255));
+            }
 
+            Mat tmp_mask = cv::Mat( Mask->height(), Mask->width(),
+                                     CV_8UC3,
+                                     const_cast<uchar*>(Mask->bits()),
+                                     static_cast<size_t>(Mask->bytesPerLine())
+                                     ).clone();
+//            for (int i = 0; i < paths->size(); i ++) {
+//                vector<QPoint> path = paths->at(i);
+//                for (int j = 0; j < path.size(); j++)
+//                    cv::line(tmp_mask, cv::Point(path[j].x(), path[j].y()), cv::Point(path[j+1].x(), path[j+1].y()), CV_RGB(255,255,255), 1);
+//            }
+
+
+            cv::cvtColor(tmp_mask, tmp_mask, CV_BGR2GRAY);
+
+            // Floodfill from point (0, 0)
+            Mat im_floodfill = tmp_mask.clone();
+            floodFill(im_floodfill, cv::Point(0,0), Scalar(255));
+
+            // Invert floodfilled image
+            Mat im_floodfill_inv;
+            bitwise_not(im_floodfill, im_floodfill_inv);
+
+            // Combine the two images to get the foreground.
+            Mat im_out = (tmp_mask | im_floodfill_inv);
+            // QImage qmask = QImage((const unsigned char*)(im_out.data),im_out.cols,im_out.rows,QImage::Format_RGB888);
+            time_t rawtime;
+            struct tm * timeinfo;
+            char buffer[80];
+
+            time (&rawtime);
+            timeinfo = localtime(&rawtime);
+
+            strftime(buffer,sizeof(buffer),"%d-%m-%Y %I:%M:%S",timeinfo);
+            std::string str(buffer);
+            imshow("Thresholded Image", tmp_mask);
+            imshow("Floodfilled Image", im_floodfill);
+            imshow("Inverted Floodfilled Image", im_floodfill_inv);
+            imshow("Foreground", im_out);
+            waitKey(0);
+            cv::imwrite("mask_"+str+".png", im_out);
+//            QImageWriter writer;
+//            writer.setFileName(QString::fromStdString("mask_"+str+".png"));
+//            writer.setFormat("png");
+//            writer.write(qmask);
+
+        } else {
+            if (paths->size() < 1) return;
+            for (int i = 0; i < paths->size(); i ++) {
+                vector<QPoint> path = paths->at(i);
+                for (int j = 0; j < path.size(); j++)
+                    Mask->setPixel(path[j], qRgb(255, 255, 255));
+            }
+
+            time_t rawtime;
+            struct tm * timeinfo;
+            char buffer[80];
+
+            time (&rawtime);
+            timeinfo = localtime(&rawtime);
+
+            strftime(buffer,sizeof(buffer),"%d-%m-%Y %I:%M:%S",timeinfo);
+            std::string str(buffer);
+            QImageWriter writer;
+            writer.setFileName(QString::fromStdString("mask_"+str+".png"));
+            writer.setFormat("png");
+            writer.write(*Mask);
+        }
     }
 }
 
@@ -422,8 +519,12 @@ void MainWindow::on_actionPixel_Node_triggered(bool checked)
                                  ).clone();
         delete Q_img;
     } else {
-        current_image = previous_image;
-        display_image(current_image);
+        if (contour_enabled) {
+            display_image(contour_image);
+        } else {
+            current_image = previous_image;
+            display_image(current_image);
+        }
     }
 }
 
@@ -488,8 +589,12 @@ void MainWindow::on_actionCost_Graph_triggered(bool checked)
                                  ).clone();
         delete Q_img;
     } else {
-        current_image = previous_image;
-        display_image(current_image);
+        if (contour_enabled) {
+            display_image(contour_image);
+        } else {
+            current_image = previous_image;
+            display_image(current_image);
+        }
     }
 }
 
@@ -520,8 +625,12 @@ void MainWindow::on_actionPath_Tree_triggered(bool checked)
                                  static_cast<size_t>(pathTree->bytesPerLine())
                                  ).clone();
     } else {
-        current_image = previous_image;
-        display_image(current_image);
+        if (contour_enabled) {
+            display_image(contour_image);
+        } else {
+            current_image = previous_image;
+            display_image(current_image);
+        }
     }
 
 }
@@ -562,7 +671,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         QMouseEvent* me = static_cast<QMouseEvent*> (event);
         QPoint p = ui->label->mapFrom(this, me->pos());
         p /= img_scale;
-        cout << p.x() << " " << p.y() << endl; // get the pos of the first seed
         if (!scissor_enabled) {
             cout << "scissor is not enabled" << endl;
             return false;
@@ -573,7 +681,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             return false;
         }
 
-        cout << "ctrl + left click" << endl;
         left_clicked = true;
 
         head_node = pixelnodes[p.y()][p.x()];
@@ -587,8 +694,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         }
 
         updatePathTree();
-
-        cout << "updated path tree" << endl;
 
         first_seed_flag = true;
         left_clicked = false;
@@ -606,7 +711,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         p /= img_scale;
         // p.y() - image.rows - down direction
         // p.x() - image.cols - right direction
-        cout << p.x() << " " << p.y() << endl;
         if (!scissor_enabled) {
             cout << "scissor is not enabled" << endl;
             return false;
@@ -620,7 +724,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             cout << "already finished, reset or save" << endl;
             return false;
         }
-        cout << "left click" << endl;
         left_clicked = true;
 
         current_node = pixelnodes[p.y()][p.x()];
@@ -642,7 +745,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
         updatePathTree();
 
-        cout << "updated path tree" << endl;
         delete pathTree;
         pathTree = new QImage(drawPathTree());
 
@@ -687,22 +789,20 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
 
     if ( event->type() == QEvent::KeyPress){
-        cout << "key press" << endl;
         QKeyEvent* event_key = static_cast<QKeyEvent*> (event);
 
         // enter: finish the current
         if ( (event_key->key()==Qt::Key_Enter || event_key->key() == Qt::Key_Return) && (!ctrl_enabled) ){
-            cout << "enter" << endl;
             ui->actionScissor->setChecked(false);
             finished_flag = true;
         }
 
-        // ctrl + enter: not sure what it means
+        // ctrl + enter: finished as closed
         if ( (event_key->key()==Qt::Key_Enter || event_key->key() == Qt::Key_Return) && ctrl_enabled ){
             finished_flag = true;
-            cout << "enter + ctrl" << endl;
             vector<QPoint> path;
             getPath(head_node->getCol(), head_node->getRow(), path);
+            paths->push_back(path);
             for (uint i = 0; i < path.size() - 1; i ++) {
                 cv::line(contour_image, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 3);
             }
@@ -710,6 +810,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             if (contour_enabled) {
                 display_image(contour_image);
             }
+            finished_asclosed = true;
             left_clicked = false;
         }
 
@@ -717,17 +818,12 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         if ( (event_key->key() == Qt::Key_Backspace) && scissor_enabled && (!dots_deleted) ){
             contour_image = image.clone();
             if (dots->size() > 0) {
-                cout << dots->size() << endl;
                 dots->pop_back();
                 dots_deleted = true;
-                cout << dots->size() << endl;
                 if (dots->size() > 0) {
-                    cout << "1"<<endl;
                     current_node = pixelnodes[dots->back().y()][dots->back().x()];
                     updatePathTree();
                 } else {
-                    cout << "2"<<endl;
-
                     this->on_actionReset_Contour_triggered();
                     return false;
                 }
@@ -833,12 +929,11 @@ void MainWindow::on_actionGuassian_3_triggered(bool checked){
         delete Qimg;
         Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
         computeCostFunc();
-        cout << "cost finished" << endl;
         delete pathTree;
         pathTree = new QImage(drawPathTree());
         delete Mask;
         Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
-        Mask->fill(qRgb(255, 255, 255));
+        Mask->fill(qRgb(0, 0, 0));
         display_image(image);
     } else if (!image.empty() && !checked) {
         image = previous_image.clone();
@@ -846,12 +941,11 @@ void MainWindow::on_actionGuassian_3_triggered(bool checked){
         delete Qimg;
         Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
         computeCostFunc();
-        cout << "cost finished" << endl;
         delete pathTree;
         pathTree = new QImage(drawPathTree());
         delete Mask;
         Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
-        Mask->fill(qRgb(255, 255, 255));
+        Mask->fill(qRgb(0, 0, 0));
         display_image(current_image);
     }
 }
@@ -869,23 +963,21 @@ void MainWindow::on_actionGaussian_5_triggered(bool checked){
         contour_image = image.clone();
         current_image = image;
         computeCostFunc();
-        cout << "cost finished" << endl;
         delete pathTree;
         pathTree = new QImage(drawPathTree());
         delete Mask;
         Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
-        Mask->fill(qRgb(255, 255, 255));
+        Mask->fill(qRgb(0, 0, 0));
         display_image(image);
     } else if (!image.empty() && !checked) {
         image = previous_image;
         current_image = previous_image;
         computeCostFunc();
-        cout << "cost finished" << endl;
         delete pathTree;
         pathTree = new QImage(drawPathTree());
         delete Mask;
         Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
-        Mask->fill(qRgb(255, 255, 255));
+        Mask->fill(qRgb(0, 0, 0));
         display_image(current_image);
     }
 }

@@ -12,6 +12,7 @@
 #include <QImage>
 #include <QPoint>
 #include <QMouseEvent>
+#include <QImageWriter>
 
 #include <QString>
 #include <QFileDialog>
@@ -20,6 +21,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <ctime>
 #include "pixelnode.h"
 #include "math.h"
 #include "workstates.h"
@@ -149,6 +151,7 @@ private:
     bool first_seed_flag;
     bool finished_flag;
     bool dots_deleted;
+    bool finished_asclosed;
 
     double img_scale;
     int idx;                    // mark the length of the nodes
