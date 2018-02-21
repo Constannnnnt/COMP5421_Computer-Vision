@@ -363,7 +363,6 @@ void MainWindow::on_actionSave_Mask_triggered()
 
             // Combine the two images to get the foreground.
             Mat im_out = (tmp_mask | im_floodfill_inv);
-            // QImage qmask = QImage((const unsigned char*)(im_out.data),im_out.cols,im_out.rows,QImage::Format_RGB888);
             time_t rawtime;
             struct tm * timeinfo;
             char buffer[80];
@@ -373,11 +372,6 @@ void MainWindow::on_actionSave_Mask_triggered()
 
             strftime(buffer,sizeof(buffer),"%d-%m-%Y %I:%M:%S",timeinfo);
             std::string str(buffer);
-            imshow("Thresholded Image", tmp_mask);
-            imshow("Floodfilled Image", im_floodfill);
-            imshow("Inverted Floodfilled Image", im_floodfill_inv);
-            imshow("Foreground", im_out);
-            waitKey(0);
             cv::imwrite("mask_"+str+".png", im_out);
 
         } else {
