@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     finished_flag = false;
     dots_deleted = false;
     finished_asclosed = false;
+
     Qimg = NULL;
     pathTree = NULL;
     Mask = NULL;
@@ -45,24 +46,35 @@ MainWindow::~MainWindow()
     // delete[] costgraph_weight;
 }
 
-/* helper function starts here  */
+/* helper function starts here*/
 // display the image
-void MainWindow::display_image(Mat im)
-{
-    if (workstates == image_only_contour && left_clicked) {
-        // cv::cvtColor(img_tmp, img_tmp, CV_BGR2RGB);
-        QImage Q_img = QImage((const unsigned char*)(contour_image.data),contour_image.cols,contour_image.rows,QImage::Format_RGB888);
 
-        QPixmap p = QPixmap::fromImage(Q_img);
-        ui->label->setPixmap( p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio) );
-    } else {
-        // cv::cvtColor(img_tmp, img_tmp, CV_BGR2RGB);
-        QImage Q_img = QImage((const unsigned char*)(im.data),im.cols,im.rows,QImage::Format_RGB888);
+void MainWindow::display_image(){
+    cv::Mat myImage;
+    if (workstates == image_only)
+        myImage = image;
+    else if (workstates == image_only_contour)
+        myImage = contour_image;
+    else if (workstates == pixel_node)
+        myImage = pixel_node_image;
+    else if (workstates == cost_graph)
+        myImage = cost_graph_image;
+    else if (workstates == path_tree)
+        myImage = path_tree_image;
+    else if (workstates == min_path)
+        myImage = min_path_image;
 
-        QPixmap p = QPixmap::fromImage(Q_img);
-        ui->label->setPixmap( p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio) );
-    }
+    QImage Q_img = QImage((const unsigned char*)(myImage.data),myImage.cols,myImage.rows,QImage::Format_RGB888);
+    QPixmap p = QPixmap::fromImage(Q_img);
+    ui->label->setPixmap( p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio) );
 
+}
+
+void MainWindow::display_image(cv::Mat im){
+
+    QImage Q_img = QImage((const unsigned char*)(im.data),im.cols,im.rows,QImage::Format_RGB888);
+    QPixmap p = QPixmap::fromImage(Q_img);
+    ui->label->setPixmap( p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio) );
 
 }
 
@@ -87,7 +99,7 @@ void MainWindow::resetAll(){
     ui->actionDisplay_Contour->setChecked(false);
     ui->actionScissor->setChecked(false);
 
-
+    workstates = image_only;
     img_scale = 1.0;
     contour_enabled = false;
     scissor_enabled = false;
@@ -101,22 +113,22 @@ void MainWindow::resetAll(){
 QImage MainWindow::drawPathTree(){
     int w = Qimg->width(),h = Qimg->height();
     QImage qi( 3*w, 3*h, Qimg->format() );
-    qi.fill(qRgb(0,0,0));  // black
+    qi.fill(qRgb(255,255,255));  // white
 
     for(int j = 0; j < h; j++)
         for(int i = 0; i < w; i++)
         {
-                pixelNode *pn=pixelnodes[j][i];
-                // qi.setPixel(3 * i + 1, 3 * j + 1, Qimg->pixel(i,j));
-                pixelNode *prevpn=pn->prevNode;
-                if(prevpn!=NULL)
+                pixelNode *pn = pixelnodes[j][i];
+                qi.setPixel(3*i + 1, 3*j + 1, Qimg->pixel(i,j));
+                pixelNode *prevpn = pn->getParent();
+                if(prevpn != NULL)
                 {
                     int c = 3 * i + 1 + prevpn->getCol() - pn->getCol();
                     int r = 3 * j + 1 + prevpn->getRow() - pn->getRow();
-                    qi.setPixel(c,r,qRgb(255,255,153));
-                    c=3 * prevpn->getCol() + 1 + pn->getCol()- prevpn->getCol();
-                    r=3 * prevpn->getRow() + 1 + pn->getRow() - prevpn->getRow();
-                    qi.setPixel(c,r,qRgb(204,204,0));
+                    qi.setPixel(c,r,qRgb(255,255,0));  // light yellow
+                    c = 3 * prevpn->getCol() + 1 + pn->getCol()- prevpn->getCol();
+                    r = 3 * prevpn->getRow() + 1 + pn->getRow() - prevpn->getRow();
+                    qi.setPixel(c,r,qRgb(100,100,0));  // dark yellow
                 }
         }
     return qi;
@@ -261,11 +273,11 @@ void MainWindow::on_actionOpen_triggered()
 
     workstates = image_only;
 
-    if (Qimg != NULL) delete Qimg;
-    if (pathTree != NULL) delete pathTree;
-    if (Mask != NULL) delete Mask;
-    if (dots != NULL) delete dots;
-    if (paths != NULL) delete paths;
+//    if (Qimg != NULL) delete Qimg;
+//    if (pathTree != NULL) delete pathTree;
+//    if (Mask != NULL) delete Mask;
+//    if (dots != NULL) delete dots;
+//    if (paths != NULL) delete paths;
 
     QString fileName = QFileDialog::getOpenFileName(
                 this, tr("Open Image"), ".", tr("Image File(*.png *.jpg *.jpeg *.bmp)"));
@@ -276,10 +288,8 @@ void MainWindow::on_actionOpen_triggered()
     // convert cv::Mat to QImage
     cv::cvtColor(image, image, CV_BGR2RGB);
     cv::cvtColor(contour_image, contour_image, CV_BGR2RGB);
-    current_image = image.clone();
-    previous_image = image.clone();
-    cv::cvtColor(current_image, current_image, CV_BGR2RGB);
-    cv::cvtColor(previous_image, previous_image, CV_BGR2RGB);
+    //current_image = image.clone();
+    //previous_image = image.clone();
 
     QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
 
@@ -297,7 +307,8 @@ void MainWindow::on_actionOpen_triggered()
     Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
     Mask->fill(qRgb(0, 0, 0));
     head_node = NULL;
-    pathTree = new QImage(drawPathTree());
+    //pathTree = new QImage(drawPathTree());
+    pathTree = new QImage;
     dots = new vector<QPoint>;
     paths = new vector< vector<QPoint> >;
 
@@ -338,9 +349,9 @@ void MainWindow::on_actionSave_Mask_triggered()
     if(reply == QMessageBox::Yes) {
         if (finished_asclosed) {
             if (paths->size() < 1) return;
-            for (int i = 0; i < paths->size(); i ++) {
+            for (uint i = 0; i < paths->size(); i ++) {
                 vector<QPoint> path = paths->at(i);
-                for (int j = 0; j < path.size(); j++)
+                for (uint j = 0; j < path.size(); j++)
                     Mask->setPixel(path[j], qRgb(255, 255, 255));
             }
 
@@ -376,9 +387,9 @@ void MainWindow::on_actionSave_Mask_triggered()
 
         } else {
             if (paths->size() < 1) return;
-            for (int i = 0; i < paths->size(); i ++) {
+            for (uint i = 0; i < paths->size(); i ++) {
                 vector<QPoint> path = paths->at(i);
-                for (int j = 0; j < path.size(); j++)
+                for (uint j = 0; j < path.size(); j++)
                     Mask->setPixel(path[j], qRgb(255, 255, 255));
             }
 
@@ -414,28 +425,23 @@ void MainWindow::on_actionExit_triggered()
 void MainWindow::on_actionZoom_In_triggered()
 {
     img_scale += 0.1;
-    if(contour_enabled == true)
-        display_image(contour_image);
-    else
-        display_image(current_image);
+    display_image();
 }
 
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
     img_scale -= 0.1;
-    if(contour_enabled == true)
-        display_image(contour_image);
-    else
-        display_image(current_image);
+    display_image();
 }
 
 
 // display help message
 void MainWindow::on_actionHelp_triggered()
 {
+    cout << "workstates is: " << workstates << endl;
     // this->print_node(current_node);
-    cout << "Image size is: " << image.rows << '\t' << image.cols << endl;
+    // cout << "Image size is: " << image.rows << '\t' << image.cols << endl;
 
     // QString text = QString("Nothing for help !");
     // QMessageBox::about(this, "Help", text);
@@ -452,14 +458,12 @@ void MainWindow::on_actionScissor_triggered(bool checked)
 void MainWindow::on_actionDisplay_Contour_triggered(bool checked)
 {
     contour_enabled = checked;
-    if (contour_enabled) {
+    if (contour_enabled)
         workstates = image_only_contour;
-        display_image(contour_image);
-    }
-    else {
+    else
         workstates = image_only;
-        display_image(current_image);
-    }
+
+    display_image();
 }
 
 
@@ -468,7 +472,7 @@ void MainWindow::on_actionReset_Contour_triggered()
     cout << "reset contour" << endl;
     contour_image = image.clone();
     resetAll();
-    display_image(image);
+    display_image();
 }
 
 
@@ -497,26 +501,17 @@ void MainWindow::on_actionPixel_Node_triggered(bool checked)
         if (ui->actionMin_Path->isChecked())
             ui->actionMin_Path->setChecked(false);
 
-        if (ui->actionCost_Graph->isChecked() ||
-            ui->actionPath_Tree->isChecked()  ||
-            ui->actionMin_Path->isChecked() )
-            previous_image = image;
-        else
-            previous_image = current_image;
-
-        current_image = cv::Mat( png.height(), png.width(),
+        pixel_node_image = cv::Mat( png.height(), png.width(),
                                  CV_8UC3,
                                  const_cast<uchar*>(png.bits()),
                                  static_cast<size_t>(png.bytesPerLine())
                                  ).clone();
         delete Q_img;
-    } else {
-        if (contour_enabled) {
-            display_image(contour_image);
-        } else {
-            current_image = previous_image;
-            display_image(current_image);
-        }
+    }
+    else {
+        ui->actionDisplay_Contour->setChecked(true);
+        workstates = image_only_contour;
+        display_image();
     }
 }
 
@@ -571,26 +566,17 @@ void MainWindow::on_actionCost_Graph_triggered(bool checked)
         if (ui->actionMin_Path->isChecked())
             ui->actionMin_Path->setChecked(false);
 
-        if (ui->actionPixel_Node->isChecked() ||
-            ui->actionPath_Tree->isChecked()  ||
-            ui->actionMin_Path->isChecked() )
-            previous_image = image;
-        else
-            previous_image = current_image;
-
-        current_image = cv::Mat( png.height(), png.width(),
+        cost_graph_image = cv::Mat( png.height(), png.width(),
                                  CV_8UC3,
                                  const_cast<uchar*>(png.bits()),
                                  static_cast<size_t>(png.bytesPerLine())
                                  ).clone();
         delete Q_img;
-    } else {
-        if (contour_enabled) {
-            display_image(contour_image);
-        } else {
-            current_image = previous_image;
-            display_image(current_image);
-        }
+    }
+    else {
+        ui->actionDisplay_Contour->setChecked(true);
+        workstates = image_only_contour;
+        display_image();
     }
 }
 
@@ -598,6 +584,12 @@ void MainWindow::on_actionCost_Graph_triggered(bool checked)
 void MainWindow::on_actionPath_Tree_triggered(bool checked)
 {
     if (checked) {
+
+        if (!first_seed_flag){
+            cout << "first seed not init" << endl;
+            return;
+        }
+
         workstates = path_tree;
         delete pathTree;
         pathTree = new QImage(drawPathTree());
@@ -612,25 +604,16 @@ void MainWindow::on_actionPath_Tree_triggered(bool checked)
         if (ui->actionMin_Path->isChecked())
             ui->actionMin_Path->setChecked(false);
 
-        if (ui->actionPixel_Node->isChecked() ||
-            ui->actionCost_Graph->isChecked()  ||
-            ui->actionMin_Path->isChecked() )
-            previous_image = image;
-        else
-            previous_image = current_image;
-
-        current_image = cv::Mat( pathTree->height(), pathTree->width(),
+        path_tree_image = cv::Mat( pathTree->height(), pathTree->width(),
                                  CV_8UC3,
                                  const_cast<uchar*>(pathTree->bits()),
                                  static_cast<size_t>(pathTree->bytesPerLine())
                                  ).clone();
-    } else {
-        if (contour_enabled) {
-            display_image(contour_image);
-        } else {
-            current_image = previous_image;
-            display_image(current_image);
-        }
+    }
+    else {
+        ui->actionDisplay_Contour->setChecked(true);
+        workstates = image_only_contour;
+        display_image();
     }
 
 }
@@ -639,6 +622,11 @@ void MainWindow::on_actionPath_Tree_triggered(bool checked)
 void MainWindow::on_actionMin_Path_triggered(bool checked)
 {
     if (checked) {
+        if (!first_seed_flag){
+            cout << "first seed not init" << endl;
+            return;
+        }
+
 
     } else {
 
@@ -689,16 +677,13 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         // draw a dot
         dots->push_back( QPoint(p.x(), p.y()) );
         cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(0,0,255), 2);
-        if(contour_enabled) {
-            display_image(contour_image);
-        }
+
+        display_image();
 
         updatePathTree();
 
         first_seed_flag = true;
         left_clicked = false;
-        delete pathTree;
-        pathTree = new QImage(drawPathTree());
 
     }
 
@@ -709,14 +694,11 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         QMouseEvent* me = static_cast<QMouseEvent*> (event);
         QPoint p = ui->label->mapFrom(this, me->pos());
         p /= img_scale;
+
         // p.y() - image.rows - down direction
         // p.x() - image.cols - right direction
         if (!scissor_enabled) {
             cout << "scissor is not enabled" << endl;
-            return false;
-        }
-        if (!first_seed_flag) {
-            cout << "please click the first seed!" << endl;
             return false;
         }
 
@@ -731,22 +713,20 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         vector<QPoint> path;
         getPath(p.x(), p.y(), path);
         dots->push_back(QPoint(p.x(), p.y()));
+
         // draw the path on the contour image
         cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(0,0,255), 2);
         for (uint i = 0; i < path.size() - 1; i ++) {
-            cv::line(contour_image, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 3);
+            cv::line(contour_image, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 1);
         }
-        if (contour_enabled) {
-            display_image(contour_image);
-        }
+
+        display_image();
+
         left_clicked = false;
 
         paths->push_back(path);
 
         updatePathTree();
-
-        delete pathTree;
-        pathTree = new QImage(drawPathTree());
 
     }
 
@@ -769,20 +749,27 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             return false;
         }
 
-        // check boundary, this causes the crash
-        if ( (p.y() > 0) && (p.x() > 0) &&
-             (p.y() < image.rows-1) && (p.x() < image.cols-1)){
-            vector<QPoint> path;
-            getPath(p.x(), p.y(), path);
-            tmp_contour = contour_image.clone();
-            if (path.size() < 1) return false;
-            for (uint i = 0; i < path.size() - 1; i ++) {
-                cv::line(tmp_contour, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 3);
-            }
-            dots_deleted = false;
-            if (contour_enabled) {
+
+        // different modes of mouse move event
+        if (workstates != path_tree && workstates != min_path){
+            // check boundary, this causes the crash
+            if ( (p.y() > 0) && (p.x() > 0) &&
+                 (p.y() < image.rows-1) && (p.x() < image.cols-1)){
+                vector<QPoint> path;
+                getPath(p.x(), p.y(), path);
+                tmp_contour = contour_image.clone();
+                if (path.size() < 1) return false;
+                for (uint i = 0; i < path.size() - 1; i ++) {
+                    cv::line(tmp_contour, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 1);
+                }
+                dots_deleted = false;
+
                 display_image(tmp_contour);
+
             }
+        }
+        else if (workstates == min_path){
+
         }
 
     }
@@ -792,24 +779,24 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         QKeyEvent* event_key = static_cast<QKeyEvent*> (event);
 
         // enter: finish the current
-        if ( (event_key->key()==Qt::Key_Enter || event_key->key() == Qt::Key_Return) && (!ctrl_enabled) ){
+        if ( (event_key->key() == Qt::Key_Enter || event_key->key() == Qt::Key_Return) && (!ctrl_enabled) ){
             ui->actionScissor->setChecked(false);
             finished_flag = true;
         }
 
         // ctrl + enter: finished as closed
-        if ( (event_key->key()==Qt::Key_Enter || event_key->key() == Qt::Key_Return) && ctrl_enabled ){
+        if ( (event_key->key() == Qt::Key_Enter || event_key->key() == Qt::Key_Return) && ctrl_enabled ){
             finished_flag = true;
             vector<QPoint> path;
             getPath(head_node->getCol(), head_node->getRow(), path);
             paths->push_back(path);
             for (uint i = 0; i < path.size() - 1; i ++) {
-                cv::line(contour_image, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 3);
+                cv::line(contour_image, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 1);
             }
             left_clicked = true;
-            if (contour_enabled) {
-                display_image(contour_image);
-            }
+
+            display_image();
+
             finished_asclosed = true;
             left_clicked = false;
         }
@@ -838,7 +825,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
                 for (uint i = 0; i < paths->size(); i++) {
                     vector<QPoint> iter = paths->at(i);
                     for (uint j = 0; j < iter.size()- 1; j ++) {
-                        cv::line(contour_image, cv::Point(iter[j].x(), iter[j].y()), cv::Point(iter[j+1].x(), iter[j+1].y()), CV_RGB(173,255,47), 3);
+                        cv::line(contour_image, cv::Point(iter[j].x(), iter[j].y()), cv::Point(iter[j+1].x(), iter[j+1].y()), CV_RGB(173,255,47), 1);
                     }
                 }
             }
@@ -914,42 +901,45 @@ void MainWindow::updatePathTree()
 
 
 // Gaussian filter Smooth
-void MainWindow::on_actionGuassian_3_triggered(bool checked){
-
-    if (!image.empty() && checked){
-        if (!ui->actionGaussian_5->isChecked()) {
-            previous_image = image.clone();
-        } else {
-            ui->actionGaussian_5->setChecked(false);
-            image = previous_image.clone();
-        }
+void MainWindow::on_actionGuassian_3_triggered()
+{
+    if ( !image.empty() ){
         cv::GaussianBlur(image, image, cv::Size(3, 3), 3, 3);
-        current_image = image.clone();
         contour_image = image.clone();
+
         delete Qimg;
         Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
         computeCostFunc();
-        delete pathTree;
-        pathTree = new QImage(drawPathTree());
+
         delete Mask;
         Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
         Mask->fill(qRgb(0, 0, 0));
-        display_image(image);
-    } else if (!image.empty() && !checked) {
-        image = previous_image.clone();
-        current_image = previous_image.clone();
-        delete Qimg;
-        Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
-        computeCostFunc();
-        delete pathTree;
-        pathTree = new QImage(drawPathTree());
-        delete Mask;
-        Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
-        Mask->fill(qRgb(0, 0, 0));
-        display_image(current_image);
+
+        display_image();
     }
 }
 
+void MainWindow::on_actionGaussian_5_triggered()
+{
+    if ( !image.empty() ){
+        cv::GaussianBlur(image, image, cv::Size(5, 5), 5, 5);
+        contour_image = image.clone();
+
+        delete Qimg;
+        Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+        computeCostFunc();
+
+        delete Mask;
+        Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
+        Mask->fill(qRgb(0, 0, 0));
+
+        display_image();
+    }
+}
+
+
+
+/*
 void MainWindow::on_actionGaussian_5_triggered(bool checked){
 
     if (!image.empty() && checked){
@@ -963,28 +953,24 @@ void MainWindow::on_actionGaussian_5_triggered(bool checked){
         contour_image = image.clone();
         current_image = image;
         computeCostFunc();
-        delete pathTree;
-        pathTree = new QImage(drawPathTree());
+
         delete Mask;
         Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
         Mask->fill(qRgb(0, 0, 0));
         display_image(image);
-    } else if (!image.empty() && !checked) {
+    }
+    else if (!image.empty() && !checked) {
         image = previous_image;
         current_image = previous_image;
         computeCostFunc();
-        delete pathTree;
-        pathTree = new QImage(drawPathTree());
+
         delete Mask;
         Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
         Mask->fill(qRgb(0, 0, 0));
         display_image(current_image);
     }
 }
-
-
-
-
+*/
 
 
 

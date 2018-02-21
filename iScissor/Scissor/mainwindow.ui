@@ -57,7 +57,7 @@
      <x>0</x>
      <y>0</y>
      <width>889</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menufile">
@@ -224,17 +224,11 @@
    </property>
   </action>
   <action name="actionGuassian_3">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="text">
     <string>Gaussian 3*3</string>
    </property>
   </action>
   <action name="actionGaussian_5">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="text">
     <string>Gaussian 5*5</string>
    </property>

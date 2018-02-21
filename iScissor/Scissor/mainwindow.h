@@ -101,9 +101,9 @@ private slots:
     void on_actionMin_Path_triggered(bool checked);
 
 
-    void on_actionGuassian_3_triggered(bool checked);
+    void on_actionGuassian_3_triggered();
 
-    void on_actionGaussian_5_triggered(bool checked);
+    void on_actionGaussian_5_triggered();
 
 private:
     Ui::MainWindow *ui;
@@ -114,8 +114,11 @@ private:
 
     Mat tmp_contour;
     Mat mask_image;
-    Mat current_image;
-    Mat previous_image;
+
+    Mat pixel_node_image;
+    Mat cost_graph_image;
+    Mat path_tree_image;
+    Mat min_path_image;
 
 
     QImage* Qimg;
@@ -144,6 +147,7 @@ private:
     int idx;                    // mark the length of the nodes
 
     void display_image(cv::Mat im);
+    void display_image();
     QScrollArea* scrollArea;
 
     // Dij algorithm
