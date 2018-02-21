@@ -19,10 +19,10 @@ MainWindow::MainWindow(QWidget *parent) :
     // ui->scrollArea->setWidget(ui->label);
     // setCentralWidget(ui->scrollArea);
 
-    costgraph_weight = new cv::Mat[9];
+    // costgraph_weight = new cv::Mat[9];
+
     img_scale = 1.0;
 
-    // ui->actionDisplay_Contour->setChecked(true);
     contour_enabled = false;
     scissor_enabled = false;
     first_seed_flag = false;
@@ -38,7 +38,7 @@ MainWindow::~MainWindow()
 
     delete head_node;
 
-    delete[] costgraph_weight;
+    // delete[] costgraph_weight;
 }
 
 /* helper function starts here  */
@@ -266,6 +266,8 @@ void MainWindow::on_actionOpen_triggered()
     // convert cv::Mat to QImage
     cv::cvtColor(image, image, CV_BGR2RGB);
     cv::cvtColor(contour_image, contour_image, CV_BGR2RGB);
+    cv::cvtColor(current_image, current_image, CV_BGR2RGB);
+    cv::cvtColor(previous_image, previous_image, CV_BGR2RGB);
 
     QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
 
@@ -396,25 +398,30 @@ void MainWindow::on_actionPixel_Node_triggered(bool checked)
         QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
         int w=Q_img->width(), h=Q_img->height();
         QImage png(3*w,3*h,Q_img->format());
-        png.fill(qRgb(0,0,0));
-        for(int j=0;j<h;j++)
-            for(int i=0;i<w;i++)
-                png.setPixel(3*i+1,3*j+1,Q_img->pixel(i,j));
+        png.fill( qRgb(0,0,0) );
+
+        for(int j=0; j<h; j++)
+            for(int i=0; i<w; i++)
+                png.setPixel(3*i+1, 3*j+1, Q_img->pixel(i,j));
+
         QPixmap p = QPixmap::fromImage(png);
         ui->label->setPixmap(p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio));
-//        QImage Q_img_tmp = Q_img->rgbSwapped();
-        if (ui->actionCost_Graph->isChecked()) {
+        // QImage Q_img_tmp = Q_img->rgbSwapped();
+
+        if (ui->actionCost_Graph->isChecked())
             ui->actionCost_Graph->setChecked(false);
-            previous_image = image;
-        } else if (ui->actionPath_Tree->isChecked()) {
+        if (ui->actionPath_Tree->isChecked())
             ui->actionPath_Tree->setChecked(false);
-            previous_image = image;
-        } else if (ui->actionMin_Path->isChecked()) {
+        if (ui->actionMin_Path->isChecked())
             ui->actionMin_Path->setChecked(false);
+
+        if (ui->actionCost_Graph->isChecked() ||
+            ui->actionPath_Tree->isChecked()  ||
+            ui->actionMin_Path->isChecked() )
             previous_image = image;
-        } else {
+        else
             previous_image = current_image;
-        }
+
         current_image = cv::Mat( png.height(), png.width(),
                                  CV_8UC3,
                                  const_cast<uchar*>(png.bits()),
@@ -436,10 +443,11 @@ void MainWindow::on_actionCost_Graph_triggered(bool checked)
         int w=Q_img->width(), h=Q_img->height();
         QImage png(3*w,3*h,Q_img->format());
         png.fill( qRgb(255,255,255) );
-        for(int j=0;j<h;j++) {
-            for(int i=0;i<w;i++) {
+
+        for(int j=0; j<h; j++) {
+            for(int i=0; i<w; i++) {
                 pixelNode *pn = pixelnodes[j][i];
-                png.setPixel(3*i+1,3*j+1,Q_img->pixel(i,j)); // i, j
+                png.setPixel( 3*i+1, 3*j+1, Q_img->pixel(i,j) ); // i, j
                 if (i + 1 < w) png.setPixel(3*i+2,3*j+1,qRgb(pn->getLinkCost(0) * 1.5,
                                                              pn->getLinkCost(0) * 1.5,
                                                              pn->getLinkCost(0) * 1.5)); // link 0
@@ -468,19 +476,22 @@ void MainWindow::on_actionCost_Graph_triggered(bool checked)
         }
         QPixmap p = QPixmap::fromImage(png);
         ui->label->setPixmap(p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio));
-//        QImage Q_img_tmp = Q_img->rgbSwapped();
-        if (ui->actionPixel_Node->isChecked()) {
+        // QImage Q_img_tmp = Q_img->rgbSwapped();
+
+        if (ui->actionPixel_Node->isChecked())
             ui->actionPixel_Node->setChecked(false);
-            previous_image = image;
-        } else if (ui->actionPath_Tree->isChecked()) {
+        if (ui->actionPath_Tree->isChecked())
             ui->actionPath_Tree->setChecked(false);
-            previous_image = image;
-        } else if (ui->actionMin_Path->isChecked()) {
+        if (ui->actionMin_Path->isChecked())
             ui->actionMin_Path->setChecked(false);
+
+        if (ui->actionPixel_Node->isChecked() ||
+            ui->actionPath_Tree->isChecked()  ||
+            ui->actionMin_Path->isChecked() )
             previous_image = image;
-        } else {
+        else
             previous_image = current_image;
-        }
+
         current_image = cv::Mat( png.height(), png.width(),
                                  CV_8UC3,
                                  const_cast<uchar*>(png.bits()),
@@ -500,20 +511,24 @@ void MainWindow::on_actionPath_Tree_triggered(bool checked)
         workstates = path_tree;
         delete pathTree;
         pathTree = new QImage(drawPathTree());
+
         QPixmap p = QPixmap::fromImage(*pathTree);
-        ui->label->setPixmap(p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio));
-        if (ui->actionPixel_Node->isChecked()) {
+        ui->label->setPixmap( p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio) );
+
+        if (ui->actionPixel_Node->isChecked())
             ui->actionPixel_Node->setChecked(false);
-            previous_image = image;
-        } else if (ui->actionCost_Graph->isChecked()) {
+        if (ui->actionCost_Graph->isChecked())
             ui->actionCost_Graph->setChecked(false);
-            previous_image = image;
-        } else if (ui->actionMin_Path->isChecked()) {
+        if (ui->actionMin_Path->isChecked())
             ui->actionMin_Path->setChecked(false);
+
+        if (ui->actionPixel_Node->isChecked() ||
+            ui->actionCost_Graph->isChecked()  ||
+            ui->actionMin_Path->isChecked() )
             previous_image = image;
-        } else {
+        else
             previous_image = current_image;
-        }
+
         current_image = cv::Mat( pathTree->height(), pathTree->width(),
                                  CV_8UC3,
                                  const_cast<uchar*>(pathTree->bits()),
@@ -731,7 +746,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
                     this->on_actionReset_Contour_triggered();
                     return false;
                 }
-                for (int i = 0; i < dots->size(); i ++) {
+                for (uint i = 0; i < dots->size(); i ++) {
                     cv::circle(contour_image, cv::Point(dots->at(i).x(), dots->at(i).y()), 1, CV_RGB(0,0,255), 2);
                 }
             }
@@ -739,9 +754,9 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             if (paths->size() > 0) {
                 paths->pop_back();
                 if (paths->size() == 0) return false;
-                for (int i = 0; i < paths->size(); i++) {
+                for (uint i = 0; i < paths->size(); i++) {
                     vector<QPoint> iter = paths->at(i);
-                    for (int j = 0; j < iter.size()- 1; j ++) {
+                    for (uint j = 0; j < iter.size()- 1; j ++) {
                         cv::line(contour_image, cv::Point(iter[j].x(), iter[j].y()), cv::Point(iter[j+1].x(), iter[j+1].y()), CV_RGB(173,255,47), 3);
                     }
                 }

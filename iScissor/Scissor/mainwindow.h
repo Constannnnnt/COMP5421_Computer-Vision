@@ -121,27 +121,14 @@ private:
     QImage* Mask;
 
 
-    int path_id;
     vector<QPoint>* dots;
     vector< vector<QPoint> >* paths;
-    QPainter* painter;
+    //QPainter* painter;
     bool left_clicked = false;
-
-    // Dij algorithm
-    Mat* costgraph_weight;
-    Mat visitedMap;
-    //Mat activeMap;
-    Mat parentMap;
-    Mat graphCost;
 
     pixelNode* head_node;               // the head of node list, always the first seed
     pixelNode* current_node;            // store the address of current_node, for setting parent during click
     vector< vector<pixelNode*> > pixelnodes;   // pixelnodes[row][col]
-
-    // click list
-    //int* x_list;
-    //int* y_list;
-    //int list_size;
 
     bool scissor_enabled;
     bool contour_enabled;
@@ -155,6 +142,17 @@ private:
 
     void display_image(cv::Mat im);
     QScrollArea* scrollArea;
+
+    // Dij algorithm
+    //Mat* costgraph_weight;
+    //Mat visitedMap;
+    //Mat parentMap;
+    //Mat graphCost;
+
+    // click list
+    //int* x_list;
+    //int* y_list;
+    //int list_size;
 
 };
 
