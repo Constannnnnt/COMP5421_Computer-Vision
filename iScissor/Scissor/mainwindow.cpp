@@ -27,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     scissor_enabled = false;
     first_seed_flag = false;
     finished_flag = false;
-
+    dots_deleted = false;
 }
 
 
@@ -143,6 +143,7 @@ void MainWindow::resetAll(){
     scissor_enabled = false;
     first_seed_flag = false;
     finished_flag = false;
+    dots_deleted = false;
     return;
 }
 
@@ -731,6 +732,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             for (int i = 0; i < path.size() - 1; i ++) {
                 cv::line(tmp_contour, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 3);
             }
+            dots_deleted = false;
             if (contour_enabled) {
                 display_image(tmp_contour);
             }
@@ -767,13 +769,44 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         }
 
         // backspace when scissoring
-        if ( (event_key->key()==Qt::Key_Backspace) && scissor_enabled ){
+        if ( (event_key->key() == Qt::Key_Backspace) && scissor_enabled && (!dots_deleted) ){
+            contour_image = image.clone();
+            if (dots->size() > 0) {
+                cout << dots->size() << endl;
+                dots->pop_back();
+                dots_deleted = true;
+                cout << dots->size() << endl;
+                if (dots->size() > 0) {
+                    cout << "1"<<endl;
+                    current_node = pixelnodes[dots->back().y()][dots->back().x()];
+                    updatePathTree();
+                } else {
+                    cout << "2"<<endl;
+
+                    this->on_actionReset_Contour_triggered();
+                    return false;
+                }
+                for (int i = 0; i < dots->size(); i ++) {
+                    cv::circle(contour_image, cv::Point(dots->at(i).x(), dots->at(i).y()), 1, CV_RGB(0,0,255), 2);
+                }
+            }
+
+            if (paths->size() > 0) {
+                paths->pop_back();
+                if (paths->size() == 0) return false;
+                for (int i = 0; i < paths->size(); i++) {
+                    vector<QPoint> iter = paths->at(i);
+                    for (int j = 0; j < iter.size()- 1; j ++) {
+                        cv::line(contour_image, cv::Point(iter[j].x(), iter[j].y()), cv::Point(iter[j+1].x(), iter[j+1].y()), CV_RGB(173,255,47), 3);
+                    }
+                }
+            }
 
         }
 
         // backspace when not scissoring
-        if ( (event_key->key()==Qt::Key_Backspace) && (!scissor_enabled) ){
-
+        if ( (event_key->key() == Qt::Key_Backspace) && (!scissor_enabled) ){
+            this->on_actionReset_Contour_triggered();
         }
     }
 

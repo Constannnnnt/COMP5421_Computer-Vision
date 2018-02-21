@@ -149,6 +149,7 @@ private:
     bool ctrl_enabled;
     bool first_seed_flag;
     bool finished_flag;
+    bool dots_deleted;
 
     double img_scale;
     int idx; // mark the length of the nodes
