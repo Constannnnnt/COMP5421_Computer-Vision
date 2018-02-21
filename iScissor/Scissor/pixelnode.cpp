@@ -28,7 +28,7 @@ double pixelNode::LinkCost(pixelNode *pn) {
         return linkcost[1];
     if(pn->getCol() == this->col && pn->getRow() == this->row - 1)
         return linkcost[2];
-    if(pn->getCol() == this->col - 1 && pn->getRow() == this->row-1)
+    if(pn->getCol() == this->col - 1 && pn->getRow() == this->row - 1)
         return linkcost[3];
     if(pn->getCol() == this->col - 1 && pn->getRow() == this->row)
         return linkcost[4];
@@ -58,43 +58,54 @@ void pixelNode::resetTotalCost(double x) {
 }
 
 void pixelNode:: operator =(FibHeapNode& RHS) {
-    pixelNode& pRHS=(pixelNode&)RHS;
+    pixelNode& pRHS = (pixelNode&)RHS;
     FHN_Assign(RHS);
+
     this->totalCost = pRHS.totalCost;
 }
 
 int  pixelNode:: operator == (FibHeapNode& RHS) {
-    pixelNode& pRHS=(pixelNode&)RHS;
+    pixelNode& pRHS = (pixelNode&)RHS;
+    // Only if FHN_Cmp() returns 0, should the key be compared
     if (FHN_Cmp(RHS)) return 0;
     // Key compare goes here in derived classes
     if(RHS.NegInfinityFlag && NegInfinityFlag) return 1;
+
     return totalCost == pRHS.totalCost;
 }
+
 int  pixelNode::operator <(FibHeapNode& RHS) {
     int X;
-    pixelNode& pRHS=(pixelNode&)RHS;
+    pixelNode& pRHS = (pixelNode&)RHS;
+    // here handles the NegInfinityFlag, return earlier if this->NegInfinityFlag is set
     if ((X=FHN_Cmp(RHS)) != 0)
         return X < 0 ? 1 : 0;
     // Key compare goes here in derived classes
     if(RHS.NegInfinityFlag && NegInfinityFlag)
         return 0;
+
     return totalCost < pRHS.totalCost;
 }
 
-//return column and row of neighbor in link direction
-void pixelNode:: Neighbor(int link,int &c,int &r) {
-    const int linktable[8][2]={
-        {1,0}, // link 0
-        {1,-1}, // link 1
-        {0,-1}, // link 2
-        {-1,-1}, // link 3
-        {-1,0}, // link 4
-        {-1,1}, // link 5
-        {0,1}, // link 6
-        {1,1} // link7
-    };
+
+
+const int linktable[8][2] = {
+    { 1,  0 },     // link 0
+    { 1, -1 },     // link 1
+    { 0, -1 },     // link 2
+    {-1, -1 },     // link 3
+    {-1,  0 },     // link 4
+    {-1,  1 },     // link 5
+    { 0,  1 },     // link 6
+    { 1,  1 }      // link 7
+};
+
+//get column and row of neighbor in link direction
+void pixelNode::Neighbor(int link, int &c, int &r) {
+
     c = this->col + linktable[link][0];
     r = this->row + linktable[link][1];
+
 }
 
 
@@ -118,4 +129,10 @@ float pixelNode::getTotalCost(){
 double pixelNode::getLinkCost(int link) {
     return this->linkcost[link];
 }
+
+
+
+
+
+
 
