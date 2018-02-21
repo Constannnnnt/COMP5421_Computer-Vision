@@ -143,6 +143,8 @@ private:
     bool dots_deleted;
     bool finished_asclosed;
 
+    bool DEBUG_MODE;
+
     double img_scale;
     int idx;                    // mark the length of the nodes
 
