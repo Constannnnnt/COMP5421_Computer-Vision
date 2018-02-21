@@ -71,73 +71,18 @@ void MainWindow::print_node(pixelNode* n)
     }
 }
 
-void MainWindow::draw_contour(int x, int y){
-
-    int draw_value;
-    cv::Vec3b fill(0,255,0);
-    //contour = cv::Mat::zeros(image.size(), CV_8UC3);
-    contour_image = image.clone();
-
-    while( this->parentMap.at<uchar>( cv::Point(x,y) ) != 255 ){
-
-        draw_value = this->parentMap.at<uchar>( cv::Point(x,y) );
-
-        contour_image.at<cv::Vec3b>( cv::Point(x,y) ) = fill;
-        //contour.at<cv::Vec3b>( cv::Point(x,y) ) = fill;
-
-        //cout << "draw value is: " << draw_value << endl;
-
-        //  0   1   2
-        //  3   4   5
-        //  6   7   8
-        switch (draw_value) {
-        case 0:
-            y -= 1;
-            x -= 1;
-            continue;
-        case 1:
-            y -= 1;
-            continue;
-        case 2:
-            y -= 1;
-            x += 1;
-            continue;
-        case 3:
-            x -= 1;
-            continue;
-        case 4:
-            cout << "self loop detected" << endl;
-            exit(1);
-            break;
-        case 5:
-            x += 1;
-            continue;
-        case 6:
-            y += 1;
-            x -= 1;
-            continue;
-        case 7:
-            y += 1;
-            continue;
-        case 8:
-            y += 1;
-            x += 1;
-            continue;
-        //default:
-        //    continue;
-        }
-    }
-}
 
 void MainWindow::resetAll(){
     ui->actionPixel_Node->setChecked(false);
     ui->actionCost_Graph->setChecked(false);
     ui->actionMin_Path->setChecked(false);
     ui->actionPath_Tree->setChecked(false);
+
     ui->actionGaussian_5->setChecked(false);
     ui->actionGuassian_3->setChecked(false);
     ui->actionDisplay_Contour->setChecked(false);
     ui->actionScissor->setChecked(false);
+
     img_scale = 1.0;
     contour_enabled = false;
     scissor_enabled = false;
@@ -147,9 +92,10 @@ void MainWindow::resetAll(){
 }
 
 QImage MainWindow::drawPathTree(){
-    int w=Qimg->width(),h=Qimg->height();
-    QImage qi(3 * w,3 * h,Qimg->format());
-    qi.fill(qRgb(0,0,0));
+    int w = Qimg->width(),h = Qimg->height();
+    QImage qi( 3*w, 3*h, Qimg->format() );
+    qi.fill(qRgb(0,0,0));  // black
+
     for(int j = 0; j < h; j++)
         for(int i = 0; i < w; i++)
         {
@@ -172,6 +118,10 @@ QImage MainWindow::drawPathTree(){
 void MainWindow::computeCostFunc(){
     int w = Qimg->width(), h = Qimg->height();
     double maxD = -1.0;
+    double length = 0.0;
+    double DLink = 0.0;
+
+    // find maxD
     for (int j = 0; j < h; j ++)
         for (int i = 0; i < w; i++) {
             pixelNode *pn=pixelnodes[j][i];
@@ -182,12 +132,13 @@ void MainWindow::computeCostFunc(){
                     maxD=pn->getLinkCost(k);
             }
         }
+
     for (int j = 0; j < h; j ++)
         for (int i = 0; i < w; i ++) {
             pixelNode *pn = pixelnodes[j][i];
             for (int k = 0; k < 8; k++) {
-                double length = k % 2 == 0 ? 1.0 : sqrt(2);
-                double DLink = pn->getLinkCost(k);
+                length = k % 2 == 0 ? 1.0 : sqrt(2);
+                DLink = pn->getLinkCost(k);
                 pn->setLinkCost(k, (maxD - DLink) * length);
             }
         }
@@ -317,12 +268,15 @@ void MainWindow::on_actionOpen_triggered()
 
     QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
 
+    // i, height, row
+    // j, width, col
     pixelnodes.resize(Q_img.height());
-    for(int i=0;i<Q_img.height();i++)
-        for(int j=0;j<Q_img.width();j++)
+    for(int i=0; i<Q_img.height(); i++)
+        for(int j=0; j<Q_img.width(); j++)
             pixelnodes[i].push_back(new pixelNode(j,i));
 
     Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+
     computeCostFunc();
     cout << "cost finished" << endl;
 
@@ -331,14 +285,9 @@ void MainWindow::on_actionOpen_triggered()
     head_node = NULL;
     pathTree = new QImage(drawPathTree());
     dots = new vector<QPoint>;
-    paths = new vector<vector<QPoint>>;
+    paths = new vector< vector<QPoint> >;
 
     ui->label->setPixmap(QPixmap::fromImage(Q_img));
-
-}
-
-// Add image
-void MainWindow::addImage() {
 
 }
 
@@ -349,7 +298,6 @@ void MainWindow::on_actionSave_Contour_triggered()
     QMessageBox::StandardButton reply = QMessageBox::question(this, "Save ", "Save image with contour marked?",
                                                               QMessageBox::Yes|QMessageBox::No);
     if(reply == QMessageBox::Yes){
-//        cv::imwrite("/home/jguoaj/Desktop/contour_image.jpg", contour_image);
         // cv::imwrite("/home/jguoaj/contour_image.jpg", image);
     }
 }
@@ -434,7 +382,7 @@ void MainWindow::on_actionReset_Contour_triggered()
 {
     cout << "reset contour" << endl;
     contour_image = image.clone();
-    resetAll();;
+    resetAll();
     display_image(image);
 }
 
@@ -486,10 +434,10 @@ void MainWindow::on_actionCost_Graph_triggered(bool checked)
         QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
         int w=Q_img->width(), h=Q_img->height();
         QImage png(3*w,3*h,Q_img->format());
-        png.fill(qRgb(255,255,255));
+        png.fill( qRgb(255,255,255) );
         for(int j=0;j<h;j++) {
             for(int i=0;i<w;i++) {
-                pixelNode *pn=pixelnodes[j][i];
+                pixelNode *pn = pixelnodes[j][i];
                 png.setPixel(3*i+1,3*j+1,Q_img->pixel(i,j)); // i, j
                 if (i + 1 < w) png.setPixel(3*i+2,3*j+1,qRgb(pn->getLinkCost(0) * 1.5,
                                                              pn->getLinkCost(0) * 1.5,
@@ -618,15 +566,12 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             cout << "scissor is not enabled" << endl;
             return false;
         }
-        if (first_seed_flag) {
-            cout << "the first seed has been selected" << endl;
-            return false;
-        }
 
         if (finished_flag) {
             cout << "already finished, reset or save" << endl;
             return false;
         }
+
         cout << "ctrl + left click" << endl;
         left_clicked = true;
 
@@ -634,7 +579,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         current_node = head_node;
 
         // draw a dot
-        dots->push_back(QPoint(p.x(), p.y()));
+        dots->push_back( QPoint(p.x(), p.y()) );
         cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(0,0,255), 2);
         if(contour_enabled) {
             display_image(contour_image);
@@ -684,7 +629,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         dots->push_back(QPoint(p.x(), p.y()));
         // draw the path on the contour image
         cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(0,0,255), 2);
-        for (int i = 0; i < path.size() - 1; i ++) {
+        for (uint i = 0; i < path.size() - 1; i ++) {
             cv::line(contour_image, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 3);
         }
         if (contour_enabled) {
@@ -728,7 +673,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             getPath(p.x(), p.y(), path);
             tmp_contour = contour_image.clone();
             if (path.size() < 1) return false;
-            for (int i = 0; i < path.size() - 1; i ++) {
+            for (uint i = 0; i < path.size() - 1; i ++) {
                 cv::line(tmp_contour, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 3);
             }
             if (contour_enabled) {
@@ -756,7 +701,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             cout << "enter + ctrl" << endl;
             vector<QPoint> path;
             getPath(head_node->getCol(), head_node->getRow(), path);
-            for (int i = 0; i < path.size() - 1; i ++) {
+            for (uint i = 0; i < path.size() - 1; i ++) {
                 cv::line(contour_image, cv::Point(path[i].x(), path[i].y()), cv::Point(path[i+1].x(), path[i+1].y()), CV_RGB(173,255,47), 3);
             }
             left_clicked = true;
@@ -782,47 +727,199 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
 void MainWindow::updatePathTree()
 {
-    int h=Qimg->height(),w=Qimg->width();
-    for(int j=0;j<h;j++)
+    int h = Qimg->height();
+    int w = Qimg->width();
+
+    for(int j=0;j<h;j++){
         for(int i=0;i<w;i++)
         {
-                pixelnodes[j][i]->totalCost=DBL_MAX;
-                pixelnodes[j][i]->state=pixelNode::INITIAL;
+                pixelnodes[j][i]->totalCost = DBL_MAX;
+                pixelnodes[j][i]->state = pixelNode::INITIAL;
         }
+    }
+
      current_node->resetTotalCost(0);
      current_node->resetPrevNode();
+
      FibHeap heap;
      heap.Insert(current_node);
-     pixelNode * q;
+     pixelNode* q;
+
      while (heap.Minimum() != NULL) {
+
          q = (pixelNode*) heap.ExtractMin();
          q->state = pixelNode::EXPANDED;
-         int c, r;
+         int c, r;  // col and row
+
          for (int i = 0; i < 8 ;i ++) {
              q->Neighbor(i, c, r);
-             if (c >= 0  && c < Qimg->width()
-                     && r >= 0 && r < Qimg->height()
-                     ) {
+
+             // boundary check
+             if (c >= 0  && c < Qimg->width() && r >= 0 && r < Qimg->height()) {
                  pixelNode* pn = pixelnodes[r][c];
+
+                 // if pn has not been expanded
                  if (pn->state != pixelNode::EXPANDED) {
-                     double cost = q->getLinkCost(i);
+                     double linkcost = q->getLinkCost(i);
+
                      if (pn->state == pixelNode::INITIAL) {
                          pn->setParent(q);
-                         pn->totalCost = cost + q->totalCost;
+                         pn->totalCost = linkcost + q->totalCost;
                          pn->state = pixelNode::ACTIVE;
                          heap.Insert(pn);
                      } else if (pn->state == pixelNode::ACTIVE) {
-                         if (cost + q->totalCost < pn -> totalCost) {
+                         if (linkcost + q->totalCost < pn->totalCost) {
                              pn->setParent(q);
                              pixelNode newpn = pixelNode(pn->getCol(), pn->getRow());
-                             newpn.totalCost = cost + q->totalCost;
+                             newpn.totalCost = linkcost + q->totalCost;
                              heap.DecreaseKey(pn, newpn);
                          }
                      }
+
                  }
              }
-         }
-     }
+
+         }  // end of Neighbor for loop
+     }  // end of while loop
+}
+
+
+// Gaussian filter Smooth
+void MainWindow::on_actionGuassian_3_triggered(bool checked){
+
+    if (!image.empty() && checked){
+        if (!ui->actionGaussian_5->isChecked()) {
+            previous_image = image.clone();
+        } else {
+            ui->actionGaussian_5->setChecked(false);
+            image = previous_image.clone();
+        }
+        cv::GaussianBlur(image, image, cv::Size(3, 3), 3, 3);
+        current_image = image.clone();
+        contour_image = image.clone();
+        delete Qimg;
+        Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+        computeCostFunc();
+        cout << "cost finished" << endl;
+        delete pathTree;
+        pathTree = new QImage(drawPathTree());
+        delete Mask;
+        Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
+        Mask->fill(qRgb(255, 255, 255));
+        display_image(image);
+    } else if (!image.empty() && !checked) {
+        image = previous_image.clone();
+        current_image = previous_image.clone();
+        delete Qimg;
+        Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+        computeCostFunc();
+        cout << "cost finished" << endl;
+        delete pathTree;
+        pathTree = new QImage(drawPathTree());
+        delete Mask;
+        Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
+        Mask->fill(qRgb(255, 255, 255));
+        display_image(current_image);
+    }
+}
+
+void MainWindow::on_actionGaussian_5_triggered(bool checked){
+
+    if (!image.empty() && checked){
+        if (!ui->actionGuassian_3->isChecked()) {
+            previous_image = image.clone();
+        } else {
+            ui->actionGuassian_3->setChecked(false);
+            image = previous_image.clone();
+        }
+        cv::GaussianBlur(image, image, cv::Size(5, 5), 5, 5);
+        contour_image = image.clone();
+        current_image = image;
+        computeCostFunc();
+        cout << "cost finished" << endl;
+        delete pathTree;
+        pathTree = new QImage(drawPathTree());
+        delete Mask;
+        Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
+        Mask->fill(qRgb(255, 255, 255));
+        display_image(image);
+    } else if (!image.empty() && !checked) {
+        image = previous_image;
+        current_image = previous_image;
+        computeCostFunc();
+        cout << "cost finished" << endl;
+        delete pathTree;
+        pathTree = new QImage(drawPathTree());
+        delete Mask;
+        Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
+        Mask->fill(qRgb(255, 255, 255));
+        display_image(current_image);
+    }
+}
+
+
+
+
+
+
+
+/*
+void MainWindow::draw_contour(int x, int y){
+
+    int draw_value;
+    cv::Vec3b fill(0,255,0);
+    //contour = cv::Mat::zeros(image.size(), CV_8UC3);
+    contour_image = image.clone();
+
+    while( this->parentMap.at<uchar>( cv::Point(x,y) ) != 255 ){
+
+        draw_value = this->parentMap.at<uchar>( cv::Point(x,y) );
+
+        contour_image.at<cv::Vec3b>( cv::Point(x,y) ) = fill;
+        //contour.at<cv::Vec3b>( cv::Point(x,y) ) = fill;
+
+        //cout << "draw value is: " << draw_value << endl;
+
+        //  0   1   2
+        //  3   4   5
+        //  6   7   8
+        switch (draw_value) {
+        case 0:
+            y -= 1;
+            x -= 1;
+            continue;
+        case 1:
+            y -= 1;
+            continue;
+        case 2:
+            y -= 1;
+            x += 1;
+            continue;
+        case 3:
+            x -= 1;
+            continue;
+        case 4:
+            cout << "self loop detected" << endl;
+            exit(1);
+            break;
+        case 5:
+            x += 1;
+            continue;
+        case 6:
+            y += 1;
+            x -= 1;
+            continue;
+        case 7:
+            y += 1;
+            continue;
+        case 8:
+            y += 1;
+            x += 1;
+            continue;
+        //default:
+        //    continue;
+        }
+    }
 }
 
 
@@ -1014,77 +1111,20 @@ void MainWindow::Dijstras(pixelNode* seed){
     } // end of while loop
 
 }
+*/
 
 
-// Gaussian filter Smooth
-void MainWindow::on_actionGuassian_3_triggered(bool checked){
 
-    if (!image.empty() && checked){
-        if (!ui->actionGaussian_5->isChecked()) {
-            previous_image = image.clone();
-        } else {
-            ui->actionGaussian_5->setChecked(false);
-            image = previous_image.clone();
-        }
-        cv::GaussianBlur(image, image, cv::Size(3, 3), 3, 3);
-        current_image = image.clone();
-        contour_image = image.clone();
-        delete Qimg;
-        Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
-        computeCostFunc();
-        cout << "cost finished" << endl;
-        delete pathTree;
-        pathTree = new QImage(drawPathTree());
-        delete Mask;
-        Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
-        Mask->fill(qRgb(255, 255, 255));
-        display_image(image);
-    } else if (!image.empty() && !checked) {
-        image = previous_image.clone();
-        current_image = previous_image.clone();
-        delete Qimg;
-        Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
-        computeCostFunc();
-        cout << "cost finished" << endl;
-        delete pathTree;
-        pathTree = new QImage(drawPathTree());
-        delete Mask;
-        Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
-        Mask->fill(qRgb(255, 255, 255));
-        display_image(current_image);
-    }
-}
 
-void MainWindow::on_actionGaussian_5_triggered(bool checked){
 
-    if (!image.empty() && checked){
-        if (!ui->actionGuassian_3->isChecked()) {
-            previous_image = image.clone();
-        } else {
-            ui->actionGuassian_3->setChecked(false);
-            image = previous_image.clone();
-        }
-        cv::GaussianBlur(image, image, cv::Size(5, 5), 5, 5);
-        contour_image = image.clone();
-        current_image = image;
-        computeCostFunc();
-        cout << "cost finished" << endl;
-        delete pathTree;
-        pathTree = new QImage(drawPathTree());
-        delete Mask;
-        Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
-        Mask->fill(qRgb(255, 255, 255));
-        display_image(image);
-    } else if (!image.empty() && !checked) {
-        image = previous_image;
-        current_image = previous_image;
-        computeCostFunc();
-        cout << "cost finished" << endl;
-        delete pathTree;
-        pathTree = new QImage(drawPathTree());
-        delete Mask;
-        Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
-        Mask->fill(qRgb(255, 255, 255));
-        display_image(current_image);
-    }
-}
+
+
+
+
+
+
+
+
+
+
+

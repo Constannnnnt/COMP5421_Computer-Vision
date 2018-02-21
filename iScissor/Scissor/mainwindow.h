@@ -40,36 +40,30 @@ public:
 
     int workstates;
 
-    void addImage();
-
     void keyPressEvent(QKeyEvent *event);
-
     void keyReleaseEvent(QKeyEvent *event);
 
     bool eventFilter(QObject *watched, QEvent *event);
-
-    void Dijstras(pixelNode* p);
-
-    void costgraph_init();
 
     void updatePathTree();
 
     // helper function
     void print_node(pixelNode* n);
 
-    void draw_contour(int x, int y);
+    void resetAll();
 
     void computeCostFunc();
-
     void channelTransform(QRgb rgb, int color[3]);
-
     double getDLink(int, int, int);
 
     void getPath(int, int, vector<QPoint>&);
 
     QImage drawPathTree();
 
-    void resetAll();
+
+    //void Dijstras(pixelNode* p);
+    //void costgraph_init();
+    //void draw_contour(int x, int y);
 
     ~MainWindow();
 
@@ -115,16 +109,21 @@ private:
     Mat image;
     Mat contour;
     Mat contour_image;
+
     Mat tmp_contour;
     Mat mask_image;
     Mat current_image;
     Mat previous_image;
+
+
     QImage* Qimg;
     QImage* pathTree;
     QImage* Mask;
+
+
     int path_id;
     vector<QPoint>* dots;
-    vector<vector<QPoint>>* paths;
+    vector< vector<QPoint> >* paths;
     QPainter* painter;
     bool left_clicked = false;
 
@@ -135,14 +134,14 @@ private:
     Mat parentMap;
     Mat graphCost;
 
-    pixelNode* head_node;   // the head of node list, always the first seed
-    pixelNode* current_node;   // store the address of current_node, for setting parent during click
-    vector<vector<pixelNode*> > pixelnodes;
+    pixelNode* head_node;               // the head of node list, always the first seed
+    pixelNode* current_node;            // store the address of current_node, for setting parent during click
+    vector< vector<pixelNode*> > pixelnodes;   // pixelnodes[row][col]
 
     // click list
-    int* x_list;
-    int* y_list;
-    int list_size;
+    //int* x_list;
+    //int* y_list;
+    //int list_size;
 
     bool scissor_enabled;
     bool contour_enabled;
@@ -151,7 +150,7 @@ private:
     bool finished_flag;
 
     double img_scale;
-    int idx; // mark the length of the nodes
+    int idx;                    // mark the length of the nodes
 
     void display_image(cv::Mat im);
     QScrollArea* scrollArea;
