@@ -107,7 +107,7 @@ private slots:
 
     void on_actionGaussian_5_triggered();
 
-    void on_actionSnapSeed_triggered();
+    void on_actionSnapSeed_triggered(bool checked);
 
 private:
     Ui::MainWindow *ui;
@@ -115,9 +115,7 @@ private:
     Mat image;
     Mat contour;
     Mat contour_image;
-
     Mat tmp_contour;
-    Mat mask_image;
 
     Mat pixel_node_image;
     Mat cost_graph_image;

@@ -283,7 +283,7 @@ void MainWindow::getSnapSeed() {
     double th = DBL_MAX;
     for (int i = 0; i < edge.cols; i ++) {
         for (int j = 0; j < edge.rows; j++) {
-            if (edge.at<uchar>(j,i) != 0 && (i!=head_node->getCol()) && (j!=head_node->getRow())) {
+            if (edge.at<uchar>(j,i) == 255 && (i!=head_node->getCol()) && (j!=head_node->getRow())) {
                 double d = (i-head_node->getCol())*(i-head_node->getCol()) + (j-head_node->getRow())*(j-head_node->getRow());
                 if (d < th){
                     th = d;
@@ -293,7 +293,7 @@ void MainWindow::getSnapSeed() {
             }
         }
     }
-    head_node= pixelnodes[r][c];
+    head_node = pixelnodes[r][c];
     return;
 }
 
@@ -338,7 +338,7 @@ void MainWindow::on_actionOpen_triggered()
     computeCostFunc();
 
     Mask = new QImage(Qimg->width(),Qimg->height(),Qimg->format());
-    Mask->fill(qRgb(0, 0, 0));
+    Mask->fill(qRgb(0, 0, 0));  // black
     head_node = NULL;
     //pathTree = new QImage(drawPathTree());
     pathTree = new QImage;
@@ -394,7 +394,6 @@ void MainWindow::on_actionSave_Mask_triggered()
                                      static_cast<size_t>(Mask->bytesPerLine())
                                      ).clone();
 
-
             cv::cvtColor(tmp_mask, tmp_mask, CV_BGR2GRAY);
 
             // Floodfill from point (0, 0)
@@ -406,7 +405,12 @@ void MainWindow::on_actionSave_Mask_triggered()
             bitwise_not(im_floodfill, im_floodfill_inv);
 
             // Combine the two images to get the foreground.
-            Mat im_out = (tmp_mask | im_floodfill_inv);
+            //Mat im_out = tmp_mask | im_floodfill_inv);
+            Mat im_out;
+            bitwise_and(image, image, im_out, im_floodfill_inv);
+            cv::cvtColor(im_out, im_out, CV_BGR2RGB);
+
+
             time_t rawtime;
             struct tm * timeinfo;
             char buffer[80];
@@ -902,8 +906,9 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
                 if (paths->size() == 0) return false;
                 for (uint i = 0; i < paths->size(); i++) {
                     vector<QPoint> iter = paths->at(i);
-                    for (uint j = 0; j < iter.size()- 1; j ++) {
-                        cv::line(contour_image, cv::Point(iter[j].x(), iter[j].y()), cv::Point(iter[j+1].x(), iter[j+1].y()), CV_RGB(173,255,47), 1);
+                    for (uint j = 0; j < iter.size() - 1; j ++) {
+                        cv::line(contour_image, cv::Point(iter[j].x(), iter[j].y()),
+                                                cv::Point(iter[j+1].x(), iter[j+1].y()), CV_RGB(173,255,47), 1);
                     }
                 }
             }
@@ -1015,9 +1020,11 @@ void MainWindow::on_actionGaussian_5_triggered()
     }
 }
 
-void MainWindow::on_actionSnapSeed_triggered(){
-    is_snap = true;
+void MainWindow::on_actionSnapSeed_triggered(bool checked)
+{
+    is_snap = checked;
 }
+
 
 
 /*
@@ -1304,17 +1311,6 @@ void MainWindow::Dijstras(pixelNode* seed){
 
 }
 */
-
-
-
-
-
-
-
-
-
-
-
 
 
 
