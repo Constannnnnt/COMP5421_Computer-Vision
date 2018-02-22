@@ -60,6 +60,8 @@ public:
 
     void getPath(int, int, vector<QPoint>&);
 
+    void getSnapSeed();
+
     QImage drawPathTree();
 
 
@@ -105,6 +107,8 @@ private slots:
 
     void on_actionGaussian_5_triggered();
 
+    void on_actionSnapSeed_triggered();
+
 private:
     Ui::MainWindow *ui;
 
@@ -142,6 +146,7 @@ private:
     bool finished_flag;
     bool dots_deleted;
     bool finished_asclosed;
+    bool is_snap;
 
     bool DEBUG_MODE;
 

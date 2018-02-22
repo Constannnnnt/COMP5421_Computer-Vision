@@ -57,7 +57,7 @@
      <x>0</x>
      <y>0</y>
      <width>889</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menufile">
@@ -91,6 +91,7 @@
     <addaction name="separator"/>
     <addaction name="actionGuassian_3"/>
     <addaction name="actionGaussian_5"/>
+    <addaction name="actionSnapSeed"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -230,6 +231,14 @@
   <action name="actionGaussian_5">
    <property name="text">
     <string>Gaussian 5*5</string>
+   </property>
+  </action>
+  <action name="actionSnapSeed">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>SnapSeed</string>
    </property>
   </action>
  </widget>

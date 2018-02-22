@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     finished_flag = false;
     dots_deleted = false;
     finished_asclosed = false;
+    is_snap = false;
 
     DEBUG_MODE = false;
 
@@ -109,6 +110,7 @@ void MainWindow::resetAll(){
     finished_flag = false;
     dots_deleted = false;
     finished_asclosed = false;
+    is_snap = false;
     return;
 }
 
@@ -264,6 +266,35 @@ void MainWindow::getPath(int x, int y, vector<QPoint> & path) {
         npn = npn->getParent();
     }
     reverse(path.begin(), path.end());
+}
+
+void MainWindow::getSnapSeed() {
+    int c = head_node->getCol();
+    int r = head_node->getRow();
+
+    // compute the edge by cv::canny
+    Mat tmp_image = image.clone();
+    Mat gray(tmp_image.rows,tmp_image.cols,CV_8UC1);
+    cvtColor(tmp_image, gray, CV_BGR2GRAY);
+    Mat edge;
+    Canny(gray, edge, 30, 127, 3, true);
+
+    // find the nearest neighbor on the edge
+    double th = DBL_MAX;
+    for (int i = 0; i < edge.cols; i ++) {
+        for (int j = 0; j < edge.rows; j++) {
+            if (edge.at<uchar>(j,i) != 0 && (i!=head_node->getCol()) && (j!=head_node->getRow())) {
+                double d = (i-head_node->getCol())*(i-head_node->getCol()) + (j-head_node->getRow())*(j-head_node->getRow());
+                if (d < th){
+                    th = d;
+                    c = i;
+                    r = j;
+                }
+            }
+        }
+    }
+    head_node= pixelnodes[r][c];
+    return;
 }
 
 /* helper function ends here */
@@ -704,11 +735,12 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         }
 
         head_node = pixelnodes[p.y()][p.x()];
+        if (is_snap) getSnapSeed();
         current_node = head_node;
 
         // draw a dot
-        dots->push_back( QPoint(p.x(), p.y()) );
-        cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(0,0,255), 2);
+        dots->push_back( QPoint(head_node->getCol(), head_node->getRow()) );
+        cv::circle(contour_image, cv::Point(head_node->getCol(),head_node->getRow()), 1, CV_RGB(0,0,255), 2);
 
         display_image();
 
@@ -811,7 +843,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
                 if (path.size() < 1) return false;
                 for (uint i = 0; i < path.size() - 1; i ++) {
                     cv::line(tmp_contour, cv::Point(3*path[i].x()+1, 3*path[i].y()+1),
-                                          cv::Point(3*path[i+1].x()+1, 3*path[i+1].y()+1), CV_RGB(0,0,255), 1); // red line
+                                          cv::Point(3*path[i+1].x()+1, 3*path[i+1].y()+1), CV_RGB(0,0,255), 3); // red line
                 }
                 dots_deleted = false;
 
@@ -983,6 +1015,9 @@ void MainWindow::on_actionGaussian_5_triggered()
     }
 }
 
+void MainWindow::on_actionSnapSeed_triggered(){
+    is_snap = true;
+}
 
 
 /*
