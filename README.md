@@ -2,11 +2,13 @@
 
 This repo contains four projects for COMP5421 - Computer Vision@HKUST. And each of these four projects involves different knowledge background about computer vision.
 
+* You may need UST CSE account to access some webpages.
+
 ## Image scissor
 
 ### General Idea
 
-The general idea of this project is that after loading the image, we finished the cost computation by implementing the cost function provided in the webpage. Every time when the user clicks a seed, we will update the path tree according to the Dijkstra's algorithm.
+The general idea of this project is that after loading the image, we finished the cost computation by implementing the cost function provided in the [course webpage](https://course.cse.ust.hk/comp5421/Password_Only/projects/iscissor/index.html)*. Every time when the user clicks a seed, we will update the path tree according to the Dijkstra's algorithm.
 
 ### Artifacts
 
