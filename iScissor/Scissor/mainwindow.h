@@ -21,13 +21,15 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <Magick++.h>
 #include <ctime>
 #include "pixelnode.h"
 #include "math.h"
 #include "workstates.h"
 
 using namespace cv;
-using namespace  std;
+using namespace std;
+using namespace Magick;
 
 namespace Ui {
 class MainWindow;
@@ -56,6 +58,7 @@ public:
 
     void computeCostFunc();
     void channelTransform(QRgb rgb, int color[3]);
+    void QImageToCVMat(const QImage &qimg,Mat &cvimg);
     double getDLink(int, int, int);
 
     void getPath(int, int, vector<QPoint>&);

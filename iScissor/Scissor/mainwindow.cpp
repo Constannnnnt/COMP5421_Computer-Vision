@@ -67,7 +67,7 @@ void MainWindow::display_image(){
     else if (workstates == min_path)
         myImage = min_path_image;
 
-    QImage Q_img = QImage((const unsigned char*)(myImage.data),myImage.cols,myImage.rows,QImage::Format_RGB888);
+    QImage Q_img = QImage((const unsigned char*)(myImage.data), myImage.cols, myImage.rows, myImage.step, QImage::Format_RGB888);
     QPixmap p = QPixmap::fromImage(Q_img);
     ui->label->setPixmap( p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio) );
 
@@ -75,7 +75,7 @@ void MainWindow::display_image(){
 
 void MainWindow::display_image(cv::Mat im){
 
-    QImage Q_img = QImage((const unsigned char*)(im.data),im.cols,im.rows,QImage::Format_RGB888);
+    QImage Q_img = QImage((const unsigned char*)(im.data), im.cols, im.rows, im.step, QImage::Format_RGB888);
     QPixmap p = QPixmap::fromImage(Q_img);
     ui->label->setPixmap( p.scaled(p.width()*img_scale, p.height()*img_scale, Qt::KeepAspectRatio) );
 
@@ -313,10 +313,27 @@ void MainWindow::on_actionOpen_triggered()
 //    if (paths != NULL) delete paths;
 
     QString fileName = QFileDialog::getOpenFileName(
-                this, tr("Open Image"), ".", tr("Image File(*.png *.jpg *.jpeg *.bmp)"));
-    image = cv::imread(fileName.toLatin1().data());
-    contour_image = cv::imread(fileName.toLatin1().data());
-    contour = cv::Mat::zeros(image.size(), CV_8UC3);
+                this, tr("Open Image"), ".", tr("Image File(*.png *.jpg *.jpeg *.bmp *.tif *.gif)"));
+    bool is_gif = fileName.contains("gif");
+
+    if (is_gif) {
+        Magick::InitializeMagick("");
+        Magick::Image mimage(fileName.toStdString());
+        int w=mimage.columns();
+        int h=mimage.rows();
+
+        // Make OpenCV Mat of same size with 8-bit and 3 channels
+        image = cv::Mat::zeros(h, w, CV_8UC3);
+        // Unpack Magick++ pixels into OpenCV Mat structure
+        mimage.write(0, 0, w, h,"BGR",Magick::CharPixel,image.data);
+        contour_image = cv::Mat::zeros(h, w, CV_8UC3);
+        mimage.write(0, 0, w, h,"BGR",Magick::CharPixel,contour_image.data);
+
+    } else {
+        image = cv::imread(fileName.toLatin1().data());
+        contour_image = cv::imread(fileName.toLatin1().data());
+        contour = cv::Mat::zeros(image.size(), CV_8UC3);
+    }
 
     // convert cv::Mat to QImage
     cv::cvtColor(image, image, CV_BGR2RGB);
@@ -324,7 +341,16 @@ void MainWindow::on_actionOpen_triggered()
     //current_image = image.clone();
     //previous_image = image.clone();
 
-    QImage Q_img = QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+    int width_im = image.cols;
+    int height_im = image.rows;
+    int width_m = this->width();
+    int height_m = this->height();
+    if (width_im < width_m || height_im < height_m) {
+        img_scale = (width_m / width_im) > (height_m / height_im) ? (width_m / width_im) : (height_m / height_im);
+    }
+
+
+    QImage Q_img = QImage((const unsigned char*)(image.data), image.cols, image.rows, image.step, QImage::Format_RGB888);
 
     // i, height, row
     // j, width, col
@@ -333,7 +359,7 @@ void MainWindow::on_actionOpen_triggered()
         for(int j=0; j<Q_img.width(); j++)
             pixelnodes[i].push_back(new pixelNode(j,i));
 
-    Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+    Qimg = new QImage((const unsigned char*)(image.data), image.cols, image.rows, image.step, QImage::Format_RGB888);
 
     computeCostFunc();
 
@@ -345,8 +371,8 @@ void MainWindow::on_actionOpen_triggered()
     dots = new vector<QPoint>;
     paths = new vector< vector<QPoint> >;
 
-    ui->label->setPixmap(QPixmap::fromImage(Q_img));
-
+    ui->label->setPixmap(QPixmap::fromImage(Q_img).scaled(QPixmap::fromImage(Q_img).width()*img_scale,
+                                                          QPixmap::fromImage(Q_img).height()*img_scale, Qt::KeepAspectRatio));
 }
 
 
@@ -365,7 +391,7 @@ void MainWindow::on_actionSave_Contour_triggered()
 
         strftime(buffer,sizeof(buffer),"%d-%m-%Y %I:%M:%S",timeinfo);
         std::string str(buffer);
-        QImage conImg = QImage((const unsigned char*)(contour_image.data),contour_image.cols,contour_image.rows,QImage::Format_RGB888);
+        QImage conImg = QImage((const unsigned char*)(contour_image.data), contour_image.cols, contour_image.rows, contour_image.step, QImage::Format_RGB888);
         QImageWriter writer;
         writer.setFileName(QString::fromStdString("contour_"+str+".png"));
         writer.setFormat("png");
@@ -520,7 +546,7 @@ void MainWindow::on_actionPixel_Node_triggered(bool checked)
         DEBUG_MODE = true;
         workstates = pixel_node;
 
-        QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+        QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,image.step,QImage::Format_RGB888);
         int w=Q_img->width(), h=Q_img->height();
         QImage png(3*w,3*h,Q_img->format());
         png.fill( qRgb(0,0,0) );
@@ -562,7 +588,7 @@ void MainWindow::on_actionCost_Graph_triggered(bool checked)
         DEBUG_MODE = true;
         workstates = cost_graph;
 
-        QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+        QImage* Q_img = new QImage((const unsigned char*)(image.data),image.cols,image.rows,image.step, QImage::Format_RGB888);
         int w=Q_img->width(), h=Q_img->height();
         QImage png(3*w,3*h,Q_img->format());
         png.fill( qRgb(255,255,255) );
@@ -991,7 +1017,7 @@ void MainWindow::on_actionGuassian_3_triggered()
         contour_image = image.clone();
 
         delete Qimg;
-        Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+        Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows, image.step, QImage::Format_RGB888);
         computeCostFunc();
 
         delete Mask;
@@ -1009,7 +1035,7 @@ void MainWindow::on_actionGaussian_5_triggered()
         contour_image = image.clone();
 
         delete Qimg;
-        Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,QImage::Format_RGB888);
+        Qimg = new QImage((const unsigned char*)(image.data),image.cols,image.rows,image.step, QImage::Format_RGB888);
         computeCostFunc();
 
         delete Mask;
