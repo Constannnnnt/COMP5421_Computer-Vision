@@ -14,7 +14,22 @@ The general idea of this project is that after loading the image, we finished th
 
 #### Original Images and Masks
 
+We provide three images, one background image and two foreground images.
+Foreground Image One:
+![Violet](./iScissor/artifact/girl.jpg)
+Mask of Foreground Image One:
+![Violet_mask](./iScissor/artifact/girl_mask.png)
+Foreground Image Two:
+![sf](./iScissor/artifact/sf.jpg)
+Mask of Foreground Image Two:
+![sf_mask](./iScissor/artifact/sf_mask.png)
+Background image:
+![hkust](./iScissor/artifact/hkust.jpg)
+
 #### Results
+
+The result is cool!!!
+![Result](./iScissor/artifact/artifact.jpg)
 
 ### Bonus
 

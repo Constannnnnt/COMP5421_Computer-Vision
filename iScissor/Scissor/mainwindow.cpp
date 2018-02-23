@@ -405,10 +405,10 @@ void MainWindow::on_actionSave_Mask_triggered()
             bitwise_not(im_floodfill, im_floodfill_inv);
 
             // Combine the two images to get the foreground.
-            //Mat im_out = tmp_mask | im_floodfill_inv);
-            Mat im_out;
-            bitwise_and(image, image, im_out, im_floodfill_inv);
-            cv::cvtColor(im_out, im_out, CV_BGR2RGB);
+            Mat im_out = (tmp_mask | im_floodfill_inv);
+//            Mat im_out;
+//            bitwise_and(image, image, im_out, im_floodfill_inv);
+//            cv::cvtColor(im_out, im_out, CV_BGR2RGB);
 
 
             time_t rawtime;
