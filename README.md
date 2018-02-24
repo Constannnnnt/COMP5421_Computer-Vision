@@ -15,6 +15,7 @@ The general idea of this project is that after loading the image, we finished th
 #### Original Images and Masks
 
 We provide three images, one background image and two foreground images.
+
 Foreground Image One:
 
 <img src = "./iScissor/artifact/girl.jpg" width = "50%" height = "50%">
