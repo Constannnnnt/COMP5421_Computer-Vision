@@ -20,6 +20,7 @@ Foreground Image One:
 <img src = "./iScissor/artifact/girl.jpg" width = "50%" height = "50%">
 
 Mask of Foreground Image One:
+
 <img src = "./iScissor/artifact/girl_mask.png" width = "50%" height = "50%">
 
 Foreground Image Two:
