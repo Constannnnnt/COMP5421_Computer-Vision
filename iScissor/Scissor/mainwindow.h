@@ -152,6 +152,7 @@ private:
     bool DEBUG_MODE;
 
     double img_scale;
+    double img_scale_min;
     int idx;                    // mark the length of the nodes
 
     void display_image(cv::Mat im);
@@ -173,11 +174,11 @@ private:
 
 
 // compare function for priority queue
-struct compareQueue{
-    bool operator() ( pixelNode* a, pixelNode* b ){
-        return (a->getTotalCost() >= b->getTotalCost());
-    }
-};
+//struct compareQueue{
+//    bool operator() ( pixelNode* a, pixelNode* b ){
+//        return (a->getTotalCost() >= b->getTotalCost());
+//    }
+//};
 
 
 #endif // MAINWINDOW_H

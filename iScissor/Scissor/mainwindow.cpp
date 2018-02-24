@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // costgraph_weight = new cv::Mat[9];
 
     img_scale = 1.0;
+    img_scale_min = 1.0;
 
     contour_enabled = false;
     scissor_enabled = false;
@@ -103,7 +104,7 @@ void MainWindow::resetAll(){
     ui->actionScissor->setChecked(false);
 
     workstates = image_only;
-    img_scale = 1.0;
+    img_scale = img_scale_min;
     contour_enabled = false;
     scissor_enabled = false;
     first_seed_flag = false;
@@ -319,8 +320,8 @@ void MainWindow::on_actionOpen_triggered()
     if (is_gif) {
         Magick::InitializeMagick("");
         Magick::Image mimage(fileName.toStdString());
-        int w=mimage.columns();
-        int h=mimage.rows();
+        int w = mimage.columns();
+        int h = mimage.rows();
 
         // Make OpenCV Mat of same size with 8-bit and 3 channels
         image = cv::Mat::zeros(h, w, CV_8UC3);
@@ -343,12 +344,13 @@ void MainWindow::on_actionOpen_triggered()
 
     int width_im = image.cols;
     int height_im = image.rows;
-    int width_m = this->width();
-    int height_m = this->height();
+    double width_m = ui->label->width();
+    double height_m = ui->label->height();
+
     if (width_im < width_m || height_im < height_m) {
         img_scale = (width_m / width_im) > (height_m / height_im) ? (width_m / width_im) : (height_m / height_im);
+        img_scale_min = img_scale;
     }
-
 
     QImage Q_img = QImage((const unsigned char*)(image.data), image.cols, image.rows, image.step, QImage::Format_RGB888);
 
