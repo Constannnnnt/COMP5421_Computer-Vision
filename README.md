@@ -16,20 +16,22 @@ The general idea of this project is that after loading the image, we finished th
 
 We provide three images, one background image and two foreground images.
 Foreground Image One:
-![Violet](./iScissor/artifact/girl.jpg) <!-- .element height="50%" width="50%" -->
+<img src = "./iScissor/artifact/girl.jpg" width = "50%" height = "50%">
 Mask of Foreground Image One:
-![Violet_mask](./iScissor/artifact/girl_mask.png) <!-- .element height="50%" width="50%" -->
+<img src = "./iScissor/artifact/girl_mask.png" width = "50%" height = "50%">
 Foreground Image Two:
-![sf](./iScissor/artifact/sf.jpg) <!-- .element height="50%" width="50%" -->
+<img src = "./iScissor/artifact/sf.jpg" width = "50%" height = "50%">
 Mask of Foreground Image Two:
-![sf_mask](./iScissor/artifact/sf_mask.png) <!-- .element height="50%" width="50%" -->
+<img src = "./iScissor/artifact/sf_mask.png" width = "50%" height = "50%">
+
 Background image:
-![hkust](./iScissor/artifact/hkust.jpg) <!-- .element height="50%" width="50%" -->
+<img src = "./iScissor/artifact/hkust.jpg" width = "50%" height = "50%">
 
 #### Results
 
 The result is cool!!!
-![Result](./iScissor/artifact/artifact.jpg) <!-- .element height="50%" width="50%" -->
+<img src = "./iScissor/artifact/artifact.jpg" width = "50%" height = "50%">
+
 
 ### Bonus
 
