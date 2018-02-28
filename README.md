@@ -53,7 +53,17 @@ To snap the first seed near the edge, we find the nearest neighbor of the seed o
 
 - Blurring
 
-We include two gaussian blurring filters in the projects such that the user could apply anyone of them to compare the difference before and after blurring.
+We include two gaussiFor blurring effect, and we use opencv Guassian filter. We adjust the Guassian filter kernel size and standard deviation to achieve different level of blurring effect. After opening the image, we could add this blurring effect using the interface of our IScissor.
+	```Tool -> Gaussian 3*3```
+    ```Tool -> Gaussian 5*5```
+After click on these two buttons, the image will be blurred. We provide a sample with our school HKUST. You can see that different level of blurring effect has been achieved. Comparing two filters, we could see that larger kernel size induces stronger blurring effect. See pics.an blurring filters in the projects such that the user could apply anyone of them to compare the difference before and after blurring. ***Also we notice that if the blurring effect gets stronger, the cost gets lower.***
+
+- Orignal Pic and its cost graph:
+<img src = "./iScissor/blur/school.jpg" width = "50%" height = "50%"><img src = "./iScissor/blur/school_costgraph.png" width = "50%" height = "50%">
+- Blurring with 3*3 gaussian filters
+<img src = "./iScissor/blur/school_blur3.png" width = "50%" height = "50%"><img src = "./iScissor/blur/school_blur3_costgraph.png" width = "50%" height = "50%">
+- Blurring with 5*5 gaussian filters
+<img src = "./iScissor/blur/school_blur5.png" width = "50%" height = "50%"><img src = "./iScissor/blur/school_blur5_costgraph.png" width = "50%" height = "50%">
 
 ## Face detection
 
