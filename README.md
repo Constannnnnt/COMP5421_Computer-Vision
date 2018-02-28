@@ -16,21 +16,13 @@ The general idea of this project is that after loading the image, we finished th
 
 We provide three images, one background image and two foreground images.
 
-Foreground Image One:
+Foreground Image One and its mask:
 
-<img src = "./iScissor/artifact/girl.jpg" width = "50%" height = "50%">
+<img src = "./iScissor/artifact/girl.jpg" width = "50%" height = "50%"><img src = "./iScissor/artifact/girl_mask.png" width = "50%" height = "50%">
 
-Mask of Foreground Image One:
+Foreground Image Two and its mask:
 
-<img src = "./iScissor/artifact/girl_mask.png" width = "50%" height = "50%">
-
-Foreground Image Two:
-
-<img src = "./iScissor/artifact/sf.jpg" width = "50%" height = "50%">
-
-Mask of Foreground Image Two:
-
-<img src = "./iScissor/artifact/sf_mask.png" width = "50%" height = "50%">
+<img src = "./iScissor/artifact/sf.jpg" width = "50%" height = "50%"><img src = "./iScissor/artifact/sf_mask.png" width = "50%" height = "50%">
 
 Background image:
 
