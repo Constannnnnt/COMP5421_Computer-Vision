@@ -53,8 +53,8 @@ for i = 1:num_images
 
 	for j = 1:num_samples_per_img
 		
-		top_left_height = rand()*(height-feature_params.template_size);
-		top_left_width = rand()*(width-feature_params.template_size);
+		top_left_height = ceil( rand()*(height-feature_params.template_size) );
+		top_left_width = ceil( rand()*(width-feature_params.template_size) );
 
 		img_crop = img(top_left_height:top_left_height+feature_params.template_size-1, top_left_width:top_left_width+feature_params.template_size-1);
 
