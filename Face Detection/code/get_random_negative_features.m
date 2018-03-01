@@ -34,6 +34,36 @@ function features_neg = get_random_negative_features(non_face_scn_path, feature_
 
 image_files = dir( fullfile( non_face_scn_path, '*.jpg' ));
 num_images = length(image_files);
+num_samples_per_img = ceil(num_samples/num_images);
 
-% placeholder to be deleted
-features_neg = rand(100, (feature_params.template_size / feature_params.hog_cell_size)^2 * 31);
+D = (feature_params.template_size / feature_params.hog_cell_size)^2 * 31;
+features_neg = zeros(num_samples, D);
+
+% For best performance, you should sample random negative examples at multiple scales.
+for i = 1:num_images
+
+	img_path = fullfile( non_face_scn_path, image_files(i).name );
+	img = imread(img_path);
+
+	if size(img, 3) == 3
+	    img = rgb2gray(img);
+	end
+
+	[height, width] = size(img);
+
+	for j = 1:num_samples_per_img
+		
+		top_left_height = 1 + rand()*(height-feature_params.template_size);
+		top_left_width = 1 + rand()*(width-feature_params.template_size);
+
+		img_crop = img(top_left_height:top_left_height+feature_params.template_size-1, top_left_width:top_left_width+feature_params.template_size-1);
+
+		index = (i-1)*num_samples_per_img + j;
+		
+		hog = vl_hog(single(img_crop), feature_params.hog_cell_size);
+		features_neg(index, 1:end) = reshape(hog, 1, D);
+
+	end
+end
+
+

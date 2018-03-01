@@ -39,28 +39,40 @@ close all
 clear
 run('vlfeat/toolbox/vl_setup')
 
+% [status,msg,msgID] = mkdir(___)
 [~,~,~] = mkdir('visualizations');
 
-data_path = '../data/'; %change if you want to work with a network copy
-train_path_pos = fullfile(data_path, 'caltech_faces/Caltech_CropFaces'); %Positive training examples. 36x36 head crops
-non_face_scn_path = fullfile(data_path, 'train_non_face_scenes'); %We can mine random or hard negatives from here
-test_scn_path = fullfile(data_path,'test_scenes/test_jpg'); %CMU+MIT test scenes
-% test_scn_path = fullfile(data_path,'extra_test_scenes'); %Bonus scenes
-label_path = fullfile(data_path,'test_scenes/ground_truth_bboxes.txt'); %the ground truth face locations in the test set
+% change if you want to work with a network copy
+data_path = '../data/'; 
 
-%The faces are 36x36 pixels, which works fine as a template size. You could
-%add other fields to this struct if you want to modify HoG default
-%parameters such as the number of orientations, but that does not help
-%performance in our limited test.
+% Positive training examples. 36x36 head crops
+% fullfile returns the full path
+train_path_pos = fullfile(data_path, 'caltech_faces/Caltech_CropFaces'); 
+
+% We can mine random or hard negatives from here
+non_face_scn_path = fullfile(data_path, 'train_non_face_scenes'); 
+
+% CMU+MIT test scenes
+test_scn_path = fullfile(data_path,'test_scenes/test_jpg'); 
+
+% test_scn_path = fullfile(data_path,'extra_test_scenes'); %Bonus scenes
+% the ground truth face locations in the test set
+label_path = fullfile(data_path,'test_scenes/ground_truth_bboxes.txt'); 
+	
+% The faces are 36x36 pixels, which works fine as a template size. You could
+% add other fields to this struct if you want to modify HoG default
+% parameters such as the number of orientations, but that does not help
+% performance in our limited test.
 feature_params = struct('template_size', 36, 'hog_cell_size', 6);
 
 
 %% Step 1. Load positive training crops and random negative examples
-%YOU CODE 'get_positive_features' and 'get_random_negative_features'
+% YOU CODE 'get_positive_features' and 'get_random_negative_features'
 
 features_pos = get_positive_features( train_path_pos, feature_params );
 
-num_negative_examples = 10000; %Higher will work strictly better, but you should start with 10000 for debugging
+% Higher will work strictly better, but you should start with 10000 for debugging
+num_negative_examples = 10000; 
 features_neg = get_random_negative_features( non_face_scn_path, feature_params, num_negative_examples);
 
     

@@ -5,8 +5,8 @@
 % mirroring or warping the positive training examples.
 
 function features_pos = get_positive_features(train_path_pos, feature_params)
-% 'train_path_pos' is a string. This directory contains 36x36 images of
-%   faces
+% 'train_path_pos' is a string. This directory contains 36x36 images of faces
+%   
 % 'feature_params' is a struct, with fields
 %   feature_params.template_size (probably 36), the number of pixels
 %      spanned by each train / test template and
@@ -28,8 +28,35 @@ function features_pos = get_positive_features(train_path_pos, feature_params)
 %  http://www.vlfeat.org/overview/hog.html   (Tutorial)
 % rgb2gray
 
-image_files = dir( fullfile( train_path_pos, '*.jpg') ); %Caltech Faces stored as .jpg
+
+% Caltech Faces stored as .jpg
+% dir() returns a 6713*1 struct array
+% eg. image_files(1).name = caltech_web_crop_00001.jpg
+image_files = dir( fullfile( train_path_pos, '*.jpg') ); 
 num_images = length(image_files);
 
-% placeholder to be deleted
-features_pos = rand(100, (feature_params.template_size / feature_params.hog_cell_size)^2 * 31);
+% rand() returns (0,1)
+D = (feature_params.template_size / feature_params.hog_cell_size)^2 * 31;
+features_pos = zeros(num_images, D);
+
+% use of vl_hog, 31 comes from the use of default UoCTTI variant
+% vl_hog: image: [36 x 36 x 1]
+% vl_hog: descriptor: [6 x 6 x 31]
+
+% For improved performance, try mirroring or warping the positive training examples.
+for i = 1:num_images
+	% read image
+	img_path = fullfile( train_path_pos, image_files(i).name );
+	img = imread(img_path);
+
+	% if rgb, convert to gray
+	if size(img, 3) == 3
+	    img = rgb2gray(img);
+	end
+
+	% use of hog
+	hog = vl_hog(single(img), feature_params.hog_cell_size);
+	features_pos(i, 1:end) = reshape(hog, 1, D);
+
+end
+
