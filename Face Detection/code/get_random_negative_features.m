@@ -53,13 +53,13 @@ for i = 1:num_images
 
 	for j = 1:num_samples_per_img
 		
-		top_left_height = 1 + rand()*(height-feature_params.template_size);
-		top_left_width = 1 + rand()*(width-feature_params.template_size);
+		top_left_height = rand()*(height-feature_params.template_size);
+		top_left_width = rand()*(width-feature_params.template_size);
 
 		img_crop = img(top_left_height:top_left_height+feature_params.template_size-1, top_left_width:top_left_width+feature_params.template_size-1);
 
 		index = (i-1)*num_samples_per_img + j;
-		
+
 		hog = vl_hog(single(img_crop), feature_params.hog_cell_size);
 		features_neg(index, 1:end) = reshape(hog, 1, D);
 
