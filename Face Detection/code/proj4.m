@@ -84,9 +84,16 @@ features_neg = get_random_negative_features( non_face_scn_path, feature_params, 
 % 'lambda' is an important parameter, try many values. Small values seem to
 % work best e.g. 0.0001, but you can try other values
 
-%YOU CODE classifier training. Make sure the outputs are 'w' and 'b'.
-w = rand((feature_params.template_size / feature_params.hog_cell_size)^2 * 31,1); %placeholder, delete
-b = rand(1); %placeholder, delete
+% YOU CODE classifier training. Make sure the outputs are 'w' and 'b'.
+lambda = 0.0001;
+X = [features_pos; features_neg];
+Y = [ones( length(features_pos),1 ); ones( length(features_neg),1 )-2];
+
+% note that it is X transpose here, lambda is the reg strength
+[w, b] = vl_svmtrain(X', Y, lambda); 
+
+% size(X) is [16851, 1116]  size(Y) is [16851, 1]
+% size(w) is [1116, 1]      size(b) is [1, 1]
 
 %% step 3. Examine learned classifier
 % You don't need to modify anything in this section. The section first
@@ -107,13 +114,13 @@ face_confs     = confidences( label_vector > 0);
 figure(2); 
 plot(sort(face_confs), 'g'); hold on
 plot(sort(non_face_confs),'r'); 
-plot([0 size(non_face_confs,1)], [0 0], 'b');
+plot([0 size(non_face_confs,1)], [0 0], 'b'); % this is a straight line between 0 and size(non_face_confs,1)
 hold off;
 
 % Visualize the learned detector. This would be a good thing to include in
 % your writeup!
-n_hog_cells = sqrt(length(w) / 31); %specific to default HoG parameters
-imhog = vl_hog('render', single(reshape(w, [n_hog_cells n_hog_cells 31])), 'verbose') ;
+n_hog_cells = sqrt(length(w) / 31); % specific to default HoG parameters
+imhog = vl_hog('render', single( reshape(w, [n_hog_cells n_hog_cells 31]) ), 'verbose') ;
 figure(3); imagesc(imhog) ; colormap gray; set(3, 'Color', [.988, .988, .988])
 
 pause(0.1) %let's ui rendering catch up
@@ -123,7 +130,7 @@ hog_template_image = frame2im(getframe(3));
 % return a partial image.
 imwrite(hog_template_image, 'visualizations/hog_template.png')
     
- 
+
 %% step 4. (optional) Mine hard negatives
 % Mining hard negatives is extra credit. You can get very good performance 
 % by using random negatives, so hard negative mining is somewhat

@@ -4,6 +4,7 @@
 % performance will be poor (the evaluation counts a duplicate detection as
 % wrong). The non-maximum suppression is done on a per-image basis. The
 % starter code includes a call to a provided non-max suppression function.
+
 function [bboxes, confidences, image_ids] = .... 
     run_detector(test_scn_path, w, b, feature_params)
 % 'test_scn_path' is a string. This directory contains images which may or
@@ -45,30 +46,76 @@ test_scenes = dir( fullfile( test_scn_path, '*.jpg' ));
 bboxes = zeros(0,4);
 confidences = zeros(0,1);
 image_ids = cell(0,1);
+cell_size = feature_params.hog_cell_size;
+cell_num = feature_params.template_size / feature_params.hog_cell_size;
+D = (feature_params.template_size/cell_size)^2 * 31;
+scales = [1];
 
-for i = 1:length(test_scenes)
+for k = 1:length(test_scenes)
       
-    fprintf('Detecting faces in %s\n', test_scenes(i).name)
-    img = imread( fullfile( test_scn_path, test_scenes(i).name ));
+    fprintf('Detecting faces in %s\n', test_scenes(k).name)
+    img = imread( fullfile( test_scn_path, test_scenes(k).name ));
     img = single(img)/255;
     if(size(img,3) > 1)
         img = rgb2gray(img);
     end
-    
-    %You can delete all of this below.
-    % Let's create 15 random detections per image
-    cur_x_min = rand(15,1) * size(img,2);
-    cur_y_min = rand(15,1) * size(img,1);
-    cur_bboxes = [cur_x_min, cur_y_min, cur_x_min + rand(15,1) * 50, cur_y_min + rand(15,1) * 50];
-    cur_confidences = rand(15,1) * 4 - 2; %confidences in the range [-2 2]
-    cur_image_ids(1:15,1) = {test_scenes(i).name};
-    
-    %non_max_supr_bbox can actually get somewhat slow with thousands of
-    %initial detections. You could pre-filter the detections by confidence,
-    %e.g. a detection with confidence -1.1 will probably never be
-    %meaningful. You probably _don't_ want to threshold at 0.0, though. You
-    %can get higher recall with a lower threshold. You don't need to modify
-    %anything in non_max_supr_bbox, but you can.
+
+    % Then step over the HoG cells,
+    % taking groups of cells that are the same size as your learned template,
+    % and classifying them. If the classification is above some confidence,
+    % keep the detection and then pass all the detections for an image to
+    % non-maximum suppression. For your initial debugging, you can operate only
+    % at a single scale and you can skip calling non-maximum suppression.
+
+    cur_bboxes = zeros(0,4);
+    cur_confidences = zeros(0,1);
+    cur_image_ids = cell(0,1);
+
+    for scale = scales
+        img_scaled = imresize(img, scale);
+        % [height, width] = size(img_scaled);
+
+        hog_features = vl_hog(single(img_scaled), cell_size);
+
+        num_y_detection = size(hog_features,1) - cell_num + 1;
+        num_x_detection = size(hog_features,2) - cell_num + 1;
+
+        s_window_features = zeros(num_y_detection*num_x_detection, D);
+
+        for i = 1:num_y_detection
+            for j = 1:num_x_detection
+                window_index = (i-1)*num_x_detection + j;
+                s_window_features(window_index,:) = reshape( hog_features(i:i+cell_num-1, j:j+cell_num-1), 1, D);
+            end
+        end
+
+        scores = s_window_features * w + b;
+        idx = find(scores > 0.5);
+
+        % find cur_scale_bboxes
+        idx_j = mod(idx, num_x_detection);
+        idx_i = (idx-j)/num_x_detection + 1;
+
+        cur_y_min = (idx_i-1) * 6 + 1;
+        cur_x_min = (idx_j-1) * 6 + 1;
+        cur_scale_bboxes = [cur_x_min, cur_y_min, cur_x_min+cell_size*cell_num-1, cur_y_min+cell_size*cell_num-1]./scale;
+
+        cur_scale_confidences = score(idx);
+        cur_scale_image_ids = repmat( {test_scenes(k).name}, [num_y_detection*num_x_detection, 1] );
+
+
+        cur_bboxes = [cur_bboxes; cur_scale_bboxes];
+        cur_confidences = [cur_confidences; cur_scale_confidences];
+        cur_image_ids = [cur_image_ids; cur_scale_image_ids];
+        
+    end
+
+    % non_max_supr_bbox can actually get somewhat slow with thousands of
+    % initial detections. You could pre-filter the detections by confidence,
+    % e.g. a detection with confidence -1.1 will probably never be
+    % meaningful. You probably _don't_ want to threshold at 0.0, though. You
+    % can get higher recall with a lower threshold. You don't need to modify
+    % anything in non_max_supr_bbox, but you can.
     [is_maximum] = non_max_supr_bbox(cur_bboxes, cur_confidences, size(img));
 
     cur_confidences = cur_confidences(is_maximum,:);
@@ -78,6 +125,7 @@ for i = 1:length(test_scenes)
     bboxes      = [bboxes;      cur_bboxes];
     confidences = [confidences; cur_confidences];
     image_ids   = [image_ids;   cur_image_ids];
+
 end
 
 
