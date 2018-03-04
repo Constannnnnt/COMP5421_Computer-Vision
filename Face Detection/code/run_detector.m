@@ -85,7 +85,7 @@ for k = 1:length(test_scenes)
         for i = 1:num_y_detection
             for j = 1:num_x_detection
                 window_index = (i-1)*num_x_detection + j;
-                s_window_features(window_index,:) = reshape( hog_features(i:i+cell_num-1, j:j+cell_num-1), 1, D);
+                s_window_features(window_index,:) = reshape( hog_features(i:i+cell_num-1, j:j+cell_num-1, :), 1, D);
             end
         end
 
@@ -96,11 +96,11 @@ for k = 1:length(test_scenes)
         idx_j = mod(idx, num_x_detection);
         idx_i = (idx-j)/num_x_detection + 1;
 
-        cur_y_min = (idx_i-1) * 6 + 1;
-        cur_x_min = (idx_j-1) * 6 + 1;
+        cur_y_min = (idx_i-1) * cell_size + 1;
+        cur_x_min = (idx_j-1) * cell_size + 1;
         cur_scale_bboxes = [cur_x_min, cur_y_min, cur_x_min+cell_size*cell_num-1, cur_y_min+cell_size*cell_num-1]./scale;
 
-        cur_scale_confidences = score(idx);
+        cur_scale_confidences = scores(idx);
         cur_scale_image_ids = repmat( {test_scenes(k).name}, [num_y_detection*num_x_detection, 1] );
 
 
