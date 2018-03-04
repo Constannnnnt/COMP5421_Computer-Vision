@@ -63,7 +63,7 @@ label_path = fullfile(data_path,'test_scenes/ground_truth_bboxes.txt');
 % add other fields to this struct if you want to modify HoG default
 % parameters such as the number of orientations, but that does not help
 % performance in our limited test.
-feature_params = struct('template_size', 36, 'hog_cell_size', 6);
+feature_params = struct('template_size', 36, 'hog_cell_size', 3);
 
 
 %% Step 1. Load positive training crops and random negative examples
@@ -72,7 +72,7 @@ feature_params = struct('template_size', 36, 'hog_cell_size', 6);
 features_pos = get_positive_features( train_path_pos, feature_params );
 
 % Higher will work strictly better, but you should start with 10000 for debugging
-num_negative_examples = 10000; 
+num_negative_examples = 50000; 
 features_neg = get_random_negative_features( non_face_scn_path, feature_params, num_negative_examples);
 
     

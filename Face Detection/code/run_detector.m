@@ -49,7 +49,7 @@ image_ids = cell(0,1);
 cell_size = feature_params.hog_cell_size;
 cell_num = feature_params.template_size / feature_params.hog_cell_size;
 D = (feature_params.template_size/cell_size)^2 * 31;
-scales = [1];
+scales = [1, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.6, 0.5, 0.55, 0.4, 0.3, 0.25, 0.15, 0.1, 0.07];
 
 for k = 1:length(test_scenes)
       
@@ -90,11 +90,11 @@ for k = 1:length(test_scenes)
         end
 
         scores = s_window_features * w + b;
-        idx = find(scores > 0.5);
+        idx = find(scores > 0.995);
 
         % find cur_scale_bboxes
         idx_j = mod(idx, num_x_detection);
-        idx_i = (idx-j)/num_x_detection + 1;
+        idx_i = (idx - idx_j)/num_x_detection + 1;
 
         cur_y_min = (idx_i-1) * cell_size + 1;
         cur_x_min = (idx_j-1) * cell_size + 1;
