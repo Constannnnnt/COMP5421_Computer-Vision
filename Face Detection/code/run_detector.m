@@ -5,8 +5,8 @@
 % wrong). The non-maximum suppression is done on a per-image basis. The
 % starter code includes a call to a provided non-max suppression function.
 
-function [bboxes, confidences, image_ids] = .... 
-    run_detector(test_scn_path, w, b, feature_params)
+function [bboxes, confidences, image_ids, mh_features_neg] = .... 
+    run_detector(test_scn_path, w, b, feature_params, mine_hard)
 % 'test_scn_path' is a string. This directory contains images which may or
 %    may not have faces in them. This function should work for the MIT+CMU
 %    test set but also for any other images (e.g. class photos)
@@ -42,14 +42,18 @@ function [bboxes, confidences, image_ids] = ....
 
 test_scenes = dir( fullfile( test_scn_path, '*.jpg' ));
 
-%initialize these as empty and incrementally expand them.
-bboxes = zeros(0,4);
-confidences = zeros(0,1);
-image_ids = cell(0,1);
+%initialize parameters
 cell_size = feature_params.hog_cell_size;
 cell_num = feature_params.template_size / feature_params.hog_cell_size;
 D = (feature_params.template_size/cell_size)^2 * 31;
 scales = [1, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.6, 0.5, 0.55, 0.4, 0.3, 0.25, 0.15, 0.1, 0.07];
+%scales = [1];
+
+%initialize these as empty and incrementally expand them.
+bboxes = zeros(0,4);
+confidences = zeros(0,1);
+image_ids = cell(0,1);
+mh_features_neg = zeros(0,D);
 
 for k = 1:length(test_scenes)
       
@@ -70,6 +74,7 @@ for k = 1:length(test_scenes)
     cur_bboxes = zeros(0,4);
     cur_confidences = zeros(0,1);
     cur_image_ids = cell(0,1);
+    cur_mh_features_neg = zeros(0,D);
 
     for scale = scales
         img_scaled = imresize(img, scale);
@@ -90,7 +95,11 @@ for k = 1:length(test_scenes)
         end
 
         scores = s_window_features * w + b;
-        idx = find(scores > 0.995);
+        if(mine_hard == true)
+            idx = find(scores > 2.1);
+        else    
+            idx = find(scores > 0.9);
+        end
 
         % find cur_scale_bboxes
         idx_j = mod(idx, num_x_detection);
@@ -102,11 +111,13 @@ for k = 1:length(test_scenes)
 
         cur_scale_confidences = scores(idx);
         cur_scale_image_ids = repmat( {test_scenes(k).name}, [num_y_detection*num_x_detection, 1] );
+        cur_scale_mh_features_neg = s_window_features(idx, :);
 
 
         cur_bboxes = [cur_bboxes; cur_scale_bboxes];
         cur_confidences = [cur_confidences; cur_scale_confidences];
         cur_image_ids = [cur_image_ids; cur_scale_image_ids];
+        cur_mh_features_neg = [cur_mh_features_neg; cur_scale_mh_features_neg];
         
     end
 
@@ -116,15 +127,18 @@ for k = 1:length(test_scenes)
     % meaningful. You probably _don't_ want to threshold at 0.0, though. You
     % can get higher recall with a lower threshold. You don't need to modify
     % anything in non_max_supr_bbox, but you can.
-    [is_maximum] = non_max_supr_bbox(cur_bboxes, cur_confidences, size(img));
+    if(mine_hard == false)
+        [is_maximum] = non_max_supr_bbox(cur_bboxes, cur_confidences, size(img));
 
-    cur_confidences = cur_confidences(is_maximum,:);
-    cur_bboxes      = cur_bboxes(     is_maximum,:);
-    cur_image_ids   = cur_image_ids(  is_maximum,:);
+        cur_confidences = cur_confidences(is_maximum,:);
+        cur_bboxes      = cur_bboxes(     is_maximum,:);
+        cur_image_ids   = cur_image_ids(  is_maximum,:);
+    end
  
     bboxes      = [bboxes;      cur_bboxes];
     confidences = [confidences; cur_confidences];
     image_ids   = [image_ids;   cur_image_ids];
+    mh_features_neg = [mh_features_neg; cur_mh_features_neg];
 
 end
 

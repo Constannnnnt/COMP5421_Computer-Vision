@@ -63,7 +63,7 @@ label_path = fullfile(data_path,'test_scenes/ground_truth_bboxes.txt');
 % add other fields to this struct if you want to modify HoG default
 % parameters such as the number of orientations, but that does not help
 % performance in our limited test.
-feature_params = struct('template_size', 36, 'hog_cell_size', 3);
+feature_params = struct('template_size', 36, 'hog_cell_size', 6);
 
 
 %% Step 1. Load positive training crops and random negative examples
@@ -72,7 +72,7 @@ feature_params = struct('template_size', 36, 'hog_cell_size', 3);
 features_pos = get_positive_features( train_path_pos, feature_params );
 
 % Higher will work strictly better, but you should start with 10000 for debugging
-num_negative_examples = 50000; 
+num_negative_examples = 10000; 
 features_neg = get_random_negative_features( non_face_scn_path, feature_params, num_negative_examples);
 
     
@@ -87,7 +87,7 @@ features_neg = get_random_negative_features( non_face_scn_path, feature_params, 
 % YOU CODE classifier training. Make sure the outputs are 'w' and 'b'.
 lambda = 0.0001;
 X = [features_pos; features_neg];
-Y = [ones( length(features_pos),1 ); ones( length(features_neg),1 )-2];
+Y = [ones( size(features_pos,1),1 ); ones( size(features_neg,1),1 )-2];
 
 % note that it is X transpose here, lambda is the reg strength
 [w, b] = vl_svmtrain(X', Y, lambda); 
@@ -139,11 +139,21 @@ imwrite(hog_template_image, 'visualizations/hog_template.png')
 % images in 'non_face_scn_path', and keep all of the features above some
 % confidence level.
 
+% 0.868 AP without Mine hard, 6 cell_size, 10000 neg samples
+mine_hard = true;
+[bboxes, confidences, image_ids, mh_features_neg] = run_detector(non_face_scn_path, w, b, feature_params, mine_hard);
+fprintf('length of mh_features_neg is: %d \n', size(mh_features_neg,1));
+lambda = 0.0001;
+X = [X; mh_features_neg];
+Y = [Y; ones( size(mh_features_neg,1),1 )-2];
+[w, b] = vl_svmtrain(X', Y, lambda); 
+
+
 %% Step 5. Run detector on test set.
 % YOU CODE 'run_detector'. Make sure the outputs are properly structured!
 % They will be interpreted in Step 6 to evaluate and visualize your
 % results. See run_detector.m for more details.
-[bboxes, confidences, image_ids] = run_detector(test_scn_path, w, b, feature_params);
+[bboxes, confidences, image_ids, mh_features_neg] = run_detector(test_scn_path, w, b, feature_params, ~mine_hard);
 
 % run_detector will have (at least) two parameters which can heavily
 % influence performance -- how much to rescale each step of your multiscale
