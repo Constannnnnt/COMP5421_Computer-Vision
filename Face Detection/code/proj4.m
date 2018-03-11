@@ -70,12 +70,23 @@ feature_params = struct('template_size', 36, 'hog_cell_size', 6);
 % YOU CODE 'get_positive_features' and 'get_random_negative_features'
 
 features_pos = get_positive_features( train_path_pos, feature_params );
+features_pos_aug = get_aug_positive_features( train_path_pos, feature_params );
+features_pos = [features_pos; features_pos_aug];
 
 % Higher will work strictly better, but you should start with 10000 for debugging
 num_negative_examples = 10000; 
 features_neg = get_random_negative_features( non_face_scn_path, feature_params, num_negative_examples);
 
-    
+%% LBP featrues, too slow don't use
+% LBP_feature_pos = get_LBP_postive_features( train_path_pos, feature_params);
+% LBP_feature_neg = get_LBP_random_negative_features( non_face_scn_path, feature_params, num_negative_examples);
+
+% lambda = 0.0001;
+% X = [LBP_feature_pos; LBP_feature_neg];
+% Y = [ones( size(LBP_feature_pos,1),1 ); -1*ones(size(LBP_feature_neg,1),1)];
+% [w1, b1] = vl_svmtrain(X', Y, lambda); 
+
+
 %% step 2. Train Classifier
 % Use vl_svmtrain on your training features to get a linear classifier
 % specified by 'w' and 'b'
@@ -87,7 +98,7 @@ features_neg = get_random_negative_features( non_face_scn_path, feature_params, 
 % YOU CODE classifier training. Make sure the outputs are 'w' and 'b'.
 lambda = 0.0001;
 X = [features_pos; features_neg];
-Y = [ones( size(features_pos,1),1 ); ones( size(features_neg,1),1 )-2];
+Y = [ones( size(features_pos,1),1 ); -1*ones(size(features_neg,1),1)];
 
 % note that it is X transpose here, lambda is the reg strength
 [w, b] = vl_svmtrain(X', Y, lambda); 
@@ -100,6 +111,7 @@ Y = [ones( size(features_pos,1),1 ); ones( size(features_neg,1),1 )-2];
 % evaluates _training_ error, which isn't ultimately what we care about,
 % but it is a good sanity check. Your training error should be very low.
 
+% eg. confidences [30277, 1] vector
 fprintf('Initial classifier performance on train data:\n')
 confidences = [features_pos; features_neg]*w + b;
 label_vector = [ones(size(features_pos,1),1); -1*ones(size(features_neg,1),1)];
@@ -141,12 +153,12 @@ imwrite(hog_template_image, 'visualizations/hog_template.png')
 
 % 0.868 AP without Mine hard, 6 cell_size, 10000 neg samples
 mine_hard = true;
-[bboxes, confidences, image_ids, mh_features_neg] = run_detector(non_face_scn_path, w, b, feature_params, mine_hard);
-fprintf('length of mh_features_neg is: %d \n', size(mh_features_neg,1));
-lambda = 0.0001;
-X = [X; mh_features_neg];
-Y = [Y; ones( size(mh_features_neg,1),1 )-2];
-[w, b] = vl_svmtrain(X', Y, lambda); 
+% [bboxes, confidences, image_ids, mh_features_neg] = run_detector(non_face_scn_path, w, b, feature_params, mine_hard);
+% fprintf('length of mh_features_neg is: %d \n', size(mh_features_neg,1));
+% lambda = 0.0001;
+% X = [X; mh_features_neg];
+% Y = [Y; ones( size(mh_features_neg,1),1 )-2];
+% [w, b] = vl_svmtrain(X', Y, lambda); 
 
 
 %% Step 5. Run detector on test set.
