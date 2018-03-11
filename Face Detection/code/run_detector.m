@@ -98,7 +98,7 @@ for k = 1:length(test_scenes)
         if(mine_hard == true)
             idx = find(scores > 2.1);
         else    
-            idx = find(scores > 0.9);
+            idx = find(scores > 0.95);
         end
 
         % find cur_scale_bboxes
