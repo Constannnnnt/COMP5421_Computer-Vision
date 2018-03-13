@@ -76,7 +76,7 @@ for k = 1:length(test_scenes)
     cur_image_ids = cell(0,1);
     cur_mh_features_neg = zeros(0,D);
 
-    for scale = scales
+    for scale = 0.1:0.05:1.1
         img_scaled = imresize(img, scale);
         % [height, width] = size(img_scaled);
 

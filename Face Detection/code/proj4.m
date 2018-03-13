@@ -74,7 +74,7 @@ features_pos_aug = get_aug_positive_features( train_path_pos, feature_params );
 features_pos = [features_pos; features_pos_aug];
 
 % Higher will work strictly better, but you should start with 10000 for debugging
-num_negative_examples = 80000; 
+num_negative_examples = 50000; 
 features_neg = get_random_negative_features( non_face_scn_path, feature_params, num_negative_examples);
 
 %% LBP featrues, too slow don't use
