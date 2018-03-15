@@ -45,7 +45,7 @@ test_scenes = dir( fullfile( test_scn_path, '*.jpg' ));
 %initialize parameters
 cell_size = feature_params.hog_cell_size;
 cell_num = feature_params.template_size / feature_params.hog_cell_size;
-D = 256;
+D = (feature_params.template_size/cell_size)^2 * 31;
 %scales = [1];
 
 %initialize these as empty and incrementally expand them.
@@ -54,7 +54,7 @@ confidences = zeros(0,1);
 image_ids = cell(0,1);
 mh_features_neg = zeros(0,D);
 
-for k = 1:length(test_scenes)
+parfor k = 1:length(test_scenes)
       
     fprintf('Detecting faces in %s\n', test_scenes(k).name)
     img = imread( fullfile( test_scn_path, test_scenes(k).name ));
@@ -79,7 +79,7 @@ for k = 1:length(test_scenes)
         img_scaled = imresize(img, scale);
         % [height, width] = size(img_scaled);
 
-        hog_features = LBP(single(img_scaled), false);
+        hog_features = vl_hog(single(img_scaled), cell_size);
 
         num_y_detection = size(hog_features,1) - cell_num + 1;
         num_x_detection = size(hog_features,2) - cell_num + 1;
