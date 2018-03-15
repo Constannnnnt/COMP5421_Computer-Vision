@@ -1,6 +1,4 @@
-
 ## Image scissor
-* You may need UST CSE account to access some webpages.
 
 ### General Idea
 
@@ -11,21 +9,25 @@ The general idea of this project is that after loading the image, we finished th
 #### Original Images and Masks
 
 We provide three images, one background image and two foreground images.
-Foreground Image One:
-![Violet](./iScissor/artifact/girl.jpg) <!-- .element height="50%" width="50%" -->
-Mask of Foreground Image One:
-![Violet_mask](./iScissor/artifact/girl_mask.png) <!-- .element height="50%" width="50%" -->
-Foreground Image Two:
-![sf](./iScissor/artifact/sf.jpg) <!-- .element height="50%" width="50%" -->
-Mask of Foreground Image Two:
-![sf_mask](./iScissor/artifact/sf_mask.png) <!-- .element height="50%" width="50%" -->
+
+Foreground Image One and its mask:
+
+<img src = "./artifact/girl.jpg" width = "50%" height = "50%"><img src = "./artifact/girl_mask.png" width = "50%" height = "50%">
+
+Foreground Image Two and its mask:
+
+<img src = "./artifact/sf.jpg" width = "50%" height = "50%"><img src = "./artifact/sf_mask.png" width = "50%" height = "50%">
+
 Background image:
-![hkust](./iScissor/artifact/hkust.jpg) <!-- .element height="50%" width="50%" -->
+
+<img src = "./artifact/hkust.jpg" width = "50%" height = "50%">
 
 #### Results
 
 The result is cool!!!
-![Result](./iScissor/artifact/artifact.jpg) <!-- .element height="50%" width="50%" -->
+
+<img src = "./artifact/artifact.jpg" width = "50%" height = "50%">
+
 
 ### Bonus
 
@@ -37,4 +39,20 @@ To snap the first seed near the edge, we find the nearest neighbor of the seed o
 
 - Blurring
 
-We include two gaussian blurring filters in the projects such that the user could apply anyone of them to compare the difference before and after blurring.
+We include two gaussiFor blurring effect, and we use opencv Guassian filter. We adjust the Guassian filter kernel size and standard deviation to achieve different level of blurring effect. After opening the image, we could add this blurring effect using the interface of our IScissor.
+	```Tool -> Gaussian 3*3```
+    ```Tool -> Gaussian 5*5```
+After click on these two buttons, the image will be blurred. We provide a sample with our school HKUST. You can see that different level of blurring effect has been achieved. Comparing two filters, we could see that larger kernel size induces stronger blurring effect. See pics.an blurring filters in the projects such that the user could apply anyone of them to compare the difference before and after blurring. ***Also we notice that if the blurring effect gets stronger, the cost gets lower.***
+
+- Orignal Pic and its cost graph:
+
+<img src = "./blur/school.jpg" width = "50%" height = "50%"><img src = "./blur/school_costgraph.png" width = "50%" height = "50%">
+
+- Blurring with 3*3 gaussian filters
+
+<img src = "./blur/school_blur3.png" width = "50%" height = "50%"><img src = "./blur/school_blur3_costgraph.png" width = "50%" height = "50%">
+
+- Blurring with 5*5 gaussian filters
+
+
+<img src = "./blur/school_blur5.png" width = "50%" height = "50%"><img src = "./blur/school_blur5_costgraph.png" width = "50%" height = "50%">

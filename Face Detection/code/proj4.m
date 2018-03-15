@@ -69,13 +69,13 @@ feature_params = struct('template_size', 36, 'hog_cell_size', 3);
 %% Step 1. Load positive training crops and random negative examples
 % YOU CODE 'get_positive_features' and 'get_random_negative_features'
 
-features_pos = get_positive_features( train_path_pos, feature_params );
-features_pos_aug = get_aug_positive_features( train_path_pos, feature_params );
+features_pos = get_LBP_positive_features( train_path_pos, feature_params );
+features_pos_aug = get_LBP_aug_positive_features( train_path_pos, feature_params );
 features_pos = [features_pos; features_pos_aug];
 
 % Higher will work strictly better, but you should start with 10000 for debugging
 num_negative_examples = 50000; 
-features_neg = get_random_negative_features( non_face_scn_path, feature_params, num_negative_examples);
+features_neg = get_LBP_random_negative_features( non_face_scn_path, feature_params, num_negative_examples);
 
 %% LBP featrues, too slow don't use
 % LBP_feature_pos = get_LBP_postive_features( train_path_pos, feature_params);

@@ -45,8 +45,7 @@ test_scenes = dir( fullfile( test_scn_path, '*.jpg' ));
 %initialize parameters
 cell_size = feature_params.hog_cell_size;
 cell_num = feature_params.template_size / feature_params.hog_cell_size;
-D = (feature_params.template_size/cell_size)^2 * 31;
-scales = [1, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.6, 0.5, 0.55, 0.4, 0.3, 0.25, 0.15, 0.1, 0.07];
+D = 256;
 %scales = [1];
 
 %initialize these as empty and incrementally expand them.
@@ -80,7 +79,7 @@ for k = 1:length(test_scenes)
         img_scaled = imresize(img, scale);
         % [height, width] = size(img_scaled);
 
-        hog_features = vl_hog(single(img_scaled), cell_size);
+        hog_features = LBP(single(img_scaled), false);
 
         num_y_detection = size(hog_features,1) - cell_num + 1;
         num_x_detection = size(hog_features,2) - cell_num + 1;
