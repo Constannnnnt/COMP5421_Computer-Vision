@@ -32,7 +32,7 @@ num_images = length(image_files);
 
 % rand() returns (0,1)
 D = (feature_params.template_size / feature_params.hog_cell_size)^2 * 31;
-features_pos_aug = zeros(num_images*2, D);
+features_pos_aug = zeros(num_images*3, D);
 
 % use of vl_hog, 31 comes from the use of default UoCTTI variant
 % vl_hog: image: [36 x 36 x 1]
@@ -45,18 +45,29 @@ for i = 1:num_images
 	img = imread(img_path);
 
 	% if rgb, convert to gray
-	if size(img, 3) == 3
+    if size(img, 3) == 3
 	    img = rgb2gray(img);
-	end
+    end
 
 	% use of hog
 	img_flip = flip(img ,2); % horizontal flip
-	img_constrast = img*0.8;
+	img_constrast = img * 0.8;
+    img_tmp = imresize(img, 1+rand()*0.5);
+    start_index = 0;
+    if size(img_tmp, 1) > size(img, 1)
+        start_index = int8(floor((size(img_tmp, 1) - size(img,1)) / 2));
+    end
+    img_crop = img_tmp;
+    if start_index ~= 0
+        img_crop = img_tmp(start_index:start_index+size(img, 1), start_index:start_index+size(img,2));
+    end
 	
 	hog_flip = vl_hog(single(img_flip), feature_params.hog_cell_size);
 	hog_contrast = vl_hog(single(img_constrast), feature_params.hog_cell_size);
+    hog_crop = vl_hog(single(img_crop), feature_params.hog_cell_size);
 
-	features_pos_aug( 2*(i-1)+1, 1:end ) = reshape(hog_flip, 1, D);
-	features_pos_aug( 2*(i-1)+2, 1:end ) = reshape(hog_contrast, 1, D);
+	features_pos_aug( 3*(i-1)+1, 1:end ) = reshape(hog_flip, 1, D);
+	features_pos_aug( 3*(i-1)+2, 1:end ) = reshape(hog_contrast, 1, D);
+    features_pos_aug( 3*(i-1)+3, 1:end ) = reshape(hog_crop, 1, D);
 
 end
