@@ -57,7 +57,7 @@
      <x>0</x>
      <y>0</y>
      <width>922</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -66,7 +66,26 @@
     </property>
     <addaction name="actionOpen_Image"/>
    </widget>
+   <widget class="QMenu" name="menuTool">
+    <property name="title">
+     <string>Tool</string>
+    </property>
+    <addaction name="actionGet_vanish_x"/>
+    <addaction name="actionGet_vanish_y"/>
+    <addaction name="actionGet_vanish_z"/>
+   </widget>
+   <widget class="QMenu" name="menuHelper">
+    <property name="title">
+     <string>Helper</string>
+    </property>
+    <addaction name="actionZoom_in"/>
+    <addaction name="actionZoom_out"/>
+    <addaction name="actionReset_all"/>
+    <addaction name="actionDraw_vanish"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuTool"/>
+   <addaction name="menuHelper"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -80,6 +99,56 @@
   <action name="actionOpen_Image">
    <property name="text">
     <string>Open Image</string>
+   </property>
+  </action>
+  <action name="actionZoom_in">
+   <property name="text">
+    <string>zoom in</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+=</string>
+   </property>
+  </action>
+  <action name="actionZoom_out">
+   <property name="text">
+    <string>zoom out</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionReset_all">
+   <property name="text">
+    <string>reset all</string>
+   </property>
+  </action>
+  <action name="actionGet_vanish_x">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>get vanish x</string>
+   </property>
+  </action>
+  <action name="actionGet_vanish_y">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>get vanish y</string>
+   </property>
+  </action>
+  <action name="actionGet_vanish_z">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>get vanish z</string>
+   </property>
+  </action>
+  <action name="actionDraw_vanish">
+   <property name="text">
+    <string>draw vanish</string>
    </property>
   </action>
  </widget>
