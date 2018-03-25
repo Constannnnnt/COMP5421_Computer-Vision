@@ -62,12 +62,15 @@ private slots:
 
     void on_actionDraw_vanish_triggered();
 
+    void on_actionGet_origin_triggered(bool checked);
+
 private:
     // private data member
     Ui::MainWindow *ui;
 
     Mat image;
     Mat contour_image;
+    Mat ProjMatrix;
 
     QScrollArea* scrollArea;
     double img_scale;
@@ -76,12 +79,20 @@ private:
     bool getVanish_mode_x;
     bool getVanish_mode_y;
     bool getVanish_mode_z;
+    bool getVanish_mode_o;
+    double scale_x;
+    double scale_y;
+    double scale_z;
     vector<int> vanish_x;
     vector<int> vanish_y;
     vector<int> vanish_z;
     cv::Point3f vanishPt_x;
     cv::Point3f vanishPt_y;
     cv::Point3f vanishPt_z;
+    cv::Point3f Origin;
+    cv::Point2f refx;
+    cv::Point2f refy;
+    cv::Point2f refz;
 
     // private helper functions
     void display_image();
@@ -89,7 +100,7 @@ private:
 
     // private functions
     void calVanishingPt();
-
+    void calProjectionMatrix();
 
 };
 

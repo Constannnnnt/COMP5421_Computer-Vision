@@ -73,6 +73,7 @@
     <addaction name="actionGet_vanish_x"/>
     <addaction name="actionGet_vanish_y"/>
     <addaction name="actionGet_vanish_z"/>
+    <addaction name="actionGet_origin"/>
    </widget>
    <widget class="QMenu" name="menuHelper">
     <property name="title">
@@ -149,6 +150,14 @@
   <action name="actionDraw_vanish">
    <property name="text">
     <string>draw vanish</string>
+   </property>
+  </action>
+  <action name="actionGet_origin">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>get origin</string>
    </property>
   </action>
  </widget>
