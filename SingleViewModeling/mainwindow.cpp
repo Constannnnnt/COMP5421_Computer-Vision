@@ -137,20 +137,25 @@ void MainWindow::on_actionDraw_vanish_triggered(){
         return;
     }
 
-    for(uint i=0; i<(vanish_x.size()/2-1); i++){
-        cv::line(contour_image, cv::Point(vanish_x[2*i], vanish_x[2*i+1]),
-                                cv::Point(vanish_x[2*i+2], vanish_x[2*i+3]), CV_RGB(255,0,0), 1); // blue
-    }
-    for(uint i=0; i<(vanish_y.size()/2-1); i++){
-        cv::line(contour_image, cv::Point(vanish_y[2*i], vanish_y[2*i+1]),
-                                cv::Point(vanish_y[2*i+2], vanish_y[2*i+3]), CV_RGB(0,255,0), 1); // green
-    }
-    for(uint i=0; i<(vanish_z.size()/2-1); i++){
-        cv::line(contour_image, cv::Point(vanish_z[2*i], vanish_z[2*i+1]),
-                                cv::Point(vanish_z[2*i+2], vanish_z[2*i+3]), CV_RGB(0,0,255), 1); // red
-    }
+    if(vanish_x.size()>0)
+        for(uint i=0; i<vanish_x.size()/4; i++){
+            cv::line(contour_image, cv::Point(vanish_x[4*i], vanish_x[4*i+1]),
+                                    cv::Point(vanish_x[4*i+2], vanish_x[4*i+3]), CV_RGB(255,0,0), 1); // blue
+        }
+    if(vanish_y.size()>0)
+        for(uint i=0; i<vanish_x.size()/4; i++){
+            cv::line(contour_image, cv::Point(vanish_y[4*i], vanish_y[4*i+1]),
+                                    cv::Point(vanish_y[4*i+2], vanish_y[4*i+3]), CV_RGB(0,255,0), 1); // green
+        }
+    if(vanish_z.size()>0)
+        for(uint i=0; i<vanish_x.size()/4; i++){
+            cv::line(contour_image, cv::Point(vanish_z[4*i], vanish_z[4*i+1]),
+                                    cv::Point(vanish_z[4*i+2], vanish_z[4*i+3]), CV_RGB(0,0,255), 1); // red
+        }
 
     display_image();
+
+    calVanishingPt();
 }
 
 // event filter
@@ -164,7 +169,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         QPoint p = ui->label->mapFrom(this, me->pos());
         p /= img_scale;
 
-        cout << p.y() << "\t" << p.x() << endl;
+        cout << p.x() << "\t" << p.y() << endl;
 
         if(getVanish_mode_x){
             vanish_x.push_back( p.x() );
@@ -193,12 +198,101 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
 
 // Actual functions start here
-// step 1: Vanishing points, Bob Collin's method
-void MainWindow::getVanishingPt(){
+// step 1: Calculate vanishing points, Bob Collin's method
+void MainWindow::calVanishingPt(){
+    cv::Mat M, EigenVector, EigenValue;
+    cv::Mat temp_M;
+    cv::Point3d point1, point2;
+    cv::Point3d line;
 
+    // M = (cv::Mat_<float>(3,3) << 1,2,3, 4,5,6, 7,8,9.1);
+    // temp_M = (cv::Mat_<float>(3,3) << 1,0,0, 0,0,0, 0,0,0);
+    // cout << "temp_M is:  " << temp_M << endl;
+
+    // get vanishing point x
+    M = cv::Mat_<float>(3,3);
+    for(uint i=0; i<vanish_x.size()/4; i++){
+        point1 = cv::Point3f(vanish_x[4*i], vanish_x[4*i+1], 1);
+        point2 = cv::Point3f(vanish_x[4*i+2], vanish_x[4*i+3], 1);
+        line = point1.cross(point2);
+        //line = cv::Point3f(line.x/line.z, line.y/line.z, 1);
+
+        temp_M = (cv::Mat_<float>(3,3) << line.x*line.x, line.x*line.y, line.x*line.z,
+                                          line.x*line.y, line.y*line.y, line.y*line.z,
+                                          line.x*line.z, line.y*line.z, line.z*line.z);
+        M = M + temp_M;
+    }
+
+    cv::eigen(M, EigenValue, EigenVector, DBL_EPSILON);
+    cout << "eigen values " << EigenValue << endl;
+    cout << "eigen vectors " << EigenVector << endl;
+
+    vanishPt_x = cv::Point3f(EigenVector.at<float>(2,0)/EigenVector.at<float>(2,2),
+                             EigenVector.at<float>(2,1)/EigenVector.at<float>(2,2), 1);
+    cout << "Vanishing Point x: " << vanishPt_x << endl;
+
+
+    // get vanishing point y
+    M = cv::Mat_<float>(3,3);
+    for(uint i=0; i<vanish_y.size()/4; i++){
+        point1 = cv::Point3f(vanish_y[4*i], vanish_y[4*i+1], 1);
+        point2 = cv::Point3f(vanish_y[4*i+2], vanish_y[4*i+3], 1);
+        line = point1.cross(point2);
+        //line = cv::Point3f(line.x/line.z, line.y/line.z, 1);
+
+        temp_M = (cv::Mat_<float>(3,3) << line.x*line.x, line.x*line.y, line.x*line.z,
+                                          line.x*line.y, line.y*line.y, line.y*line.z,
+                                          line.x*line.z, line.y*line.z, line.z*line.z);
+        M = M + temp_M;
+    }
+
+    cv::eigen(M, EigenValue, EigenVector, DBL_EPSILON);
+    cout << "eigen values " << EigenValue << endl;
+    cout << "eigen vectors " << EigenVector << endl;
+
+    vanishPt_y = cv::Point3f(EigenVector.at<float>(2,0)/EigenVector.at<float>(2,2),
+                             EigenVector.at<float>(2,1)/EigenVector.at<float>(2,2), 1);
+    cout << "Vanishing Point y: " << vanishPt_y << endl;
+
+
+    // get vanishing point z
+    M = cv::Mat_<float>(3,3);
+    for(uint i=0; i<vanish_z.size()/4; i++){
+        point1 = cv::Point3f(vanish_z[4*i], vanish_z[4*i+1], 1);
+        point2 = cv::Point3f(vanish_z[4*i+2], vanish_z[4*i+3], 1);
+        line = point1.cross(point2);
+        //line = cv::Point3f(line.x/line.z, line.y/line.z, 1);
+
+        temp_M = (cv::Mat_<float>(3,3) << line.x*line.x, line.x*line.y, line.x*line.z,
+                                          line.x*line.y, line.y*line.y, line.y*line.z,
+                                          line.x*line.z, line.y*line.z, line.z*line.z);
+        M = M + temp_M;
+    }
+
+    cv::eigen(M, EigenValue, EigenVector, DBL_EPSILON);
+    cout << "eigen values " << EigenValue << endl;
+    cout << "eigen vectors " << EigenVector << endl;
+
+    vanishPt_z = cv::Point3f(EigenVector.at<float>(2,0)/EigenVector.at<float>(2,2),
+                             EigenVector.at<float>(2,1)/EigenVector.at<float>(2,2), 1);
+    cout << "Vanishing Point z: " << vanishPt_z << endl;
 
 }
 
+
+// step 2: Choose Reference Points
+
+
+
+
+
+// step 3: Compute 3D Positions
+
+
+
+
+
+// step 4: Compute Texture Maps
 
 
 

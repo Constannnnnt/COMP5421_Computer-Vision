@@ -79,13 +79,16 @@ private:
     vector<int> vanish_x;
     vector<int> vanish_y;
     vector<int> vanish_z;
+    cv::Point3f vanishPt_x;
+    cv::Point3f vanishPt_y;
+    cv::Point3f vanishPt_z;
 
     // private helper functions
     void display_image();
     void resetAll();
 
     // private functions
-    void getVanishingPt();
+    void calVanishingPt();
 
 
 };
