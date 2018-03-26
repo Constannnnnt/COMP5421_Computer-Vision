@@ -174,6 +174,7 @@ void MainWindow::on_actionDraw_vanish_triggered(){
 
     calVanishingPt();
     calProjectionMatrix();
+    getTextureMap();
 }
 
 // event filter
@@ -290,7 +291,7 @@ void MainWindow::calVanishingPt(){
 
     vanishPt_z = cv::Point3f(EigenVector.at<float>(2,0)/EigenVector.at<float>(2,2),
                              EigenVector.at<float>(2,1)/EigenVector.at<float>(2,2), 1);
-    cout << "Vanishing Point z: " << vanishPt_z << endl;
+    cout << "Vanishing Point z: " << vanishPt_z << endl << endl;
 
 }
 
@@ -310,6 +311,9 @@ void MainWindow::calProjectionMatrix(){
     vanishPt_y = cv::Point3f(-966.982, 204.371, 1);
     vanishPt_z = cv::Point3f(1443.49, 9398.12, 1);
 
+    // by click
+    Origin = cv::Point3f(1390, 2173, 1);
+
     scale_x = (0.5 * (refx.x - Origin.x)/(vanishPt_x.x - refx.x)
              + 0.5 * (refx.y - Origin.x)/(vanishPt_x.y - refx.y)) / REF_LENGTH_X;
 
@@ -321,13 +325,55 @@ void MainWindow::calProjectionMatrix(){
 
     cout << "scale_x is: " << scale_x << endl;
     cout << "scale_y is: " << scale_y << endl;
-    cout << "scale_z is: " << scale_z << endl;
+    cout << "scale_z is: " << scale_z << endl << endl;
+
+    ProjMatrix = (cv::Mat_<float>(3,4) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, scale_z*vanishPt_z.x, Origin.x,
+                                          scale_x*vanishPt_x.y, scale_y*vanishPt_y.y, scale_z*vanishPt_z.y, Origin.y,
+                                          scale_x*vanishPt_x.z, scale_y*vanishPt_y.z, scale_z*vanishPt_z.z, Origin.z);
+
+    cout << "Projection Matrix is: " << ProjMatrix << endl << endl;
 
 }
 
 
 // step 3: Use homography matrix to get texture map
+void MainWindow::getTextureMap(){
+    cv::Mat Hxy = (cv::Mat_<float>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, Origin.x,
+                                           scale_x*vanishPt_x.y, scale_y*vanishPt_y.y, Origin.y,
+                                           scale_x*vanishPt_x.z, scale_y*vanishPt_y.z, Origin.z);
 
+    cv::Mat Hxz = (cv::Mat_<float>(3,3) << scale_x*vanishPt_x.x, scale_z*vanishPt_z.x, Origin.x,
+                                           scale_x*vanishPt_x.y, scale_z*vanishPt_z.y, Origin.y,
+                                           scale_x*vanishPt_x.z, scale_z*vanishPt_z.z, Origin.z);
+
+    cv::Mat Hyz = (cv::Mat_<float>(3,3) << scale_y*vanishPt_y.x, scale_z*vanishPt_z.x, Origin.x,
+                                           scale_y*vanishPt_y.y, scale_z*vanishPt_z.y, Origin.y,
+                                           scale_y*vanishPt_y.z, scale_z*vanishPt_z.z, Origin.z);
+
+    cv::Mat dstImage;
+    cout << "texture map starts" << endl << endl;
+    cv::Mat tempImage = cv::Mat(image.size().height, image.size().width, image.type());
+
+    cv::warpPerspective(image, dstImage, Hxy.inv(), tempImage.size());
+
+//    QImage Q_img = QImage((const unsigned char*)(dstImage.data), dstImage.cols, dstImage.rows, dstImage.step, QImage::Format_RGB888);
+//    ui->label->setPixmap(QPixmap::fromImage(Q_img).scaled(QPixmap::fromImage(Q_img).width()*img_scale,
+//                                                          QPixmap::fromImage(Q_img).height()*img_scale, Qt::KeepAspectRatio));
+
+    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
+    imwrite("/home/jguoaj/Desktop/SVM/temp/Hxy_image.jpg", dstImage);
+
+    cv::warpPerspective(image, dstImage, Hxz.inv(), tempImage.size());
+    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
+    imwrite("/home/jguoaj/Desktop/SVM/temp/Hxz_image.jpg", dstImage);
+
+    cv::warpPerspective(image, dstImage, Hyz.inv(), tempImage.size());
+    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
+    imwrite("/home/jguoaj/Desktop/SVM/temp/Hyz_image.jpg", dstImage);
+
+
+
+}
 
 
 

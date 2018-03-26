@@ -101,6 +101,7 @@ private:
     // private functions
     void calVanishingPt();
     void calProjectionMatrix();
+    void getTextureMap();
 
 };
 
