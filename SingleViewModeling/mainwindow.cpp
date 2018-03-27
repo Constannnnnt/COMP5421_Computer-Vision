@@ -315,13 +315,13 @@ void MainWindow::calProjectionMatrix(){
     Origin = cv::Point3f(1390, 2173, 1);
 
     scale_x = (0.5 * (refx.x - Origin.x)/(vanishPt_x.x - refx.x)
-             + 0.5 * (refx.y - Origin.x)/(vanishPt_x.y - refx.y)) / REF_LENGTH_X;
+             + 0.5 * (refx.y - Origin.y)/(vanishPt_x.y - refx.y)) / REF_LENGTH_X;
 
     scale_y = (0.5 * (refy.x - Origin.x)/(vanishPt_y.x - refy.x)
-             + 0.5 * (refy.y - Origin.x)/(vanishPt_y.y - refy.y)) / REF_LENGTH_Y;
+             + 0.5 * (refy.y - Origin.y)/(vanishPt_y.y - refy.y)) / REF_LENGTH_Y;
 
     scale_z = (0.5 * (refz.x - Origin.x)/(vanishPt_z.x - refz.x)
-             + 0.5 * (refz.y - Origin.x)/(vanishPt_z.y - refz.y)) / REF_LENGTH_Z;
+             + 0.5 * (refz.y - Origin.y)/(vanishPt_z.y - refz.y)) / REF_LENGTH_Z;
 
     cout << "scale_x is: " << scale_x << endl;
     cout << "scale_y is: " << scale_y << endl;
@@ -354,6 +354,7 @@ void MainWindow::getTextureMap(){
     cout << "texture map starts" << endl << endl;
     cv::Mat tempImage = cv::Mat(image.size().height, image.size().width, image.type());
 
+    /*
     cv::warpPerspective(image, dstImage, Hxy.inv(), tempImage.size());
 
 //    QImage Q_img = QImage((const unsigned char*)(dstImage.data), dstImage.cols, dstImage.rows, dstImage.step, QImage::Format_RGB888);
@@ -370,6 +371,30 @@ void MainWindow::getTextureMap(){
     cv::warpPerspective(image, dstImage, Hyz.inv(), tempImage.size());
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
     imwrite("/home/jguoaj/Desktop/SVM/temp/Hyz_image.jpg", dstImage);
+
+    */
+
+    // inverse warping
+    cv::Mat invImage;
+    cv::warpPerspective(image, dstImage, Hxy.inv(), tempImage.size(), INTER_LINEAR);
+    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
+    imwrite("/home/jguoaj/Desktop/SVM/temp/Hxy_image.jpg", dstImage);
+    cv::warpPerspective(dstImage, invImage, Hxy, tempImage.size(), INTER_LINEAR);
+    imwrite("/home/jguoaj/Desktop/SVM/temp/Inv_Hxy_image.jpg", invImage);
+
+
+    cv::warpPerspective(image, dstImage, Hxz.inv(), tempImage.size(), INTER_LINEAR);
+    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
+    imwrite("/home/jguoaj/Desktop/SVM/temp/Hxz_image.jpg", dstImage);
+    cv::warpPerspective(dstImage, invImage, Hxz, tempImage.size(), INTER_LINEAR);
+    imwrite("/home/jguoaj/Desktop/SVM/temp/Inv_Hxz_image.jpg", invImage);
+
+
+    cv::warpPerspective(image, dstImage, Hyz.inv(), tempImage.size(), INTER_LINEAR);
+    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
+    imwrite("/home/jguoaj/Desktop/SVM/temp/Hyz_image.jpg", dstImage);
+    cv::warpPerspective(dstImage, invImage, Hyz, tempImage.size(), INTER_LINEAR);
+    imwrite("/home/jguoaj/Desktop/SVM/temp/Inv_Hyz_image.jpg", invImage);
 
 
 
