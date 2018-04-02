@@ -24,6 +24,12 @@ MainWindow::MainWindow(QWidget *parent) :
     getVanish_mode_y = false;
     getVanish_mode_z = false;
     getVanish_mode_o = false;
+    setReference_x = false;
+    setReference_y = false;
+    setReference_z = false;
+    refx_m = false;
+    refy_m = false;
+    refz_m = false;
 
 }
 
@@ -109,6 +115,12 @@ void MainWindow::resetAll(){
     ui->actionGet_vanish_z->setChecked(false);
     ui->actionGet_origin->setChecked(false);
     getVanish_mode_x = getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = false;
+    setReference_x = false;
+    setReference_y = false;
+    setReference_z = false;
+    refx_m = false;
+    refy_m = false;
+    refz_m = false;
 }
 
 void MainWindow::on_actionGet_vanish_x_triggered(bool checked){
@@ -117,7 +129,10 @@ void MainWindow::on_actionGet_vanish_x_triggered(bool checked){
     ui->actionGet_vanish_y->setChecked(false);
     ui->actionGet_vanish_z->setChecked(false);
     ui->actionGet_origin->setChecked(false);
-    getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = false;
+    ui->actionset_reference_x->setChecked(false);
+    ui->actionset_reference_y->setChecked(false);
+    ui->actionset_reference_z->setChecked(false);
+    getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_x = setReference_y = setReference_z = false;
 }
 void MainWindow::on_actionGet_vanish_y_triggered(bool checked){
     getVanish_mode_y = checked;
@@ -125,7 +140,10 @@ void MainWindow::on_actionGet_vanish_y_triggered(bool checked){
     ui->actionGet_vanish_x->setChecked(false);
     ui->actionGet_vanish_z->setChecked(false);
     ui->actionGet_origin->setChecked(false);
-    getVanish_mode_x = getVanish_mode_z = getVanish_mode_o = false;
+    ui->actionset_reference_x->setChecked(false);
+    ui->actionset_reference_y->setChecked(false);
+    ui->actionset_reference_z->setChecked(false);
+    getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_x = setReference_y = setReference_z = false;
 }
 void MainWindow::on_actionGet_vanish_z_triggered(bool checked){
     getVanish_mode_z = checked;
@@ -133,7 +151,10 @@ void MainWindow::on_actionGet_vanish_z_triggered(bool checked){
     ui->actionGet_vanish_x->setChecked(false);
     ui->actionGet_vanish_y->setChecked(false);
     ui->actionGet_origin->setChecked(false);
-    getVanish_mode_x = getVanish_mode_y = getVanish_mode_o = false;
+    ui->actionset_reference_x->setChecked(false);
+    ui->actionset_reference_y->setChecked(false);
+    ui->actionset_reference_z->setChecked(false);
+    getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_x = setReference_y = setReference_z = false;
 }
 void MainWindow::on_actionGet_origin_triggered(bool checked){
     getVanish_mode_o = checked;
@@ -141,7 +162,46 @@ void MainWindow::on_actionGet_origin_triggered(bool checked){
     ui->actionGet_vanish_x->setChecked(false);
     ui->actionGet_vanish_y->setChecked(false);
     ui->actionGet_vanish_z->setChecked(false);
-    getVanish_mode_x = getVanish_mode_y = getVanish_mode_z = false;
+    ui->actionset_reference_x->setChecked(false);
+    ui->actionset_reference_y->setChecked(false);
+    ui->actionset_reference_z->setChecked(false);
+    getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_x = setReference_y = setReference_z = false;
+}
+
+void MainWindow::on_actionset_reference_x_triggered(bool checked){
+    setReference_x = checked;
+
+    ui->actionGet_vanish_x->setChecked(false);
+    ui->actionGet_vanish_y->setChecked(false);
+    ui->actionGet_vanish_z->setChecked(false);
+    ui->actionGet_origin->setChecked(false);
+    ui->actionset_reference_y->setChecked(false);
+    ui->actionset_reference_z->setChecked(false);
+    getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_y = setReference_z = false;
+}
+
+void MainWindow::on_actionset_reference_y_triggered(bool checked){
+    setReference_y = checked;
+
+    ui->actionGet_vanish_x->setChecked(false);
+    ui->actionGet_vanish_y->setChecked(false);
+    ui->actionGet_vanish_z->setChecked(false);
+    ui->actionGet_origin->setChecked(false);
+    ui->actionset_reference_x->setChecked(false);
+    ui->actionset_reference_z->setChecked(false);
+    getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_x = setReference_z = false;
+}
+
+void MainWindow::on_actionset_reference_z_triggered(bool checked){
+    setReference_z = checked;
+
+    ui->actionGet_vanish_x->setChecked(false);
+    ui->actionGet_vanish_y->setChecked(false);
+    ui->actionGet_vanish_z->setChecked(false);
+    ui->actionGet_origin->setChecked(false);
+    ui->actionset_reference_y->setChecked(false);
+    ui->actionset_reference_x->setChecked(false);
+    getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_y = setReference_x = false;
 }
 
 void MainWindow::on_actionDraw_vanish_triggered(){
@@ -205,6 +265,20 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         else if(getVanish_mode_o){
             Origin = cv::Point3f(p.x(), p.y(), 1);
             cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(128,128,128), 5);
+            origin_m = true;
+        }
+        else if (setReference_x) {
+            refx = cv::Point2f(p.x(), p.y());
+            cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(128,128,128), 5);
+            refx_m = true;
+        } else if (setReference_y) {
+            refy = cv::Point2f(p.x(), p.y());
+            cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(128,128,128), 5);
+            refy_m = true;
+        } else if (setReference_z) {
+            refz = cv::Point2f(p.x(), p.y());
+            cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(128,128,128), 5);
+            refz_m = true;
         }
         else
             return false;
@@ -241,7 +315,7 @@ void MainWindow::calVanishingPt(){
         M = M + temp_M;
     }
 
-    cv::eigen(M, EigenValue, EigenVector, DBL_EPSILON);
+    cv::eigen(M, EigenValue, EigenVector);
     cout << "eigen values x: " << EigenValue << endl;
     cout << "eigen vectors x: " << EigenVector << endl << endl;
 
@@ -263,7 +337,7 @@ void MainWindow::calVanishingPt(){
         M = M + temp_M;
     }
 
-    cv::eigen(M, EigenValue, EigenVector, DBL_EPSILON);
+    cv::eigen(M, EigenValue, EigenVector);
     cout << "eigen values y: " << EigenValue << endl;
     cout << "eigen vectors y: " << EigenVector << endl << endl;
 
@@ -285,7 +359,7 @@ void MainWindow::calVanishingPt(){
         M = M + temp_M;
     }
 
-    cv::eigen(M, EigenValue, EigenVector, DBL_EPSILON);
+    cv::eigen(M, EigenValue, EigenVector);
     cout << "eigen values z: " << EigenValue << endl;
     cout << "eigen vectors z: " << EigenVector << endl << endl;
 
@@ -298,21 +372,41 @@ void MainWindow::calVanishingPt(){
 
 // step 2: Calculate Projection Matrix
 void MainWindow::calProjectionMatrix(){
-    // by measurement
-    refx = cv::Point2f(2660, 1580);
-    refy = cv::Point2f(803, 1680);
-    refz = cv::Point2f(1387, 1433);
+    // Choose the Origin First
+    if (!origin_m) {
+        cout << "not selected origin" << endl;
+        return;
+    }
+    if (!refx_m) {
+        cout << "not selected x-axis" << endl;
+        return;
+    }
+    if (!refy_m) {
+        cout << "not selected y-axis" << endl;
+        return;
+    }
+    if (!refz_m) {
+        cout << "not selected z-axis" << endl;
+        return;
+    }
 
-    // by click
-    // vanishPt_x = [5345.87, 345.158, 1]
-    // vanishPt_y = [-966.982, 204.371, 1]
-    // vanishPt_z = [1443.49, 9398.12, 1]
-    vanishPt_x = cv::Point3f(5345.87, 345.158, 1);
-    vanishPt_y = cv::Point3f(-966.982, 204.371, 1);
-    vanishPt_z = cv::Point3f(1443.49, 9398.12, 1);
+    // Choose three reference points
 
-    // by click
-    Origin = cv::Point3f(1390, 2173, 1);
+//    // by measurement
+//    refx = cv::Point2f(2660, 1580);
+//    refy = cv::Point2f(803, 1680);
+//    refz = cv::Point2f(1387, 1433);
+
+//    // by click
+//    // vanishPt_x = [5345.87, 345.158, 1]
+//    // vanishPt_y = [-966.982, 204.371, 1]
+//    // vanishPt_z = [1443.49, 9398.12, 1]
+//    vanishPt_x = cv::Point3f(5345.87, 345.158, 1);
+//    vanishPt_y = cv::Point3f(-966.982, 204.371, 1);
+//    vanishPt_z = cv::Point3f(1443.49, 9398.12, 1);
+
+//    // by click
+//    Origin = cv::Point3f(1390, 2173, 1);
 
     scale_x = (0.5 * (refx.x - Origin.x)/(vanishPt_x.x - refx.x)
              + 0.5 * (refx.y - Origin.x)/(vanishPt_x.y - refx.y)) / REF_LENGTH_X;

@@ -57,7 +57,7 @@
      <x>0</x>
      <y>0</y>
      <width>922</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -74,6 +74,9 @@
     <addaction name="actionGet_vanish_y"/>
     <addaction name="actionGet_vanish_z"/>
     <addaction name="actionGet_origin"/>
+    <addaction name="actionset_reference_x"/>
+    <addaction name="actionset_reference_y"/>
+    <addaction name="actionset_reference_z"/>
    </widget>
    <widget class="QMenu" name="menuHelper">
     <property name="title">
@@ -158,6 +161,21 @@
    </property>
    <property name="text">
     <string>get origin</string>
+   </property>
+  </action>
+  <action name="actionset_reference_x">
+   <property name="text">
+    <string>set reference x</string>
+   </property>
+  </action>
+  <action name="actionset_reference_y">
+   <property name="text">
+    <string>set reference y</string>
+   </property>
+  </action>
+  <action name="actionset_reference_z">
+   <property name="text">
+    <string>set reference z</string>
    </property>
   </action>
  </widget>

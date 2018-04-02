@@ -62,6 +62,12 @@ private slots:
 
     void on_actionDraw_vanish_triggered();
 
+    void on_actionset_reference_x_triggered(bool checked);
+
+    void on_actionset_reference_y_triggered(bool checked);
+
+    void on_actionset_reference_z_triggered(bool checked);
+
     void on_actionGet_origin_triggered(bool checked);
 
 private:
@@ -80,6 +86,10 @@ private:
     bool getVanish_mode_y;
     bool getVanish_mode_z;
     bool getVanish_mode_o;
+    bool setReference_x;
+    bool setReference_y;
+    bool setReference_z;
+    bool refx_m, refy_m, refz_m, origin_m;
     double scale_x;
     double scale_y;
     double scale_z;
