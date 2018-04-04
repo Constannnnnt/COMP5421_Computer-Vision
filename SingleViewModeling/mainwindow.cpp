@@ -86,7 +86,7 @@ void MainWindow::on_actionOpen_Image_triggered()
 
 void MainWindow::display_image(){
     cv::Mat myImage;
-    if(getVanish_mode_x || getVanish_mode_y || getVanish_mode_z)
+    if(getVanish_mode_x || getVanish_mode_y || getVanish_mode_z || getVanish_mode_o || refx_m || refy_m || refz_m )
         myImage = contour_image;
     else
         myImage = image;
@@ -143,7 +143,7 @@ void MainWindow::on_actionGet_vanish_y_triggered(bool checked){
     ui->actionset_reference_x->setChecked(false);
     ui->actionset_reference_y->setChecked(false);
     ui->actionset_reference_z->setChecked(false);
-    getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_x = setReference_y = setReference_z = false;
+    getVanish_mode_x = getVanish_mode_z = getVanish_mode_o = setReference_x = setReference_y = setReference_z = false;
 }
 void MainWindow::on_actionGet_vanish_z_triggered(bool checked){
     getVanish_mode_z = checked;
@@ -154,7 +154,7 @@ void MainWindow::on_actionGet_vanish_z_triggered(bool checked){
     ui->actionset_reference_x->setChecked(false);
     ui->actionset_reference_y->setChecked(false);
     ui->actionset_reference_z->setChecked(false);
-    getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_x = setReference_y = setReference_z = false;
+    getVanish_mode_y = getVanish_mode_x = getVanish_mode_o = setReference_x = setReference_y = setReference_z = false;
 }
 void MainWindow::on_actionGet_origin_triggered(bool checked){
     getVanish_mode_o = checked;
@@ -165,7 +165,7 @@ void MainWindow::on_actionGet_origin_triggered(bool checked){
     ui->actionset_reference_x->setChecked(false);
     ui->actionset_reference_y->setChecked(false);
     ui->actionset_reference_z->setChecked(false);
-    getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_x = setReference_y = setReference_z = false;
+    getVanish_mode_y = getVanish_mode_z = getVanish_mode_x = setReference_x = setReference_y = setReference_z = false;
 }
 
 void MainWindow::on_actionset_reference_x_triggered(bool checked){
@@ -177,7 +177,7 @@ void MainWindow::on_actionset_reference_x_triggered(bool checked){
     ui->actionGet_origin->setChecked(false);
     ui->actionset_reference_y->setChecked(false);
     ui->actionset_reference_z->setChecked(false);
-    getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_y = setReference_z = false;
+    getVanish_mode_x = getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_y = setReference_z = false;
 }
 
 void MainWindow::on_actionset_reference_y_triggered(bool checked){
@@ -189,7 +189,7 @@ void MainWindow::on_actionset_reference_y_triggered(bool checked){
     ui->actionGet_origin->setChecked(false);
     ui->actionset_reference_x->setChecked(false);
     ui->actionset_reference_z->setChecked(false);
-    getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_x = setReference_z = false;
+    getVanish_mode_x = getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_x = setReference_z = false;
 }
 
 void MainWindow::on_actionset_reference_z_triggered(bool checked){
@@ -201,7 +201,7 @@ void MainWindow::on_actionset_reference_z_triggered(bool checked){
     ui->actionGet_origin->setChecked(false);
     ui->actionset_reference_y->setChecked(false);
     ui->actionset_reference_x->setChecked(false);
-    getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_y = setReference_x = false;
+    getVanish_mode_x = getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_y = setReference_x = false;
 }
 
 void MainWindow::on_actionDraw_vanish_triggered(){

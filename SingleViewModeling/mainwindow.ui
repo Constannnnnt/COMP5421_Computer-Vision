@@ -164,16 +164,25 @@
    </property>
   </action>
   <action name="actionset_reference_x">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>set reference x</string>
    </property>
   </action>
   <action name="actionset_reference_y">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>set reference y</string>
    </property>
   </action>
   <action name="actionset_reference_z">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>set reference z</string>
    </property>
