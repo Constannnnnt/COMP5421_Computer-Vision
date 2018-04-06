@@ -1,9 +1,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#define REF_LENGTH_X 620
-#define REF_LENGTH_Y 284
-#define REF_LENGTH_Z 224
+#define REF_LENGTH_X 300
+#define REF_LENGTH_Y 400
+#define REF_LENGTH_Z 183
+//#define REF_LENGTH_X 620
+//#define REF_LENGTH_Y 284
+//#define REF_LENGTH_Z 224
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -160,12 +163,12 @@ void MainWindow::on_actionDraw_vanish_triggered(){
                                     cv::Point(vanish_x[4*i+2], vanish_x[4*i+3]), CV_RGB(255,0,0), 4); // blue
         }
     if(vanish_y.size()>0)
-        for(uint i=0; i<vanish_x.size()/4; i++){
+        for(uint i=0; i<vanish_y.size()/4; i++){
             cv::line(contour_image, cv::Point(vanish_y[4*i], vanish_y[4*i+1]),
                                     cv::Point(vanish_y[4*i+2], vanish_y[4*i+3]), CV_RGB(0,255,0), 4); // green
         }
     if(vanish_z.size()>0)
-        for(uint i=0; i<vanish_x.size()/4; i++){
+        for(uint i=0; i<vanish_z.size()/4; i++){
             cv::line(contour_image, cv::Point(vanish_z[4*i], vanish_z[4*i+1]),
                                     cv::Point(vanish_z[4*i+2], vanish_z[4*i+3]), CV_RGB(0,0,255), 4); // red
         }
@@ -175,6 +178,7 @@ void MainWindow::on_actionDraw_vanish_triggered(){
     calVanishingPt();
     calProjectionMatrix();
     getTextureMap();
+    //cal3DPosition();
 }
 
 // event filter
@@ -298,21 +302,24 @@ void MainWindow::calVanishingPt(){
 
 // step 2: Calculate Projection Matrix
 void MainWindow::calProjectionMatrix(){
-    // by measurement
+    /**/
+    refx = cv::Point2f(607, 430);
+    refy = cv::Point2f(173, 367);
+    refz = cv::Point2f(392, 399);
+    vanishPt_x = cv::Point3f(4045.92, -1393.23, 1);
+    vanishPt_y = cv::Point3f(-1788.97, -1205.26, 1);
+    vanishPt_z = cv::Point3f(370.262, 3659.41, 1);
+    Origin = cv::Point3f(392, 542, 1);
+
+    /*
     refx = cv::Point2f(2660, 1580);
     refy = cv::Point2f(803, 1680);
     refz = cv::Point2f(1387, 1433);
-
-    // by click
-    // vanishPt_x = [5345.87, 345.158, 1]
-    // vanishPt_y = [-966.982, 204.371, 1]
-    // vanishPt_z = [1443.49, 9398.12, 1]
     vanishPt_x = cv::Point3f(5345.87, 345.158, 1);
     vanishPt_y = cv::Point3f(-966.982, 204.371, 1);
     vanishPt_z = cv::Point3f(1443.49, 9398.12, 1);
-
-    // by click
     Origin = cv::Point3f(1390, 2173, 1);
+    */
 
     scale_x = (0.5 * (refx.x - Origin.x)/(vanishPt_x.x - refx.x)
              + 0.5 * (refx.y - Origin.y)/(vanishPt_x.y - refx.y)) / REF_LENGTH_X;
@@ -338,6 +345,7 @@ void MainWindow::calProjectionMatrix(){
 
 // step 3: Use homography matrix to get texture map
 void MainWindow::getTextureMap(){
+
     cv::Mat Hxy = (cv::Mat_<float>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, Origin.x,
                                            scale_x*vanishPt_x.y, scale_y*vanishPt_y.y, Origin.y,
                                            scale_x*vanishPt_x.z, scale_y*vanishPt_y.z, Origin.z);
@@ -351,62 +359,66 @@ void MainWindow::getTextureMap(){
                                            scale_y*vanishPt_y.z, scale_z*vanishPt_z.z, Origin.z);
 
     cv::Mat dstImage;
-    cout << "texture map starts" << endl << endl;
-    cv::Mat tempImage = cv::Mat(image.size().height, image.size().width, image.type());
+    cv::Mat invImage;
+
+    cv::Mat tempImage = cv::Mat(image.size().height*2, image.size().width*2, image.type());
 
     /*
+    cout << "debug info " << endl << endl;
+    invImage = (cv::Mat_<float>(3,1) << 0, 224, 1);
+    dstImage = Hxz * invImage;
+    cout << "dstImage is:  " << dstImage << endl << endl;
+    cout << "x and y is:  " << dstImage.at<float>(0,0)/dstImage.at<float>(2,0) << "\t" << dstImage.at<float>(1,0)/dstImage.at<float>(2,0) << endl;
+
+
     cv::warpPerspective(image, dstImage, Hxy.inv(), tempImage.size());
-
-//    QImage Q_img = QImage((const unsigned char*)(dstImage.data), dstImage.cols, dstImage.rows, dstImage.step, QImage::Format_RGB888);
-//    ui->label->setPixmap(QPixmap::fromImage(Q_img).scaled(QPixmap::fromImage(Q_img).width()*img_scale,
-//                                                          QPixmap::fromImage(Q_img).height()*img_scale, Qt::KeepAspectRatio));
-
-    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Hxy_image.jpg", dstImage);
-
-    cv::warpPerspective(image, dstImage, Hxz.inv(), tempImage.size());
-    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Hxz_image.jpg", dstImage);
-
-    cv::warpPerspective(image, dstImage, Hyz.inv(), tempImage.size());
-    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Hyz_image.jpg", dstImage);
-
+    QImage Q_img = QImage ((const unsigned char*)(dstImage.data), dstImage.cols, dstImage.rows, dstImage.step, QImage::Format_RGB888);
+    ui->label->setPixmap(QPixmap::fromImage(Q_img).scaled(QPixmap::fromImage(Q_img).width()*img_scale,
+                                                          QPixmap::fromImage(Q_img).height()*img_scale, Qt::KeepAspectRatio));
     */
 
-    // inverse warping
-    cv::Mat invImage;
     cv::warpPerspective(image, dstImage, Hxy.inv(), tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Hxy_image.jpg", dstImage);
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/Hxy_image.jpg", dstImage);
     cv::warpPerspective(dstImage, invImage, Hxy, tempImage.size(), INTER_LINEAR);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Inv_Hxy_image.jpg", invImage);
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/Inv_Hxy_image.jpg", invImage);
 
 
     cv::warpPerspective(image, dstImage, Hxz.inv(), tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Hxz_image.jpg", dstImage);
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/Hxz_image.jpg", dstImage);
     cv::warpPerspective(dstImage, invImage, Hxz, tempImage.size(), INTER_LINEAR);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Inv_Hxz_image.jpg", invImage);
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/Inv_Hxz_image.jpg", invImage);
 
 
     cv::warpPerspective(image, dstImage, Hyz.inv(), tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Hyz_image.jpg", dstImage);
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/Hyz_image.jpg", dstImage);
     cv::warpPerspective(dstImage, invImage, Hyz, tempImage.size(), INTER_LINEAR);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Inv_Hyz_image.jpg", invImage);
-
-
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/Inv_Hyz_image.jpg", invImage);
 
 }
 
 
-
-
 // step 4: Mark interesting points
+void MainWindow::cal3DPosition(){
 
+//    Mat p_src, p_dst;
+//    p_src = (cv::Mat_<double>(3,1) << 379, 139, 1);
 
+//    p_dst = Hxy * p_src;
+//    cout << "3D Position xy is: " << p_dst << endl;
+//    cout << p_dst.at<double>(0,0)/p_dst.at<double>(0,2) << '\t' << p_dst.at<double>(0,1)/p_dst.at<double>(0,2) << endl;
 
+//    p_dst = Hxz * p_src;
+//    cout << "3D Position xz is: " << p_dst << endl;
+//    cout << p_dst.at<double>(0,0)/p_dst.at<double>(0,2) << '\t' << p_dst.at<double>(0,1)/p_dst.at<double>(0,2) << endl;
+
+//    p_dst = Hyz * p_src;
+//    cout << "3D Position yz is: " << p_dst << endl;
+//    cout << p_dst.at<double>(0,0)/p_dst.at<double>(0,2) << '\t' << p_dst.at<double>(0,1)/p_dst.at<double>(0,2) << endl;
+
+}
 
 
 // step 5: Generate 3D vrml models

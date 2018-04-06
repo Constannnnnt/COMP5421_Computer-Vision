@@ -94,6 +94,9 @@ private:
     cv::Point2f refy;
     cv::Point2f refz;
 
+    // 2D to 3D pespective transform matrix
+    // Mat Hxy, Hxz, Hyz;
+
     // private helper functions
     void display_image();
     void resetAll();
@@ -102,6 +105,8 @@ private:
     void calVanishingPt();
     void calProjectionMatrix();
     void getTextureMap();
+    //Point3f cal3DPosition(Point3f);
+    void cal3DPosition();
 
 };
 

@@ -101,6 +101,9 @@
    <property name="text">
     <string>Open Image</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
   <action name="actionZoom_in">
    <property name="text">
