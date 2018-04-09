@@ -6,6 +6,7 @@
 #include <queue>
 #include <math.h>
 #include <vector>
+#include <string>
 
 #include <QMainWindow>
 #include <QScrollArea>
@@ -39,6 +40,15 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    struct Face{
+        int id;
+        Mat texture;
+        string textureFileName;
+        vector<Point3f> coor2d;
+        vector<Point3f> coor3d;
+
+    };
+
     explicit MainWindow(QWidget *parent = 0);
 
     bool eventFilter(QObject *watched, QEvent *event);
@@ -84,34 +94,21 @@ private:
     double img_scale;
     double img_scale_min;
 
-    bool getVanish_mode_x;
-    bool getVanish_mode_y;
-    bool getVanish_mode_z;
-    bool getVanish_mode_o;
+    bool getVanish_mode_x, getVanish_mode_y, getVanish_mode_z, getVanish_mode_o, get3d_mode;
+    double scale_x, scale_y, scale_z;
+    vector<int> vanish_x, vanish_y, vanish_z;
+    cv::Point3f vanishPt_x, vanishPt_y, vanishPt_z, Origin;
+    cv::Point3f refx, refy, refz;
+
     bool setReference_x;
     bool setReference_y;
     bool setReference_z;
     bool refx_m, refy_m, refz_m, origin_m;
-    double scale_x;
-    double scale_y;
-    double scale_z;
-    vector<int> vanish_x;
-    vector<int> vanish_y;
-    vector<int> vanish_z;
-    cv::Point3f vanishPt_x;
-    cv::Point3f vanishPt_y;
-    cv::Point3f vanishPt_z;
-    cv::Point3f Origin;
-    cv::Point3f refx;
-    cv::Point3f refy;
-    cv::Point3f refz;
-    bool get3d_mode;
     int REF_LENGTH_X;
     int REF_LENGTH_Y;
     int REF_LENGTH_Z;
 
-    // 2D to 3D pespective transform matrix
-    // Mat Hxy, Hxz, Hyz;
+    vector<Face> faces;
 
     // private helper functions
     void display_image();
@@ -124,9 +121,12 @@ private:
     void cal3DPosition();
     float getRefHeight(Point3f r, Point3f b);
     Point3f get3dCoor(Point3f r, Point3f b);
-    void generateVRMLCode(const string &);
+    Point3f get3dCoor(Point3f r, float h);
+    void generateVRML(const string &);
 
 };
+
+
 
 #endif // MAINWINDOW_H
 
