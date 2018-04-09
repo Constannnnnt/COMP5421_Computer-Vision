@@ -74,9 +74,14 @@
     <addaction name="actionGet_vanish_y"/>
     <addaction name="actionGet_vanish_z"/>
     <addaction name="actionGet_origin"/>
+<<<<<<< HEAD
     <addaction name="actionset_reference_x"/>
     <addaction name="actionset_reference_y"/>
     <addaction name="actionset_reference_z"/>
+=======
+    <addaction name="separator"/>
+    <addaction name="actionGet_3D_point"/>
+>>>>>>> 0764eada45e59f31ed6b66124da4657f2913527c
    </widget>
    <widget class="QMenu" name="menuHelper">
     <property name="title">
@@ -103,6 +108,9 @@
   <action name="actionOpen_Image">
    <property name="text">
     <string>Open Image</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionZoom_in">
@@ -163,11 +171,16 @@
     <string>get origin</string>
    </property>
   </action>
+<<<<<<< HEAD
   <action name="actionset_reference_x">
+=======
+  <action name="actionGet_3D_point">
+>>>>>>> 0764eada45e59f31ed6b66124da4657f2913527c
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
+<<<<<<< HEAD
     <string>set reference x</string>
    </property>
   </action>
@@ -185,6 +198,9 @@
    </property>
    <property name="text">
     <string>set reference z</string>
+=======
+    <string>get 3D point</string>
+>>>>>>> 0764eada45e59f31ed6b66124da4657f2913527c
    </property>
   </action>
  </widget>

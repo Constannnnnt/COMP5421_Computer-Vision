@@ -30,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     refx_m = false;
     refy_m = false;
     refz_m = false;
+    get3d_mode = false;
 
 }
 
@@ -121,6 +122,8 @@ void MainWindow::resetAll(){
     refx_m = false;
     refy_m = false;
     refz_m = false;
+    ui->actionGet_3D_point->setChecked(false);
+    getVanish_mode_x = getVanish_mode_y = getVanish_mode_z = getVanish_mode_o =  get3d_mode = false;
 }
 
 void MainWindow::on_actionGet_vanish_x_triggered(bool checked){
@@ -204,6 +207,15 @@ void MainWindow::on_actionset_reference_z_triggered(bool checked){
     getVanish_mode_x = getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = setReference_y = setReference_x = false;
 }
 
+void MainWindow::on_actionGet_3D_point_triggered(bool checked){
+    get3d_mode = checked;
+
+    ui->actionGet_vanish_x->setChecked(false);
+    ui->actionGet_vanish_y->setChecked(false);
+    ui->actionGet_vanish_z->setChecked(false);
+    getVanish_mode_x = getVanish_mode_y = getVanish_mode_z = false;
+}
+
 void MainWindow::on_actionDraw_vanish_triggered(){
     cout << "size of vanish x: " << vanish_x.size() << endl;
     cout << "size of vanish y: " << vanish_y.size() << endl;
@@ -235,6 +247,8 @@ void MainWindow::on_actionDraw_vanish_triggered(){
     calVanishingPt();
     calProjectionMatrix();
     getTextureMap();
+    cal3DPosition();
+
 }
 
 // event filter
@@ -279,6 +293,9 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             refz = cv::Point3f(p.x() , p.y() , 1);
             cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(128,128,128), 5);
             refz_m = true;
+        }
+        else if(get3d_mode){
+
         }
         else
             return false;
@@ -415,6 +432,7 @@ void MainWindow::calProjectionMatrix(){
 
 // step 3: Use homography matrix to get texture map
 void MainWindow::getTextureMap(){
+
     cv::Mat Hxy = (cv::Mat_<double>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, Origin.x,
                                            scale_x*vanishPt_x.y, scale_y*vanishPt_y.y, Origin.y,
                                            scale_x*vanishPt_x.z, scale_y*vanishPt_y.z, Origin.z);
@@ -427,13 +445,63 @@ void MainWindow::getTextureMap(){
                                            scale_y*vanishPt_y.y, scale_z*vanishPt_z.y, Origin.y,
                                            scale_y*vanishPt_y.z, scale_z*vanishPt_z.z, Origin.z);
 
+    /*
+    cv::warpPerspective(image, dstImage, Hxy.inv(), tempImage.size());
+    QImage Q_img = QImage ((const unsigned char*)(dstImage.data), dstImage.cols, dstImage.rows, dstImage.step, QImage::Format_RGB888);
+    ui->label->setPixmap(QPixmap::fromImage(Q_img).scaled(QPixmap::fromImage(Q_img).width()*img_scale,
+                                                          QPixmap::fromImage(Q_img).height()*img_scale, Qt::KeepAspectRatio));
+    */
+
     cv::Mat dstImage;
-    cout << "texture map starts" << endl << endl;
-    cv::Mat tempImage = cv::Mat(image.size().height, image.size().width, image.type());
+    cv::Mat perspective_matrix;
+    cv::Mat tempImage;
+
+    Point2f v1 = Point2f(162, 227);
+    Point2f v2 = Point2f(173, 367);
+    Point2f v3 = Point2f(391, 542);
+    Point2f v4 = Point2f(392, 399);
+    Point2f v5 = Point2f(607, 430);
+    Point2f v6 = Point2f(618, 290);
+    Point2f v7 = Point2f(379, 139);
+    //Point2f v8 = Point2f(382, 277);
+
+    // patch xy
+    Point2f pts1[] = {v4, v6, v1, v7};
+    Point2f pts2[] = {Point2f(0,0), Point2f(REF_LENGTH_X,0), Point2f(0,REF_LENGTH_Y), Point2f(REF_LENGTH_X,REF_LENGTH_Y)};
+
+    perspective_matrix = cv::getPerspectiveTransform(pts1, pts2);
+    tempImage = cv::Mat(REF_LENGTH_Y, REF_LENGTH_X, image.type());
+
+    cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
+    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
+    imwrite("../../../../SingleViewModel/temp/xy_patch.jpg", dstImage);
+
+    // patch xz
+    Point2f pts3[] = {v3, v5, v4, v6};
+    Point2f pts4[] = {Point2f(0,0), Point2f(REF_LENGTH_X,0), Point2f(0,REF_LENGTH_Z), Point2f(REF_LENGTH_X,REF_LENGTH_Z)};
+
+    perspective_matrix = cv::getPerspectiveTransform(pts3, pts4);
+    tempImage = cv::Mat(REF_LENGTH_Z, REF_LENGTH_X, image.type());
+
+    cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
+    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
+    imwrite("../../../../SingleViewModel/temp/xz_patch.jpg", dstImage);
+
+    // patch yz
+    Point2f pts5[] = {v3, v2, v4, v1};
+    Point2f pts6[] = {Point2f(0,0), Point2f(REF_LENGTH_Y,0), Point2f(0,REF_LENGTH_Z), Point2f(REF_LENGTH_Y,REF_LENGTH_Z)};
+
+    perspective_matrix = cv::getPerspectiveTransform(pts5, pts6);
+    tempImage = cv::Mat(REF_LENGTH_Z, REF_LENGTH_Y, image.type());
+
+    cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
+    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
+    imwrite("../../../../SingleViewModel/temp/yz_patch.jpg", dstImage);
 
 
-    // inverse warping
-    cv::Mat invImage;
+    /*
+    cv::Mat tempImage = cv::Mat(image.size().height*2, image.size().width*2, image.type());
+
     cv::warpPerspective(image, dstImage, Hxy.inv(), tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
     imwrite("../../../../SingleViewModeling/SVM/temp/Hxy_image.jpg", dstImage);
@@ -454,20 +522,169 @@ void MainWindow::getTextureMap(){
     cv::warpPerspective(dstImage, invImage, Hyz, tempImage.size(), INTER_LINEAR);
     imwrite("../../../../SingleViewModeling/SVM/temp/Inv_Hyz_image.jpg", invImage);
 
+// step 4: Mark interesting points
+inline float norml2(Point3f p){
+    return sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
+}
+
+float MainWindow::getRefHeight(Point3f r, Point3f b){
+
+    // we want to find Reference height R
+    float R;
+    float H = REF_LENGTH_Z;
+    Point3f b0, v, t, temp;
+    b0 = Point3f(Origin.x, Origin.y, 1);
+    temp = ( b.cross(b0) ).cross( vanishPt_x.cross(vanishPt_y) );
+    v = Point3f(temp.x/temp.z, temp.y/temp.z, 1);
+    temp = ( v.cross(refz) ).cross( r.cross(b) );
+    t = Point3f(temp.x/temp.z, temp.y/temp.z, 1);
+
+    R = H * norml2(r-b) * norml2(vanishPt_z-t) / ( norml2(t-b) * norml2(vanishPt_z-r) );
+    return R;
+}
+
+Point3f MainWindow::get3dCoor(Point3f r, Point3f b){
+
+    float z0 = getRefHeight(r, b);
+    //cout << "\n 3D height z0 is:  " << z0 << endl;
+
+    Mat point_3d;
+    Mat point_2d = ( cv::Mat_<float>(3,1) << r.x, r.y, r.z );
+    Mat Hz = (cv::Mat_<float>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, scale_z*z0*vanishPt_z.x + Origin.x,
+                                      scale_x*vanishPt_x.y, scale_y*vanishPt_y.y, scale_z*z0*vanishPt_z.y + Origin.y,
+                                      scale_x*vanishPt_x.z, scale_y*vanishPt_y.z, scale_z*z0*vanishPt_z.z + Origin.z);
+
+    point_3d = Hz.inv() * point_2d;
+
+    Point3f p = Point3f(point_3d.at<float>(0,0)/point_3d.at<float>(2,0),
+                        point_3d.at<float>(1,0)/point_3d.at<float>(2,0), z0);
+    return p;
+}
+
+void MainWindow::cal3DPosition(){
+
+    /*
+    Point2f v1 = Point2f(162, 227);
+    Point2f v2 = Point2f(173, 367);
+    Point2f v3 = Point2f(391, 542);
+    Point2f v4 = Point2f(392, 399);
+    Point2f v5 = Point2f(607, 430);
+    Point2f v6 = Point2f(618, 290);
+    Point2f v7 = Point2f(379, 139);
+    */
+
+    Point3f r1 = Point3f(618, 290, 1);
+    Point3f b1 = Point3f(607, 430, 1);
+    Point3f p1 = get3dCoor(r1, b1);
+    cout << "p1 coordinate is: " << p1 << endl;
+
+
+
+}
+
+
+// step 5: Generate 3D vrml models
+void SingleViewModel::generateVRML(const string &prefix)
+{
+    string fname = prefix + ".wrl";
+    ofstream ofile(fname.c_str());
+    ofile << "#VRML V2.0 utf8" << endl << endl;
+    ofile << "Collision {" << endl;
+    ofile << "    collide FALSE" << endl;
+    ofile << "    children [" << endl;
+
+    for(int i=0; i<faces.size(); i++){
+        Face *face = faces[i];
+        ofile << "Shape{" << endl;
+        ofile << "    appearance  Appearance{" << endl;
+        ofile << "        texture  ImageTexture{" << endl;
+        ofile << "           url \"" << face->TexFileName() << "\"" << endl;
+        ofile << "        }" << endl;
+        ofile << "    }" << endl;
+        ofile << "    geometry IndexedFaceSet {" << endl;
+        ofile << "       coord Coordinate {" << endl;
+        ofile << "         point[";
+        for(int j=3; j>0; j--)
+        {
+            cv::Point3d p = face->realvertexs[j]->Coor3d();
+            ofile << p.x << " " << p.y << " " << p.z << ", ";
+        }
+        cv::Point3d p = face->realvertexs[0]->Coor3d();
+        ofile << p.x << " " << p.y << " " << p.z << "]" << endl;
+        ofile<<"       }" << endl;
+        ofile<<"       coordIndex [0,1,2,3,-1]" << endl;
+        ofile<<"       ccw TRUE" << endl;
+        ofile<<"       solid FALSE" << endl;
+        ofile<<"       texCoord TextureCoordinate {" << endl;
+        ofile<<"       point [0  0, 1  0, 1  1, 0  1]" << endl;
+        ofile<<"       }" << endl;
+        ofile<<"       texCoordIndex[0 1 2 3 -1]" << endl;
+        ofile<<"    }" << endl;
+        ofile<<"}" << endl;
+    }
+
 }
 
 
 
-
-// step 4: Mark interesting points
-
-
-
-
-
-// step 5: Generate 3D vrml models
-
-
+/*
+void SingleViewModel::generateVRMLCode(const string &prefix)
+{
+    for(int i=0;i<faces.size();i++)
+    {
+        Face *face=faces[i];
+        char fID[20];
+        sprintf(fID,"_%.3d.png",face->ID());
+        string fname(fID);
+        fname=prefix+fname;
+        face->Texture().save(fname.c_str());
+        face->textureFileName=fname;
+    }
+    string fname=prefix+".wrl";
+    ofstream ofile(fname.c_str());
+    ofile<<"#VRML V2.0 utf8"<<endl;
+    ofile<<"Transform {"<<endl;
+    ofile<<"  translation "<<camCenter.x<<" "<<camCenter.y<<" "<<camCenter.z<<endl;
+    ofile<<"  children ["<<endl;
+    ofile<<"    Shape {"<<endl;
+    ofile<<"      geometry Sphere {"<<endl;
+    ofile<<"        radius 0.15"<<endl;
+    ofile<<"      }"<<endl;
+    ofile<<"    }"<<endl;
+    ofile<<"  ]"<<endl;
+    ofile<<"}"<<endl;
+    for(int i=0;i<faces.size();i++)
+    {
+        Face *face=faces[i];
+        ofile<<"Shape{"<<endl;
+        ofile<<"    appearance  Appearance{"<<endl;
+        ofile<<"        texture  ImageTexture{"<<endl;
+        ofile<<"           url \""<<face->TexFileName()<<"\""<<endl;
+        ofile<<"        }"<<endl;
+        ofile<<"    }"<<endl;
+        ofile<<"    geometry IndexedFaceSet {"<<endl;
+        ofile<<"       coord Coordinate {"<<endl;
+        ofile<<"         point[";
+        for(int j=3;j>0;j--)
+        {
+            cv::Point3d p=face->realvertexs[j]->Coor3d();
+            ofile<<p.x<<" "<<p.y<<" "<<p.z<<", ";
+        }
+        cv::Point3d p=face->realvertexs[0]->Coor3d();
+        ofile<<p.x<<" "<<p.y<<" "<<p.z<<"]"<<endl;
+        ofile<<"       }"<<endl;
+        ofile<<"       coordIndex [0,1,2,3,-1]"<<endl;
+        ofile<<"       ccw TRUE"<<endl;
+        ofile<<"       solid FALSE"<<endl;
+        ofile<<"       texCoord TextureCoordinate {"<<endl;
+        ofile<<"       point [0  0, 1  0, 1  1, 0  1]"<<endl;
+        ofile<<"       }"<<endl;
+        ofile<<"       texCoordIndex[0 1 2 3 -1]"<<endl;
+        ofile<<"    }"<<endl;
+        ofile<<"}"<<endl;
+    }
+}
+*/
 
 
 
