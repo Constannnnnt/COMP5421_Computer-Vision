@@ -106,9 +106,9 @@ private:
     cv::Point3f refy;
     cv::Point3f refz;
     bool get3d_mode;
-    int REF_LENGTH_X;
-    int REF_LENGTH_Y;
-    int REF_LENGTH_Z;
+//    int REF_LENGTH_X;
+//    int REF_LENGTH_Y;
+//    int REF_LENGTH_Z;
 
     // 2D to 3D pespective transform matrix
     // Mat Hxy, Hxz, Hyz;

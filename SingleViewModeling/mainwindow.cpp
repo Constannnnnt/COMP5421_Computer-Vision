@@ -407,6 +407,8 @@ void MainWindow::calProjectionMatrix(){
     REF_LENGTH_Y = sqrt((refy.x - Origin.x)*(refy.x - Origin.x) + (refy.y - Origin.y)*(refy.y - Origin.y));
     REF_LENGTH_Z = sqrt((refz.x - Origin.x)*(refz.x - Origin.x) + (refz.y - Origin.y)*(refz.y - Origin.y));
 
+    cout << REF_LENGTH_X << " " << REF_LENGTH_Y << " " << REF_LENGTH_Z << endl;
+
 
     scale_x = (0.5 * (refx.x - Origin.x)/(vanishPt_x.x - refx.x)
                  + 0.5 * (refx.y - Origin.y)/(vanishPt_x.y - refx.y)) / REF_LENGTH_X;
@@ -474,8 +476,8 @@ void MainWindow::getTextureMap(){
 
     cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-//    imwrite("../../../../SingleViewModeling/SingleViewModel/temp/xy_patch.jpg", dstImage);
-    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
+    imwrite("../../../../SingleViewModeling/SingleViewModel/temp/xy_patch.jpg", dstImage);
+//    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
 
     // patch xz
     Point2f pts3[] = {v3, v5, v4, v6};
@@ -486,8 +488,8 @@ void MainWindow::getTextureMap(){
 
     cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-//    imwrite("../../../../SingleViewModeling/SingleViewModel/temp/xz_patch.jpg", dstImage);
-    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
+    imwrite("../../../../SingleViewModeling/SingleViewModel/temp/xz_patch.jpg", dstImage);
+//    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
 
     // patch yz
     Point2f pts5[] = {v3, v2, v4, v1};
@@ -498,8 +500,8 @@ void MainWindow::getTextureMap(){
 
     cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-//    imwrite("../../../../SingleViewModeling/SingleViewModel/temp/yz_patch.jpg", dstImage);
-    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
+    imwrite("../../../../SingleViewModeling/SingleViewModel/temp/yz_patch.jpg", dstImage);
+//    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
 
 
     /*
