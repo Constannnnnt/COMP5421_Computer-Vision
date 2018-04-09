@@ -100,9 +100,9 @@ private:
     cv::Point3f vanishPt_y;
     cv::Point3f vanishPt_z;
     cv::Point3f Origin;
-    cv::Point2f refx;
-    cv::Point2f refy;
-    cv::Point2f refz;
+    cv::Point3f refx;
+    cv::Point3f refy;
+    cv::Point3f refz;
 
     // private helper functions
     void display_image();

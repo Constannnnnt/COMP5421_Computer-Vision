@@ -1,9 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#define REF_LENGTH_X 620
-#define REF_LENGTH_Y 284
-#define REF_LENGTH_Z 224
+//#define REF_LENGTH_X 300
+//#define REF_LENGTH_Y 400
+//#define REF_LENGTH_Z 180
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -220,12 +220,12 @@ void MainWindow::on_actionDraw_vanish_triggered(){
                                     cv::Point(vanish_x[4*i+2], vanish_x[4*i+3]), CV_RGB(255,0,0), 4); // blue
         }
     if(vanish_y.size()>0)
-        for(uint i=0; i<vanish_x.size()/4; i++){
+        for(uint i=0; i<vanish_y.size()/4; i++){
             cv::line(contour_image, cv::Point(vanish_y[4*i], vanish_y[4*i+1]),
                                     cv::Point(vanish_y[4*i+2], vanish_y[4*i+3]), CV_RGB(0,255,0), 4); // green
         }
     if(vanish_z.size()>0)
-        for(uint i=0; i<vanish_x.size()/4; i++){
+        for(uint i=0; i<vanish_z.size()/4; i++){
             cv::line(contour_image, cv::Point(vanish_z[4*i], vanish_z[4*i+1]),
                                     cv::Point(vanish_z[4*i+2], vanish_z[4*i+3]), CV_RGB(0,0,255), 4); // red
         }
@@ -251,16 +251,16 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         cout << p.x() << "\t" << p.y() << endl;
 
         if(getVanish_mode_x){
-            vanish_x.push_back( p.x() );
-            vanish_x.push_back( p.y() );
+            vanish_x.push_back( p.x());
+            vanish_x.push_back( p.y());
         }
         else if(getVanish_mode_y){
-            vanish_y.push_back( p.x() );
-            vanish_y.push_back( p.y() );
+            vanish_y.push_back( p.x());
+            vanish_y.push_back( p.y());
         }
         else if(getVanish_mode_z){
-            vanish_z.push_back( p.x() );
-            vanish_z.push_back( p.y() );
+            vanish_z.push_back( p.x());
+            vanish_z.push_back( p.y());
         }
         else if(getVanish_mode_o){
             Origin = cv::Point3f(p.x(), p.y(), 1);
@@ -268,15 +268,15 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             origin_m = true;
         }
         else if (setReference_x) {
-            refx = cv::Point2f(p.x(), p.y());
+            refx = cv::Point3f(p.x() , p.y() , 1);
             cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(128,128,128), 5);
             refx_m = true;
         } else if (setReference_y) {
-            refy = cv::Point2f(p.x(), p.y());
+            refy = cv::Point3f(p.x() , p.y() , 1);
             cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(128,128,128), 5);
             refy_m = true;
         } else if (setReference_z) {
-            refz = cv::Point2f(p.x(), p.y());
+            refz = cv::Point3f(p.x() , p.y() , 1);
             cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(128,128,128), 5);
             refz_m = true;
         }
@@ -298,18 +298,14 @@ void MainWindow::calVanishingPt(){
     cv::Point3d point1, point2;
     cv::Point3d line;
 
-    // M = (cv::Mat_<float>(3,3) << 1,2,3, 4,5,6, 7,8,9.1);
-    // temp_M = (cv::Mat_<float>(3,3) << 1,0,0, 0,0,0, 0,0,0);
-    // cout << "temp_M is:  " << temp_M << endl;
-
     // get vanishing point x
-    M = (cv::Mat_<float>(3,3) << 0,0,0, 0,0,0, 0,0,0);
+    M = (cv::Mat_<double>(3,3) << 0,0,0, 0,0,0, 0,0,0);
     for(uint i=0; i<vanish_x.size()/4; i++){
         point1 = cv::Point3f(vanish_x[4*i], vanish_x[4*i+1], 1);
         point2 = cv::Point3f(vanish_x[4*i+2], vanish_x[4*i+3], 1);
         line = point1.cross(point2);
 
-        temp_M = (cv::Mat_<float>(3,3) << line.x*line.x, line.x*line.y, line.x*line.z,
+        temp_M = (cv::Mat_<double>(3,3) << line.x*line.x, line.x*line.y, line.x*line.z,
                                           line.x*line.y, line.y*line.y, line.y*line.z,
                                           line.x*line.z, line.y*line.z, line.z*line.z);
         M = M + temp_M;
@@ -319,19 +315,19 @@ void MainWindow::calVanishingPt(){
     cout << "eigen values x: " << EigenValue << endl;
     cout << "eigen vectors x: " << EigenVector << endl << endl;
 
-    vanishPt_x = cv::Point3f(EigenVector.at<float>(2,0)/EigenVector.at<float>(2,2),
-                             EigenVector.at<float>(2,1)/EigenVector.at<float>(2,2), 1);
+    vanishPt_x = cv::Point3f(EigenVector.at<double>(2,0)/EigenVector.at<double>(2,2),
+                             EigenVector.at<double>(2,1)/EigenVector.at<double>(2,2), 1);
     cout << "Vanishing Point x: " << vanishPt_x << endl;
 
 
     // get vanishing point y
-    M = (cv::Mat_<float>(3,3) << 0,0,0, 0,0,0, 0,0,0);
+    M = (cv::Mat_<double>(3,3) << 0,0,0, 0,0,0, 0,0,0);
     for(uint i=0; i<vanish_y.size()/4; i++){
         point1 = cv::Point3f(vanish_y[4*i], vanish_y[4*i+1], 1);
         point2 = cv::Point3f(vanish_y[4*i+2], vanish_y[4*i+3], 1);
         line = point1.cross(point2);
 
-        temp_M = (cv::Mat_<float>(3,3) << line.x*line.x, line.x*line.y, line.x*line.z,
+        temp_M = (cv::Mat_<double>(3,3) << line.x*line.x, line.x*line.y, line.x*line.z,
                                           line.x*line.y, line.y*line.y, line.y*line.z,
                                           line.x*line.z, line.y*line.z, line.z*line.z);
         M = M + temp_M;
@@ -341,19 +337,19 @@ void MainWindow::calVanishingPt(){
     cout << "eigen values y: " << EigenValue << endl;
     cout << "eigen vectors y: " << EigenVector << endl << endl;
 
-    vanishPt_y = cv::Point3f(EigenVector.at<float>(2,0)/EigenVector.at<float>(2,2),
-                             EigenVector.at<float>(2,1)/EigenVector.at<float>(2,2), 1);
+    vanishPt_y = cv::Point3f(EigenVector.at<double>(2,0)/EigenVector.at<double>(2,2),
+                             EigenVector.at<double>(2,1)/EigenVector.at<double>(2,2), 1);
     cout << "Vanishing Point y: " << vanishPt_y << endl;
 
 
     // get vanishing point z
-    M = (cv::Mat_<float>(3,3) << 0,0,0, 0,0,0, 0,0,0);
+    M = (cv::Mat_<double>(3,3) << 0,0,0, 0,0,0, 0,0,0);
     for(uint i=0; i<vanish_z.size()/4; i++){
         point1 = cv::Point3f(vanish_z[4*i], vanish_z[4*i+1], 1);
         point2 = cv::Point3f(vanish_z[4*i+2], vanish_z[4*i+3], 1);
         line = point1.cross(point2);
 
-        temp_M = (cv::Mat_<float>(3,3) << line.x*line.x, line.x*line.y, line.x*line.z,
+        temp_M = (cv::Mat_<double>(3,3) << line.x*line.x, line.x*line.y, line.x*line.z,
                                           line.x*line.y, line.y*line.y, line.y*line.z,
                                           line.x*line.z, line.y*line.z, line.z*line.z);
         M = M + temp_M;
@@ -363,8 +359,8 @@ void MainWindow::calVanishingPt(){
     cout << "eigen values z: " << EigenValue << endl;
     cout << "eigen vectors z: " << EigenVector << endl << endl;
 
-    vanishPt_z = cv::Point3f(EigenVector.at<float>(2,0)/EigenVector.at<float>(2,2),
-                             EigenVector.at<float>(2,1)/EigenVector.at<float>(2,2), 1);
+    vanishPt_z = cv::Point3f(EigenVector.at<double>(2,0)/EigenVector.at<double>(2,2),
+                             EigenVector.at<double>(2,1)/EigenVector.at<double>(2,2), 1);
     cout << "Vanishing Point z: " << vanishPt_z << endl << endl;
 
 }
@@ -390,26 +386,13 @@ void MainWindow::calProjectionMatrix(){
         return;
     }
 
-    // Choose three reference points
+    int REF_LENGTH_X = sqrt((refx.x - Origin.x)*(refx.x - Origin.x) + (refx.y - Origin.y)*(refx.y - Origin.y));
+    int REF_LENGTH_Y = sqrt((refy.x - Origin.x)*(refy.x - Origin.x) + (refy.y - Origin.y)*(refy.y - Origin.y));
+    int REF_LENGTH_Z = sqrt((refz.x - Origin.x)*(refz.x - Origin.x) + (refz.y - Origin.y)*(refz.y - Origin.y));
 
-//    // by measurement
-//    refx = cv::Point2f(2660, 1580);
-//    refy = cv::Point2f(803, 1680);
-//    refz = cv::Point2f(1387, 1433);
-
-//    // by click
-//    // vanishPt_x = [5345.87, 345.158, 1]
-//    // vanishPt_y = [-966.982, 204.371, 1]
-//    // vanishPt_z = [1443.49, 9398.12, 1]
-//    vanishPt_x = cv::Point3f(5345.87, 345.158, 1);
-//    vanishPt_y = cv::Point3f(-966.982, 204.371, 1);
-//    vanishPt_z = cv::Point3f(1443.49, 9398.12, 1);
-
-//    // by click
-//    Origin = cv::Point3f(1390, 2173, 1);
 
     scale_x = (0.5 * (refx.x - Origin.x)/(vanishPt_x.x - refx.x)
-             + 0.5 * (refx.y - Origin.y)/(vanishPt_x.y - refx.y)) / REF_LENGTH_X;
+                 + 0.5 * (refx.y - Origin.y)/(vanishPt_x.y - refx.y)) / REF_LENGTH_X;
 
     scale_y = (0.5 * (refy.x - Origin.x)/(vanishPt_y.x - refy.x)
              + 0.5 * (refy.y - Origin.y)/(vanishPt_y.y - refy.y)) / REF_LENGTH_Y;
@@ -421,7 +404,7 @@ void MainWindow::calProjectionMatrix(){
     cout << "scale_y is: " << scale_y << endl;
     cout << "scale_z is: " << scale_z << endl << endl;
 
-    ProjMatrix = (cv::Mat_<float>(3,4) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, scale_z*vanishPt_z.x, Origin.x,
+    ProjMatrix = (cv::Mat_<double>(3,4) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, scale_z*vanishPt_z.x, Origin.x,
                                           scale_x*vanishPt_x.y, scale_y*vanishPt_y.y, scale_z*vanishPt_z.y, Origin.y,
                                           scale_x*vanishPt_x.z, scale_y*vanishPt_y.z, scale_z*vanishPt_z.z, Origin.z);
 
@@ -432,15 +415,15 @@ void MainWindow::calProjectionMatrix(){
 
 // step 3: Use homography matrix to get texture map
 void MainWindow::getTextureMap(){
-    cv::Mat Hxy = (cv::Mat_<float>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, Origin.x,
+    cv::Mat Hxy = (cv::Mat_<double>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, Origin.x,
                                            scale_x*vanishPt_x.y, scale_y*vanishPt_y.y, Origin.y,
                                            scale_x*vanishPt_x.z, scale_y*vanishPt_y.z, Origin.z);
 
-    cv::Mat Hxz = (cv::Mat_<float>(3,3) << scale_x*vanishPt_x.x, scale_z*vanishPt_z.x, Origin.x,
+    cv::Mat Hxz = (cv::Mat_<double>(3,3) << scale_x*vanishPt_x.x, scale_z*vanishPt_z.x, Origin.x,
                                            scale_x*vanishPt_x.y, scale_z*vanishPt_z.y, Origin.y,
                                            scale_x*vanishPt_x.z, scale_z*vanishPt_z.z, Origin.z);
 
-    cv::Mat Hyz = (cv::Mat_<float>(3,3) << scale_y*vanishPt_y.x, scale_z*vanishPt_z.x, Origin.x,
+    cv::Mat Hyz = (cv::Mat_<double>(3,3) << scale_y*vanishPt_y.x, scale_z*vanishPt_z.x, Origin.x,
                                            scale_y*vanishPt_y.y, scale_z*vanishPt_z.y, Origin.y,
                                            scale_y*vanishPt_y.z, scale_z*vanishPt_z.z, Origin.z);
 
@@ -448,49 +431,28 @@ void MainWindow::getTextureMap(){
     cout << "texture map starts" << endl << endl;
     cv::Mat tempImage = cv::Mat(image.size().height, image.size().width, image.type());
 
-    /*
-    cv::warpPerspective(image, dstImage, Hxy.inv(), tempImage.size());
-
-//    QImage Q_img = QImage((const unsigned char*)(dstImage.data), dstImage.cols, dstImage.rows, dstImage.step, QImage::Format_RGB888);
-//    ui->label->setPixmap(QPixmap::fromImage(Q_img).scaled(QPixmap::fromImage(Q_img).width()*img_scale,
-//                                                          QPixmap::fromImage(Q_img).height()*img_scale, Qt::KeepAspectRatio));
-
-    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Hxy_image.jpg", dstImage);
-
-    cv::warpPerspective(image, dstImage, Hxz.inv(), tempImage.size());
-    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Hxz_image.jpg", dstImage);
-
-    cv::warpPerspective(image, dstImage, Hyz.inv(), tempImage.size());
-    cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Hyz_image.jpg", dstImage);
-
-    */
 
     // inverse warping
     cv::Mat invImage;
     cv::warpPerspective(image, dstImage, Hxy.inv(), tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Hxy_image.jpg", dstImage);
+    imwrite("../../../../SingleViewModeling/SVM/temp/Hxy_image.jpg", dstImage);
     cv::warpPerspective(dstImage, invImage, Hxy, tempImage.size(), INTER_LINEAR);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Inv_Hxy_image.jpg", invImage);
+    imwrite("../../../../SingleViewModeling/SVM/temp/Inv_Hxy_image.jpg", invImage);
 
 
     cv::warpPerspective(image, dstImage, Hxz.inv(), tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Hxz_image.jpg", dstImage);
+    imwrite("../../../../SingleViewModeling/SVM/temp/Hxz_image.jpg", dstImage);
     cv::warpPerspective(dstImage, invImage, Hxz, tempImage.size(), INTER_LINEAR);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Inv_Hxz_image.jpg", invImage);
+    imwrite("../../../../SingleViewModeling/SVM/temp/Inv_Hxz_image.jpg", invImage);
 
 
     cv::warpPerspective(image, dstImage, Hyz.inv(), tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Hyz_image.jpg", dstImage);
+    imwrite("../../../../SingleViewModeling/SVM/temp/Hyz_image.jpg", dstImage);
     cv::warpPerspective(dstImage, invImage, Hyz, tempImage.size(), INTER_LINEAR);
-    imwrite("/home/jguoaj/Desktop/SVM/temp/Inv_Hyz_image.jpg", invImage);
-
-
+    imwrite("../../../../SingleViewModeling/SVM/temp/Inv_Hyz_image.jpg", invImage);
 
 }
 
