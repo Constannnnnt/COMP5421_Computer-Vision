@@ -1,9 +1,13 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-//#define REF_LENGTH_X 300
-//#define REF_LENGTH_Y 400
-//#define REF_LENGTH_Z 183
+// #define REF_LENGTH_X 300
+// #define REF_LENGTH_Y 400
+// #define REF_LENGTH_Z 183
+
+// #define REF_LENGTH_X 620
+// #define REF_LENGTH_Y 284
+// #define REF_LENGTH_Z 224
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -116,12 +120,8 @@ void MainWindow::resetAll(){
     ui->actionGet_vanish_z->setChecked(false);
     ui->actionGet_origin->setChecked(false);
     getVanish_mode_x = getVanish_mode_y = getVanish_mode_z = getVanish_mode_o = false;
-    setReference_x = false;
-    setReference_y = false;
-    setReference_z = false;
-    refx_m = false;
-    refy_m = false;
-    refz_m = false;
+    setReference_x = setReference_y = setReference_z = false;
+    refx_m = refy_m = refz_m = false;
     ui->actionGet_3D_point->setChecked(false);
     getVanish_mode_x = getVanish_mode_y = getVanish_mode_z = getVanish_mode_o =  get3d_mode = false;
 }
@@ -248,6 +248,7 @@ void MainWindow::on_actionDraw_vanish_triggered(){
     calProjectionMatrix();
     getTextureMap();
     cal3DPosition();
+    generateVRML(string("sony"));
 
 }
 
@@ -265,16 +266,16 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         cout << p.x() << "\t" << p.y() << endl;
 
         if(getVanish_mode_x){
-            vanish_x.push_back( p.x());
-            vanish_x.push_back( p.y());
+            vanish_x.push_back( p.x() );
+            vanish_x.push_back( p.y() );
         }
         else if(getVanish_mode_y){
-            vanish_y.push_back( p.x());
-            vanish_y.push_back( p.y());
+            vanish_y.push_back( p.x() );
+            vanish_y.push_back( p.y() );
         }
         else if(getVanish_mode_z){
-            vanish_z.push_back( p.x());
-            vanish_z.push_back( p.y());
+            vanish_z.push_back( p.x() );
+            vanish_z.push_back( p.y() );
         }
         else if(getVanish_mode_o){
             Origin = cv::Point3f(p.x(), p.y(), 1);
@@ -315,6 +316,10 @@ void MainWindow::calVanishingPt(){
     cv::Point3d point1, point2;
     cv::Point3d line;
 
+    // M = (cv::Mat_<double>(3,3) << 1,2,3, 4,5,6, 7,8,9.1);
+    // temp_M = (cv::Mat_<double>(3,3) << 1,0,0, 0,0,0, 0,0,0);
+    // cout << "temp_M is:  " << temp_M << endl;
+
     // get vanishing point x
     M = (cv::Mat_<double>(3,3) << 0,0,0, 0,0,0, 0,0,0);
     for(uint i=0; i<vanish_x.size()/4; i++){
@@ -328,7 +333,7 @@ void MainWindow::calVanishingPt(){
         M = M + temp_M;
     }
 
-    cv::eigen(M, EigenValue, EigenVector);
+    cv::eigen(M, EigenValue, EigenVector, DBL_EPSILON);
     cout << "eigen values x: " << EigenValue << endl;
     cout << "eigen vectors x: " << EigenVector << endl << endl;
 
@@ -350,7 +355,7 @@ void MainWindow::calVanishingPt(){
         M = M + temp_M;
     }
 
-    cv::eigen(M, EigenValue, EigenVector);
+    cv::eigen(M, EigenValue, EigenVector, DBL_EPSILON);
     cout << "eigen values y: " << EigenValue << endl;
     cout << "eigen vectors y: " << EigenVector << endl << endl;
 
@@ -372,7 +377,7 @@ void MainWindow::calVanishingPt(){
         M = M + temp_M;
     }
 
-    cv::eigen(M, EigenValue, EigenVector);
+    cv::eigen(M, EigenValue, EigenVector, DBL_EPSILON);
     cout << "eigen values z: " << EigenValue << endl;
     cout << "eigen vectors z: " << EigenVector << endl << endl;
 
@@ -385,6 +390,39 @@ void MainWindow::calVanishingPt(){
 
 // step 2: Calculate Projection Matrix
 void MainWindow::calProjectionMatrix(){
+    /*
+    refx = cv::Point3f(607, 430, 1);
+    refy = cv::Point3f(173, 367, 1);
+    refz = cv::Point3f(392, 399, 1);
+    vanishPt_x = cv::Point3f(4045.92, -1393.23, 1);
+    vanishPt_y = cv::Point3f(-1788.97, -1205.26, 1);
+    vanishPt_z = cv::Point3f(370.262, 3659.41, 1);
+    Origin = cv::Point3f(391, 542, 1);
+    */
+
+    /*
+    refx = cv::Point2f(2660, 1580);
+    refy = cv::Point2f(803, 1680);
+    refz = cv::Point2f(1387, 1433);
+    vanishPt_x = cv::Point3f(5345.87, 345.158, 1);
+    vanishPt_y = cv::Point3f(-966.982, 204.371, 1);
+    vanishPt_z = cv::Point3f(1443.49, 9398.12, 1);
+    Origin = cv::Point3f(1390, 2173, 1);
+    */
+
+    // scale_z could have up to a double deviation from correct if refz.x = Origin.x = 391
+    /*
+    cout << "\n scale_x \n";
+    cout << (refx.x - Origin.x)/(vanishPt_x.x - refx.x) << endl;
+    cout << (refx.y - Origin.y)/(vanishPt_x.y - refx.y) << endl;
+    cout << "\n scale_y \n";
+    cout << (refy.x - Origin.x)/(vanishPt_y.x - refy.x) << endl;
+    cout << (refy.y - Origin.y)/(vanishPt_y.y - refy.y) << endl;
+    cout << "\n scale_z \n";
+    cout << (refz.x - Origin.x)/(vanishPt_z.x - refz.x) << endl;
+    cout << (refz.y - Origin.y)/(vanishPt_z.y - refz.y) << endl;
+    */
+
     // Choose the Origin First
     if (!origin_m) {
         cout << "not selected origin" << endl;
@@ -411,7 +449,7 @@ void MainWindow::calProjectionMatrix(){
 
 
     scale_x = (0.5 * (refx.x - Origin.x)/(vanishPt_x.x - refx.x)
-                 + 0.5 * (refx.y - Origin.y)/(vanishPt_x.y - refx.y)) / REF_LENGTH_X;
+             + 0.5 * (refx.y - Origin.y)/(vanishPt_x.y - refx.y)) / REF_LENGTH_X;
 
     scale_y = (0.5 * (refy.x - Origin.x)/(vanishPt_y.x - refy.x)
              + 0.5 * (refy.y - Origin.y)/(vanishPt_y.y - refy.y)) / REF_LENGTH_Y;
@@ -423,7 +461,7 @@ void MainWindow::calProjectionMatrix(){
     cout << "scale_y is: " << scale_y << endl;
     cout << "scale_z is: " << scale_z << endl << endl;
 
-    ProjMatrix = (cv::Mat_<double>(3,4) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, scale_z*vanishPt_z.x, Origin.x,
+    ProjMatrix = (cv::Mat_<float>(3,4) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, scale_z*vanishPt_z.x, Origin.x,
                                           scale_x*vanishPt_x.y, scale_y*vanishPt_y.y, scale_z*vanishPt_z.y, Origin.y,
                                           scale_x*vanishPt_x.z, scale_y*vanishPt_y.z, scale_z*vanishPt_z.z, Origin.z);
 
@@ -435,15 +473,15 @@ void MainWindow::calProjectionMatrix(){
 // step 3: Use homography matrix to get texture map
 void MainWindow::getTextureMap(){
 
-    cv::Mat Hxy = (cv::Mat_<double>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, Origin.x,
+    cv::Mat Hxy = (cv::Mat_<float>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, Origin.x,
                                            scale_x*vanishPt_x.y, scale_y*vanishPt_y.y, Origin.y,
                                            scale_x*vanishPt_x.z, scale_y*vanishPt_y.z, Origin.z);
 
-    cv::Mat Hxz = (cv::Mat_<double>(3,3) << scale_x*vanishPt_x.x, scale_z*vanishPt_z.x, Origin.x,
+    cv::Mat Hxz = (cv::Mat_<float>(3,3) << scale_x*vanishPt_x.x, scale_z*vanishPt_z.x, Origin.x,
                                            scale_x*vanishPt_x.y, scale_z*vanishPt_z.y, Origin.y,
                                            scale_x*vanishPt_x.z, scale_z*vanishPt_z.z, Origin.z);
 
-    cv::Mat Hyz = (cv::Mat_<double>(3,3) << scale_y*vanishPt_y.x, scale_z*vanishPt_z.x, Origin.x,
+    cv::Mat Hyz = (cv::Mat_<float>(3,3) << scale_y*vanishPt_y.x, scale_z*vanishPt_z.x, Origin.x,
                                            scale_y*vanishPt_y.y, scale_z*vanishPt_z.y, Origin.y,
                                            scale_y*vanishPt_y.z, scale_z*vanishPt_z.z, Origin.z);
 
@@ -477,7 +515,8 @@ void MainWindow::getTextureMap(){
     cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
     imwrite("../../../../SingleViewModeling/SingleViewModel/temp/xy_patch.jpg", dstImage);
-//    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
+    // imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/xy_patch.jpg", dstImage);
+
 
     // patch xz
     Point2f pts3[] = {v3, v5, v4, v6};
@@ -488,8 +527,13 @@ void MainWindow::getTextureMap(){
 
     cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
+<<<<<<< HEAD
     imwrite("../../../../SingleViewModeling/SingleViewModel/temp/xz_patch.jpg", dstImage);
 //    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
+=======
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/xz_patch.jpg", dstImage);
+
+>>>>>>> 02f0ecd5506ebf9f22e095c51e92394df990290e
 
     // patch yz
     Point2f pts5[] = {v3, v2, v4, v1};
@@ -500,8 +544,12 @@ void MainWindow::getTextureMap(){
 
     cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
+<<<<<<< HEAD
     imwrite("../../../../SingleViewModeling/SingleViewModel/temp/yz_patch.jpg", dstImage);
 //    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
+=======
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
+>>>>>>> 02f0ecd5506ebf9f22e095c51e92394df990290e
 
 
     /*
@@ -509,30 +557,32 @@ void MainWindow::getTextureMap(){
 
     cv::warpPerspective(image, dstImage, Hxy.inv(), tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("../../../../SingleViewModeling/SVM/temp/Hxy_image.jpg", dstImage);
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/Hxy_image.jpg", dstImage);
     cv::warpPerspective(dstImage, invImage, Hxy, tempImage.size(), INTER_LINEAR);
-    imwrite("../../../../SingleViewModeling/SVM/temp/Inv_Hxy_image.jpg", invImage);
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/Inv_Hxy_image.jpg", invImage);
 
 
     cv::warpPerspective(image, dstImage, Hxz.inv(), tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("../../../../SingleViewModeling/SVM/temp/Hxz_image.jpg", dstImage);
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/Hxz_image.jpg", dstImage);
     cv::warpPerspective(dstImage, invImage, Hxz, tempImage.size(), INTER_LINEAR);
-    imwrite("../../../../SingleViewModeling/SVM/temp/Inv_Hxz_image.jpg", invImage);
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/Inv_Hxz_image.jpg", invImage);
 
 
     cv::warpPerspective(image, dstImage, Hyz.inv(), tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("../../../../SingleViewModeling/SVM/temp/Hyz_image.jpg", dstImage);
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/Hyz_image.jpg", dstImage);
     cv::warpPerspective(dstImage, invImage, Hyz, tempImage.size(), INTER_LINEAR);
-    imwrite("../../../../SingleViewModeling/SVM/temp/Inv_Hyz_image.jpg", invImage);
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/Inv_Hyz_image.jpg", invImage);
     */
+
 }
+
+
 // step 4: Mark interesting points
 inline float norml2(Point3f p){
     return sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
 }
-
 
 float MainWindow::getRefHeight(Point3f r, Point3f b){
 
@@ -568,68 +618,146 @@ Point3f MainWindow::get3dCoor(Point3f r, Point3f b){
     return p;
 }
 
+// function overload, http://sklin93.github.io/svm.html
+// continue mark the interesting points on the same height
+Point3f MainWindow::get3dCoor(Point3f r, float h){
+
+    float z0 = h;
+    Mat point_3d;
+    Mat point_2d = ( cv::Mat_<float>(3,1) << r.x, r.y, r.z );
+    Mat Hz = (cv::Mat_<float>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, scale_z*z0*vanishPt_z.x + Origin.x,
+                                      scale_x*vanishPt_x.y, scale_y*vanishPt_y.y, scale_z*z0*vanishPt_z.y + Origin.y,
+                                      scale_x*vanishPt_x.z, scale_y*vanishPt_y.z, scale_z*z0*vanishPt_z.z + Origin.z);
+
+    point_3d = Hz.inv() * point_2d;
+
+    Point3f p = Point3f(point_3d.at<float>(0,0)/point_3d.at<float>(2,0),
+                        point_3d.at<float>(1,0)/point_3d.at<float>(2,0), z0);
+    return p;
+}
+
+
 void MainWindow::cal3DPosition(){
 
-    /*
-    Point2f v1 = Point2f(162, 227);
-    Point2f v2 = Point2f(173, 367);
-    Point2f v3 = Point2f(391, 542);
-    Point2f v4 = Point2f(392, 399);
-    Point2f v5 = Point2f(607, 430);
-    Point2f v6 = Point2f(618, 290);
-    Point2f v7 = Point2f(379, 139);
+    /* 3d world coordinate, v5 and v6 example
+    Point3f p = get3dCoor(v6, v5);
+    cout << "v6 coordinate is: " << p << endl;
     */
 
-    Point3f r1 = Point3f(618, 290, 1);
-    Point3f b1 = Point3f(607, 430, 1);
-    Point3f p1 = get3dCoor(r1, b1);
-    cout << "p1 coordinate is: " << p1 << endl;
+    /* 2d image coordinate */
+    Point3f v1 = Point3f(162, 227, 1);
+    Point3f v2 = Point3f(173, 367, 1);
+    Point3f v3 = Point3f(391, 542, 1);
+    Point3f v4 = Point3f(392, 399, 1);
+    Point3f v5 = Point3f(607, 430, 1);
+    Point3f v6 = Point3f(618, 290, 1);
+    Point3f v7 = Point3f(379, 139, 1);
+    Point3f v8 = Point3f(382, 278, 1);
 
+    Point3f p1, p2, p3, p4, p5, p6, p7, p8;
+
+    p1 = get3dCoor(v1, v2);
+    p6 = get3dCoor(v6, v5);
+
+    p2 = get3dCoor(v2, 0);
+    p3 = get3dCoor(v3, 0);
+    p5 = get3dCoor(v5, 0);
+    p8 = get3dCoor(v8, 0);
+
+    p4 = get3dCoor(v4, 183);
+    p7 = get3dCoor(v7, 183);
+
+    cout << "\n\n";
+    cout << "v1 coordinate is: " << p1 << endl;
+    cout << "v2 coordinate is: " << p2 << endl;
+    cout << "v3 coordinate is: " << p3 << endl;
+    cout << "v4 coordinate is: " << p4 << endl;
+    cout << "v5 coordinate is: " << p5 << endl;
+    cout << "v6 coordinate is: " << p6 << endl;
+    cout << "v7 coordinate is: " << p7 << endl;
+    cout << "v8 coordinate is: " << p8 << endl;
+
+    Face face1;
+    face1.coor3d.push_back(p4);
+    face1.coor3d.push_back(p6);
+    face1.coor3d.push_back(p7);
+    face1.coor3d.push_back(p1);
+    face1.textureFileName = string("xy_patch.jpg");
+    faces.push_back(face1);
+
+    Face face2;
+    face2.coor3d.push_back(p3);
+    face2.coor3d.push_back(p5);
+    face2.coor3d.push_back(p6);
+    face2.coor3d.push_back(p4);
+    face2.textureFileName = string("xz_patch.jpg");
+    faces.push_back(face2);
+
+    Face face3;
+    face3.coor3d.push_back(p3);
+    face3.coor3d.push_back(p2);
+    face3.coor3d.push_back(p1);
+    face3.coor3d.push_back(p4);
+    face3.textureFileName = string("yz_patch.jpg");
+    faces.push_back(face3);
 
 }
 
 
 // step 5: Generate 3D vrml models
-//void MainWindow::generateVRMLCode(const string &prefix)
-//{
-//    string fname = prefix + ".wrl";
-//    ofstream ofile(fname.c_str());
-//    ofile << "#VRML V2.0 utf8" << endl << endl;
-//    ofile << "Collision {" << endl;
-//    ofile << "    collide FALSE" << endl;
-//    ofile << "    children [" << endl;
+void MainWindow::generateVRML(const string &prefix)
+{
+    string fname = prefix + ".wrl";
+    ofstream ofile(fname.c_str());
+    ofile << "#VRML V2.0 utf8" << endl << endl;
+    ofile << "Collision {" << endl;
+    ofile << "    collide FALSE" << endl;
+    ofile << "    children [" << endl;
 
-//    for(int i=0; i<faces.size(); i++){
-//        Face *face = faces[i];
-//        ofile << "Shape{" << endl;
-//        ofile << "    appearance  Appearance{" << endl;
-//        ofile << "        texture  ImageTexture{" << endl;
-//        ofile << "           url \"" << face->TexFileName() << "\"" << endl;
-//        ofile << "        }" << endl;
-//        ofile << "    }" << endl;
-//        ofile << "    geometry IndexedFaceSet {" << endl;
-//        ofile << "       coord Coordinate {" << endl;
-//        ofile << "         point[";
-//        for(int j=3; j>0; j--)
-//        {
-//            cv::Point3d p = face->realvertexs[j]->Coor3d();
-//            ofile << p.x << " " << p.y << " " << p.z << ", ";
-//        }
-//        cv::Point3d p = face->realvertexs[0]->Coor3d();
-//        ofile << p.x << " " << p.y << " " << p.z << "]" << endl;
-//        ofile<<"       }" << endl;
-//        ofile<<"       coordIndex [0,1,2,3,-1]" << endl;
-//        ofile<<"       ccw TRUE" << endl;
-//        ofile<<"       solid FALSE" << endl;
-//        ofile<<"       texCoord TextureCoordinate {" << endl;
-//        ofile<<"       point [0  0, 1  0, 1  1, 0  1]" << endl;
-//        ofile<<"       }" << endl;
-//        ofile<<"       texCoordIndex[0 1 2 3 -1]" << endl;
-//        ofile<<"    }" << endl;
-//        ofile<<"}" << endl;
-//    }
+    for(uint i=0; i<faces.size(); i++){
 
-//}
+        Face face = faces[i];
+        ofile << "Shape {" << endl;
+        ofile << "    appearance  Appearance {" << endl;
+        ofile << "        texture  ImageTexture {" << endl;
+        ofile << "            url \"" << face.textureFileName << "\"" << endl;
+        ofile << "        }" << endl;
+        ofile << "    }" << endl;
+        ofile << "    geometry IndexedFaceSet {" << endl;
+        ofile << "        coord Coordinate {" << endl;
+        ofile << "            point [" << endl;
+
+        vector<Point3f> Coor3 = face.coor3d;
+        for(uint j=0; j<Coor3.size(); j++){
+            Point3f p = Coor3[j];
+            ofile << "                   ";
+            ofile << p.x << " " << p.y << " " << p.z << "," << endl;
+        }
+
+        ofile << "           ]" << endl;
+        ofile << "       }" << endl;
+        ofile << "       coordIndex [" << endl;
+        ofile << "               0, 1, 2, 3, -1" << endl;
+        ofile << "       ]" << endl;
+        ofile << "       texCoord TextureCoordinate {" << endl;
+        ofile << "           point [" << endl;
+        ofile << "                     0  0, " << endl;
+        ofile << "                     1  0, " << endl;
+        ofile << "                     1  1, " << endl;
+        ofile << "                     0  1, " << endl;
+        ofile << "           ]" << endl;
+        ofile << "       }" << endl;
+        ofile << "       texCoordIndex [" << endl;
+        ofile << "               0, 1, 2, 3, -1" << endl;
+        ofile << "       ]" << endl;
+        ofile << "       solid FALSE" << endl;
+        ofile << "    }" << endl;
+        ofile << "}" << endl;
+    }
+    ofile << "    ]" << endl;
+    ofile << "}" << endl;
+
+}
 
 
 
@@ -691,3 +819,23 @@ void SingleViewModel::generateVRMLCode(const string &prefix)
     }
 }
 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
