@@ -64,6 +64,8 @@ private slots:
 
     void on_actionGet_origin_triggered(bool checked);
 
+    void on_actionGet_3D_point_triggered(bool checked);
+
 private:
     // private data member
     Ui::MainWindow *ui;
@@ -76,23 +78,11 @@ private:
     double img_scale;
     double img_scale_min;
 
-    bool getVanish_mode_x;
-    bool getVanish_mode_y;
-    bool getVanish_mode_z;
-    bool getVanish_mode_o;
-    double scale_x;
-    double scale_y;
-    double scale_z;
-    vector<int> vanish_x;
-    vector<int> vanish_y;
-    vector<int> vanish_z;
-    cv::Point3f vanishPt_x;
-    cv::Point3f vanishPt_y;
-    cv::Point3f vanishPt_z;
-    cv::Point3f Origin;
-    cv::Point2f refx;
-    cv::Point2f refy;
-    cv::Point2f refz;
+    bool getVanish_mode_x, getVanish_mode_y, getVanish_mode_z, getVanish_mode_o, get3d_mode;
+    double scale_x, scale_y, scale_z;
+    vector<int> vanish_x, vanish_y, vanish_z;
+    cv::Point3f vanishPt_x, vanishPt_y, vanishPt_z, Origin;
+    cv::Point3f refx, refy, refz;
 
     // 2D to 3D pespective transform matrix
     // Mat Hxy, Hxz, Hyz;
@@ -105,8 +95,10 @@ private:
     void calVanishingPt();
     void calProjectionMatrix();
     void getTextureMap();
-    //Point3f cal3DPosition(Point3f);
     void cal3DPosition();
+    float getRefHeight(Point3f r, Point3f b);
+    Point3f get3dCoor(Point3f r, Point3f b);
+    void generateVRMLCode(const string &);
 
 };
 

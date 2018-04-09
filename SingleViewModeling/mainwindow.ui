@@ -74,6 +74,8 @@
     <addaction name="actionGet_vanish_y"/>
     <addaction name="actionGet_vanish_z"/>
     <addaction name="actionGet_origin"/>
+    <addaction name="separator"/>
+    <addaction name="actionGet_3D_point"/>
    </widget>
    <widget class="QMenu" name="menuHelper">
     <property name="title">
@@ -161,6 +163,14 @@
    </property>
    <property name="text">
     <string>get origin</string>
+   </property>
+  </action>
+  <action name="actionGet_3D_point">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>get 3D point</string>
    </property>
   </action>
  </widget>
