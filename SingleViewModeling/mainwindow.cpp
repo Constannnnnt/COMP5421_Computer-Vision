@@ -3,7 +3,7 @@
 
 //#define REF_LENGTH_X 300
 //#define REF_LENGTH_Y 400
-//#define REF_LENGTH_Z 180
+//#define REF_LENGTH_Z 183
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -403,9 +403,9 @@ void MainWindow::calProjectionMatrix(){
         return;
     }
 
-    int REF_LENGTH_X = sqrt((refx.x - Origin.x)*(refx.x - Origin.x) + (refx.y - Origin.y)*(refx.y - Origin.y));
-    int REF_LENGTH_Y = sqrt((refy.x - Origin.x)*(refy.x - Origin.x) + (refy.y - Origin.y)*(refy.y - Origin.y));
-    int REF_LENGTH_Z = sqrt((refz.x - Origin.x)*(refz.x - Origin.x) + (refz.y - Origin.y)*(refz.y - Origin.y));
+    REF_LENGTH_X = sqrt((refx.x - Origin.x)*(refx.x - Origin.x) + (refx.y - Origin.y)*(refx.y - Origin.y));
+    REF_LENGTH_Y = sqrt((refy.x - Origin.x)*(refy.x - Origin.x) + (refy.y - Origin.y)*(refy.y - Origin.y));
+    REF_LENGTH_Z = sqrt((refz.x - Origin.x)*(refz.x - Origin.x) + (refz.y - Origin.y)*(refz.y - Origin.y));
 
 
     scale_x = (0.5 * (refx.x - Origin.x)/(vanishPt_x.x - refx.x)
@@ -474,7 +474,8 @@ void MainWindow::getTextureMap(){
 
     cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("../../../../SingleViewModel/temp/xy_patch.jpg", dstImage);
+//    imwrite("../../../../SingleViewModeling/SingleViewModel/temp/xy_patch.jpg", dstImage);
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
 
     // patch xz
     Point2f pts3[] = {v3, v5, v4, v6};
@@ -485,7 +486,8 @@ void MainWindow::getTextureMap(){
 
     cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("../../../../SingleViewModel/temp/xz_patch.jpg", dstImage);
+//    imwrite("../../../../SingleViewModeling/SingleViewModel/temp/xz_patch.jpg", dstImage);
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
 
     // patch yz
     Point2f pts5[] = {v3, v2, v4, v1};
@@ -496,7 +498,8 @@ void MainWindow::getTextureMap(){
 
     cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-    imwrite("../../../../SingleViewModel/temp/yz_patch.jpg", dstImage);
+//    imwrite("../../../../SingleViewModeling/SingleViewModel/temp/yz_patch.jpg", dstImage);
+    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
 
 
     /*
@@ -521,11 +524,13 @@ void MainWindow::getTextureMap(){
     imwrite("../../../../SingleViewModeling/SVM/temp/Hyz_image.jpg", dstImage);
     cv::warpPerspective(dstImage, invImage, Hyz, tempImage.size(), INTER_LINEAR);
     imwrite("../../../../SingleViewModeling/SVM/temp/Inv_Hyz_image.jpg", invImage);
-
+    */
+}
 // step 4: Mark interesting points
 inline float norml2(Point3f p){
     return sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
 }
+
 
 float MainWindow::getRefHeight(Point3f r, Point3f b){
 
@@ -579,51 +584,50 @@ void MainWindow::cal3DPosition(){
     cout << "p1 coordinate is: " << p1 << endl;
 
 
-
 }
 
 
 // step 5: Generate 3D vrml models
-void SingleViewModel::generateVRML(const string &prefix)
-{
-    string fname = prefix + ".wrl";
-    ofstream ofile(fname.c_str());
-    ofile << "#VRML V2.0 utf8" << endl << endl;
-    ofile << "Collision {" << endl;
-    ofile << "    collide FALSE" << endl;
-    ofile << "    children [" << endl;
+//void MainWindow::generateVRMLCode(const string &prefix)
+//{
+//    string fname = prefix + ".wrl";
+//    ofstream ofile(fname.c_str());
+//    ofile << "#VRML V2.0 utf8" << endl << endl;
+//    ofile << "Collision {" << endl;
+//    ofile << "    collide FALSE" << endl;
+//    ofile << "    children [" << endl;
 
-    for(int i=0; i<faces.size(); i++){
-        Face *face = faces[i];
-        ofile << "Shape{" << endl;
-        ofile << "    appearance  Appearance{" << endl;
-        ofile << "        texture  ImageTexture{" << endl;
-        ofile << "           url \"" << face->TexFileName() << "\"" << endl;
-        ofile << "        }" << endl;
-        ofile << "    }" << endl;
-        ofile << "    geometry IndexedFaceSet {" << endl;
-        ofile << "       coord Coordinate {" << endl;
-        ofile << "         point[";
-        for(int j=3; j>0; j--)
-        {
-            cv::Point3d p = face->realvertexs[j]->Coor3d();
-            ofile << p.x << " " << p.y << " " << p.z << ", ";
-        }
-        cv::Point3d p = face->realvertexs[0]->Coor3d();
-        ofile << p.x << " " << p.y << " " << p.z << "]" << endl;
-        ofile<<"       }" << endl;
-        ofile<<"       coordIndex [0,1,2,3,-1]" << endl;
-        ofile<<"       ccw TRUE" << endl;
-        ofile<<"       solid FALSE" << endl;
-        ofile<<"       texCoord TextureCoordinate {" << endl;
-        ofile<<"       point [0  0, 1  0, 1  1, 0  1]" << endl;
-        ofile<<"       }" << endl;
-        ofile<<"       texCoordIndex[0 1 2 3 -1]" << endl;
-        ofile<<"    }" << endl;
-        ofile<<"}" << endl;
-    }
+//    for(int i=0; i<faces.size(); i++){
+//        Face *face = faces[i];
+//        ofile << "Shape{" << endl;
+//        ofile << "    appearance  Appearance{" << endl;
+//        ofile << "        texture  ImageTexture{" << endl;
+//        ofile << "           url \"" << face->TexFileName() << "\"" << endl;
+//        ofile << "        }" << endl;
+//        ofile << "    }" << endl;
+//        ofile << "    geometry IndexedFaceSet {" << endl;
+//        ofile << "       coord Coordinate {" << endl;
+//        ofile << "         point[";
+//        for(int j=3; j>0; j--)
+//        {
+//            cv::Point3d p = face->realvertexs[j]->Coor3d();
+//            ofile << p.x << " " << p.y << " " << p.z << ", ";
+//        }
+//        cv::Point3d p = face->realvertexs[0]->Coor3d();
+//        ofile << p.x << " " << p.y << " " << p.z << "]" << endl;
+//        ofile<<"       }" << endl;
+//        ofile<<"       coordIndex [0,1,2,3,-1]" << endl;
+//        ofile<<"       ccw TRUE" << endl;
+//        ofile<<"       solid FALSE" << endl;
+//        ofile<<"       texCoord TextureCoordinate {" << endl;
+//        ofile<<"       point [0  0, 1  0, 1  1, 0  1]" << endl;
+//        ofile<<"       }" << endl;
+//        ofile<<"       texCoordIndex[0 1 2 3 -1]" << endl;
+//        ofile<<"    }" << endl;
+//        ofile<<"}" << endl;
+//    }
 
-}
+//}
 
 
 
@@ -685,23 +689,3 @@ void SingleViewModel::generateVRMLCode(const string &prefix)
     }
 }
 */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
