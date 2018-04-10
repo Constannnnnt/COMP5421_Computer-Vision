@@ -1,0 +1,103 @@
+#VRML V2.0 utf8
+
+Collision {
+    collide FALSE
+    children [
+Shape {
+    appearance  Appearance {
+        texture  ImageTexture {
+            url "xy_patch.jpg"
+        }
+    }
+    geometry IndexedFaceSet {
+        coord Coordinate {
+            point [
+                   -2.33329 -1.34754 144,
+                   241.491 -1.76051 144,
+                   241.74 280.256 144,
+                   1.35992 285.601 144,
+           ]
+       }
+       coordIndex [
+               0, 1, 2, 3, -1
+       ]
+       texCoord TextureCoordinate {
+           point [
+                     0  0, 
+                     1  0, 
+                     1  1, 
+                     0  1, 
+           ]
+       }
+       texCoordIndex [
+               0, 1, 2, 3, -1
+       ]
+       solid FALSE
+    }
+}
+Shape {
+    appearance  Appearance {
+        texture  ImageTexture {
+            url "xz_patch.jpg"
+        }
+    }
+    geometry IndexedFaceSet {
+        coord Coordinate {
+            point [
+                   -1.46557 -0.431733 0,
+                   241.182 0.257967 0,
+                   241.491 -1.76051 144,
+                   -2.33329 -1.34754 144,
+           ]
+       }
+       coordIndex [
+               0, 1, 2, 3, -1
+       ]
+       texCoord TextureCoordinate {
+           point [
+                     0  0, 
+                     1  0, 
+                     1  1, 
+                     0  1, 
+           ]
+       }
+       texCoordIndex [
+               0, 1, 2, 3, -1
+       ]
+       solid FALSE
+    }
+}
+Shape {
+    appearance  Appearance {
+        texture  ImageTexture {
+            url "yz_patch.jpg"
+        }
+    }
+    geometry IndexedFaceSet {
+        coord Coordinate {
+            point [
+                   -1.46557 -0.431733 0,
+                   3.10541 280.535 0,
+                   1.35992 285.601 144,
+                   -2.33329 -1.34754 144,
+           ]
+       }
+       coordIndex [
+               0, 1, 2, 3, -1
+       ]
+       texCoord TextureCoordinate {
+           point [
+                     0  0, 
+                     1  0, 
+                     1  1, 
+                     0  1, 
+           ]
+       }
+       texCoordIndex [
+               0, 1, 2, 3, -1
+       ]
+       solid FALSE
+    }
+}
+    ]
+}

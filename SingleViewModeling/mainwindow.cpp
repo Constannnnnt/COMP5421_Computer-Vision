@@ -252,6 +252,7 @@ void MainWindow::on_actionDraw_vanish_triggered(){
 
 }
 
+
 // event filter
 bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
 
@@ -278,20 +279,20 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
             vanish_z.push_back( p.y() );
         }
         else if(getVanish_mode_o){
-            Origin = cv::Point3f(p.x(), p.y(), 1);
+            Origin = cv::Point3d(p.x(), p.y(), 1);
             cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(128,128,128), 5);
             origin_m = true;
         }
         else if (setReference_x) {
-            refx = cv::Point3f(p.x() , p.y() , 1);
+            refx = cv::Point3d(p.x() , p.y() , 1);
             cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(128,128,128), 5);
             refx_m = true;
         } else if (setReference_y) {
-            refy = cv::Point3f(p.x() , p.y() , 1);
+            refy = cv::Point3d(p.x() , p.y() , 1);
             cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(128,128,128), 5);
             refy_m = true;
         } else if (setReference_z) {
-            refz = cv::Point3f(p.x() , p.y() , 1);
+            refz = cv::Point3d(p.x() , p.y() , 1);
             cv::circle(contour_image, cv::Point(p.x(),p.y()), 1, CV_RGB(128,128,128), 5);
             refz_m = true;
         }
@@ -323,8 +324,8 @@ void MainWindow::calVanishingPt(){
     // get vanishing point x
     M = (cv::Mat_<double>(3,3) << 0,0,0, 0,0,0, 0,0,0);
     for(uint i=0; i<vanish_x.size()/4; i++){
-        point1 = cv::Point3f(vanish_x[4*i], vanish_x[4*i+1], 1);
-        point2 = cv::Point3f(vanish_x[4*i+2], vanish_x[4*i+3], 1);
+        point1 = cv::Point3d(vanish_x[4*i], vanish_x[4*i+1], 1);
+        point2 = cv::Point3d(vanish_x[4*i+2], vanish_x[4*i+3], 1);
         line = point1.cross(point2);
 
         temp_M = (cv::Mat_<double>(3,3) << line.x*line.x, line.x*line.y, line.x*line.z,
@@ -333,11 +334,11 @@ void MainWindow::calVanishingPt(){
         M = M + temp_M;
     }
 
-    cv::eigen(M, EigenValue, EigenVector, DBL_EPSILON);
+    cv::eigen(M, EigenValue, EigenVector);
     cout << "eigen values x: " << EigenValue << endl;
     cout << "eigen vectors x: " << EigenVector << endl << endl;
 
-    vanishPt_x = cv::Point3f(EigenVector.at<double>(2,0)/EigenVector.at<double>(2,2),
+    vanishPt_x = cv::Point3d(EigenVector.at<double>(2,0)/EigenVector.at<double>(2,2),
                              EigenVector.at<double>(2,1)/EigenVector.at<double>(2,2), 1);
     cout << "Vanishing Point x: " << vanishPt_x << endl;
 
@@ -345,8 +346,8 @@ void MainWindow::calVanishingPt(){
     // get vanishing point y
     M = (cv::Mat_<double>(3,3) << 0,0,0, 0,0,0, 0,0,0);
     for(uint i=0; i<vanish_y.size()/4; i++){
-        point1 = cv::Point3f(vanish_y[4*i], vanish_y[4*i+1], 1);
-        point2 = cv::Point3f(vanish_y[4*i+2], vanish_y[4*i+3], 1);
+        point1 = cv::Point3d(vanish_y[4*i], vanish_y[4*i+1], 1);
+        point2 = cv::Point3d(vanish_y[4*i+2], vanish_y[4*i+3], 1);
         line = point1.cross(point2);
 
         temp_M = (cv::Mat_<double>(3,3) << line.x*line.x, line.x*line.y, line.x*line.z,
@@ -355,11 +356,11 @@ void MainWindow::calVanishingPt(){
         M = M + temp_M;
     }
 
-    cv::eigen(M, EigenValue, EigenVector, DBL_EPSILON);
+    cv::eigen(M, EigenValue, EigenVector);
     cout << "eigen values y: " << EigenValue << endl;
     cout << "eigen vectors y: " << EigenVector << endl << endl;
 
-    vanishPt_y = cv::Point3f(EigenVector.at<double>(2,0)/EigenVector.at<double>(2,2),
+    vanishPt_y = cv::Point3d(EigenVector.at<double>(2,0)/EigenVector.at<double>(2,2),
                              EigenVector.at<double>(2,1)/EigenVector.at<double>(2,2), 1);
     cout << "Vanishing Point y: " << vanishPt_y << endl;
 
@@ -367,8 +368,8 @@ void MainWindow::calVanishingPt(){
     // get vanishing point z
     M = (cv::Mat_<double>(3,3) << 0,0,0, 0,0,0, 0,0,0);
     for(uint i=0; i<vanish_z.size()/4; i++){
-        point1 = cv::Point3f(vanish_z[4*i], vanish_z[4*i+1], 1);
-        point2 = cv::Point3f(vanish_z[4*i+2], vanish_z[4*i+3], 1);
+        point1 = cv::Point3d(vanish_z[4*i], vanish_z[4*i+1], 1);
+        point2 = cv::Point3d(vanish_z[4*i+2], vanish_z[4*i+3], 1);
         line = point1.cross(point2);
 
         temp_M = (cv::Mat_<double>(3,3) << line.x*line.x, line.x*line.y, line.x*line.z,
@@ -377,11 +378,11 @@ void MainWindow::calVanishingPt(){
         M = M + temp_M;
     }
 
-    cv::eigen(M, EigenValue, EigenVector, DBL_EPSILON);
+    cv::eigen(M, EigenValue, EigenVector);
     cout << "eigen values z: " << EigenValue << endl;
     cout << "eigen vectors z: " << EigenVector << endl << endl;
 
-    vanishPt_z = cv::Point3f(EigenVector.at<double>(2,0)/EigenVector.at<double>(2,2),
+    vanishPt_z = cv::Point3d(EigenVector.at<double>(2,0)/EigenVector.at<double>(2,2),
                              EigenVector.at<double>(2,1)/EigenVector.at<double>(2,2), 1);
     cout << "Vanishing Point z: " << vanishPt_z << endl << endl;
 
@@ -390,38 +391,6 @@ void MainWindow::calVanishingPt(){
 
 // step 2: Calculate Projection Matrix
 void MainWindow::calProjectionMatrix(){
-    /*
-    refx = cv::Point3f(607, 430, 1);
-    refy = cv::Point3f(173, 367, 1);
-    refz = cv::Point3f(392, 399, 1);
-    vanishPt_x = cv::Point3f(4045.92, -1393.23, 1);
-    vanishPt_y = cv::Point3f(-1788.97, -1205.26, 1);
-    vanishPt_z = cv::Point3f(370.262, 3659.41, 1);
-    Origin = cv::Point3f(391, 542, 1);
-    */
-
-    /*
-    refx = cv::Point2f(2660, 1580);
-    refy = cv::Point2f(803, 1680);
-    refz = cv::Point2f(1387, 1433);
-    vanishPt_x = cv::Point3f(5345.87, 345.158, 1);
-    vanishPt_y = cv::Point3f(-966.982, 204.371, 1);
-    vanishPt_z = cv::Point3f(1443.49, 9398.12, 1);
-    Origin = cv::Point3f(1390, 2173, 1);
-    */
-
-    // scale_z could have up to a double deviation from correct if refz.x = Origin.x = 391
-    /*
-    cout << "\n scale_x \n";
-    cout << (refx.x - Origin.x)/(vanishPt_x.x - refx.x) << endl;
-    cout << (refx.y - Origin.y)/(vanishPt_x.y - refx.y) << endl;
-    cout << "\n scale_y \n";
-    cout << (refy.x - Origin.x)/(vanishPt_y.x - refy.x) << endl;
-    cout << (refy.y - Origin.y)/(vanishPt_y.y - refy.y) << endl;
-    cout << "\n scale_z \n";
-    cout << (refz.x - Origin.x)/(vanishPt_z.x - refz.x) << endl;
-    cout << (refz.y - Origin.y)/(vanishPt_z.y - refz.y) << endl;
-    */
 
     // Choose the Origin First
     if (!origin_m) {
@@ -448,20 +417,41 @@ void MainWindow::calProjectionMatrix(){
     cout << REF_LENGTH_X << " " << REF_LENGTH_Y << " " << REF_LENGTH_Z << endl;
 
 
-    scale_x = (0.5 * (refx.x - Origin.x)/(vanishPt_x.x - refx.x)
-             + 0.5 * (refx.y - Origin.y)/(vanishPt_x.y - refx.y)) / REF_LENGTH_X;
+//    scale_x = (0.5 * (refx.x - Origin.x)/(vanishPt_x.x - refx.x)
+//             + 0.5 * (refx.y - Origin.y)/(vanishPt_x.y - refx.y)) / REF_LENGTH_X;
 
-    scale_y = (0.5 * (refy.x - Origin.x)/(vanishPt_y.x - refy.x)
-             + 0.5 * (refy.y - Origin.y)/(vanishPt_y.y - refy.y)) / REF_LENGTH_Y;
+//    scale_y = (0.5 * (refy.x - Origin.x)/(vanishPt_y.x - refy.x)
+//             + 0.5 * (refy.y - Origin.y)/(vanishPt_y.y - refy.y)) / REF_LENGTH_Y;
+//    scale_x = ((refx.x - Origin.x)/(vanishPt_x.x - refx.x)) / REF_LENGTH_X;
+//    scale_y = ((refy.y - Origin.y)/(vanishPt_y.y - refy.y)) / REF_LENGTH_Y;
 
-    scale_z = (0.5 * (refz.x - Origin.x)/(vanishPt_z.x - refz.x)
-             + 0.5 * (refz.y - Origin.y)/(vanishPt_z.y - refz.y)) / REF_LENGTH_Z;
-
+//    if(abs(refz.x - Origin.x) <= 1){
+//            scale_z = ((refz.y - Origin.y)/(vanishPt_z.y - refz.y)) / REF_LENGTH_Z;
+//        }
+//        else{
+//            scale_z = (0.5 * (refz.x - Origin.x)/(vanishPt_z.x - refz.x)
+//                     + 0.5 * (refz.y - Origin.y)/(vanishPt_z.y - refz.y)) / REF_LENGTH_Z;
+//        }
+    cv::Mat right = (cv::Mat_<double>(2,1) << refx.x - Origin.x, refx.y - Origin.y);
+    cv::Mat left = (cv::Mat_<double>(2,1) << vanishPt_x.x - refx.x, vanishPt_x.y - refx.y);
+    cv::Mat ans;
+    cv::solve(left, right, ans, DECOMP_NORMAL);
+    scale_x = ans.at<double>(0) / REF_LENGTH_X;
     cout << "scale_x is: " << scale_x << endl;
+
+    right = (cv::Mat_<double>(2,1) << refy.x - Origin.x, refy.y - Origin.y);
+    left = (cv::Mat_<double>(2,1) << vanishPt_y.x - refy.x, vanishPt_y.y - refy.y);
+    cv::solve(left, right, ans, DECOMP_NORMAL);
+    scale_y = ans.at<double>(0) / REF_LENGTH_Y;
     cout << "scale_y is: " << scale_y << endl;
+
+    right = (cv::Mat_<double>(2,1) << refz.x - Origin.x, refz.y - Origin.y);
+    left = (cv::Mat_<double>(2,1) << vanishPt_z.x - refz.x, vanishPt_z.y - refz.y);
+    cv::solve(left, right, ans, DECOMP_NORMAL);
+    scale_z = ans.at<double>(0) / REF_LENGTH_Z;
     cout << "scale_z is: " << scale_z << endl << endl;
 
-    ProjMatrix = (cv::Mat_<float>(3,4) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, scale_z*vanishPt_z.x, Origin.x,
+    ProjMatrix = (cv::Mat_<double>(3,4) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, scale_z*vanishPt_z.x, Origin.x,
                                           scale_x*vanishPt_x.y, scale_y*vanishPt_y.y, scale_z*vanishPt_z.y, Origin.y,
                                           scale_x*vanishPt_x.z, scale_y*vanishPt_y.z, scale_z*vanishPt_z.z, Origin.z);
 
@@ -473,17 +463,19 @@ void MainWindow::calProjectionMatrix(){
 // step 3: Use homography matrix to get texture map
 void MainWindow::getTextureMap(){
 
-    cv::Mat Hxy = (cv::Mat_<float>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, Origin.x,
+    cv::Mat Hxy = (cv::Mat_<double>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, Origin.x,
                                            scale_x*vanishPt_x.y, scale_y*vanishPt_y.y, Origin.y,
                                            scale_x*vanishPt_x.z, scale_y*vanishPt_y.z, Origin.z);
 
-    cv::Mat Hxz = (cv::Mat_<float>(3,3) << scale_x*vanishPt_x.x, scale_z*vanishPt_z.x, Origin.x,
+    cv::Mat Hxz = (cv::Mat_<double>(3,3) << scale_x*vanishPt_x.x, scale_z*vanishPt_z.x, Origin.x,
                                            scale_x*vanishPt_x.y, scale_z*vanishPt_z.y, Origin.y,
                                            scale_x*vanishPt_x.z, scale_z*vanishPt_z.z, Origin.z);
 
-    cv::Mat Hyz = (cv::Mat_<float>(3,3) << scale_y*vanishPt_y.x, scale_z*vanishPt_z.x, Origin.x,
+    cv::Mat Hyz = (cv::Mat_<double>(3,3) << scale_y*vanishPt_y.x, scale_z*vanishPt_z.x, Origin.x,
                                            scale_y*vanishPt_y.y, scale_z*vanishPt_z.y, Origin.y,
                                            scale_y*vanishPt_y.z, scale_z*vanishPt_z.z, Origin.z);
+
+
 
     /*
     cv::warpPerspective(image, dstImage, Hxy.inv(), tempImage.size());
@@ -496,60 +488,64 @@ void MainWindow::getTextureMap(){
     cv::Mat perspective_matrix;
     cv::Mat tempImage;
 
-    Point2f v1 = Point2f(162, 227);
-    Point2f v2 = Point2f(173, 367);
-    Point2f v3 = Point2f(391, 542);
-    Point2f v4 = Point2f(392, 399);
-    Point2f v5 = Point2f(607, 430);
-    Point2f v6 = Point2f(618, 290);
-    Point2f v7 = Point2f(379, 139);
+//    Point2f v1 = Point2f(162, 227); // yz, xy
+//    Point2f v2 = Point2f(174, 366); // yz
+//    Point2f v3 = Point2f(391, 542); // xz, yz
+//    Point2f v4 = Point2f(392, 399); // xz, yz, xy
+//    Point2f v5 = Point2f(607, 430); // xz
+//    Point2f v6 = Point2f(618, 290); // xy, xz
+//    Point2f v7 = Point2f(379, 139); // xy
     //Point2f v8 = Point2f(382, 277);
 
+    Point2f v1 = Point2f(770, 1100); // yz, xy
+    Point2f v2 = Point2f(787, 1677); // yz
+    Point2f v3 = Point2f(1393, 2173); // xz, yz
+    Point2f v4 = Point2f(1387, 1430); // xz, yz, xy
+    Point2f v5 = Point2f(2660, 1580); // xz
+    Point2f v6 = Point2f(2737, 1063); // xy, xz
+    Point2f v7 = Point2f(2003, 890); // xy
+//        //Point2f v8 = Point2f(382, 277);
+
     // patch xy
-    Point2f pts1[] = {v4, v6, v1, v7};
+    Point2f pts1[] = {v1, v7, v4, v6};
     Point2f pts2[] = {Point2f(0,0), Point2f(REF_LENGTH_X,0), Point2f(0,REF_LENGTH_Y), Point2f(REF_LENGTH_X,REF_LENGTH_Y)};
 
     perspective_matrix = cv::getPerspectiveTransform(pts1, pts2);
     tempImage = cv::Mat(REF_LENGTH_Y, REF_LENGTH_X, image.type());
 
     cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
+    cv::resize(dstImage, dstImage, cv::Size(), 1/img_scale, 1/img_scale);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
     imwrite("../../../../SingleViewModeling/SingleViewModel/temp/xy_patch.jpg", dstImage);
     // imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/xy_patch.jpg", dstImage);
 
 
     // patch xz
-    Point2f pts3[] = {v3, v5, v4, v6};
+    Point2f pts3[] = {v4, v6,v3, v5};
     Point2f pts4[] = {Point2f(0,0), Point2f(REF_LENGTH_X,0), Point2f(0,REF_LENGTH_Z), Point2f(REF_LENGTH_X,REF_LENGTH_Z)};
 
     perspective_matrix = cv::getPerspectiveTransform(pts3, pts4);
     tempImage = cv::Mat(REF_LENGTH_Z, REF_LENGTH_X, image.type());
 
     cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
+    cv::resize(dstImage, dstImage, cv::Size(), 1/img_scale, 1/img_scale);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-<<<<<<< HEAD
     imwrite("../../../../SingleViewModeling/SingleViewModel/temp/xz_patch.jpg", dstImage);
-//    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
-=======
-    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/xz_patch.jpg", dstImage);
+    // imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/xz_patch.jpg", dstImage);
 
->>>>>>> 02f0ecd5506ebf9f22e095c51e92394df990290e
 
     // patch yz
-    Point2f pts5[] = {v3, v2, v4, v1};
+    Point2f pts5[] = {v4, v1, v3, v2};
     Point2f pts6[] = {Point2f(0,0), Point2f(REF_LENGTH_Y,0), Point2f(0,REF_LENGTH_Z), Point2f(REF_LENGTH_Y,REF_LENGTH_Z)};
 
     perspective_matrix = cv::getPerspectiveTransform(pts5, pts6);
     tempImage = cv::Mat(REF_LENGTH_Z, REF_LENGTH_Y, image.type());
 
     cv::warpPerspective(image, dstImage, perspective_matrix, tempImage.size(), INTER_LINEAR);
+    cv::resize(dstImage, dstImage, cv::Size(), 1/img_scale, 1/img_scale);
     cv::cvtColor(dstImage, dstImage, CV_BGR2RGB);
-<<<<<<< HEAD
     imwrite("../../../../SingleViewModeling/SingleViewModel/temp/yz_patch.jpg", dstImage);
-//    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
-=======
-    imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
->>>>>>> 02f0ecd5506ebf9f22e095c51e92394df990290e
+    // imwrite("/home/jguoaj/Desktop/SingleViewModel/temp/yz_patch.jpg", dstImage);
 
 
     /*
@@ -580,59 +576,59 @@ void MainWindow::getTextureMap(){
 
 
 // step 4: Mark interesting points
-inline float norml2(Point3f p){
+inline double norml2(Point3d p){
     return sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
 }
 
-float MainWindow::getRefHeight(Point3f r, Point3f b){
+double MainWindow::getRefHeight(Point3d r, Point3d b){
 
     // we want to find Reference height R
-    float R;
-    float H = REF_LENGTH_Z;
-    Point3f b0, v, t, temp;
-    b0 = Point3f(Origin.x, Origin.y, 1);
+    double R;
+    double H = REF_LENGTH_Z;
+    Point3d b0, v, t, temp;
+    b0 = Point3d(Origin.x, Origin.y, 1);
     temp = ( b.cross(b0) ).cross( vanishPt_x.cross(vanishPt_y) );
-    v = Point3f(temp.x/temp.z, temp.y/temp.z, 1);
+    v = Point3d(temp.x/temp.z, temp.y/temp.z, 1);
     temp = ( v.cross(refz) ).cross( r.cross(b) );
-    t = Point3f(temp.x/temp.z, temp.y/temp.z, 1);
+    t = Point3d(temp.x/temp.z, temp.y/temp.z, 1);
 
     R = H * norml2(r-b) * norml2(vanishPt_z-t) / ( norml2(t-b) * norml2(vanishPt_z-r) );
     return R;
 }
 
-Point3f MainWindow::get3dCoor(Point3f r, Point3f b){
+Point3d MainWindow::get3dCoor(Point3d r, Point3d b){
 
-    float z0 = getRefHeight(r, b);
+    double z0 = getRefHeight(r, b);
     //cout << "\n 3D height z0 is:  " << z0 << endl;
 
     Mat point_3d;
-    Mat point_2d = ( cv::Mat_<float>(3,1) << r.x, r.y, r.z );
-    Mat Hz = (cv::Mat_<float>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, scale_z*z0*vanishPt_z.x + Origin.x,
+    Mat point_2d = ( cv::Mat_<double>(3,1) << r.x, r.y, r.z );
+    Mat Hz = (cv::Mat_<double>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, scale_z*z0*vanishPt_z.x + Origin.x,
                                       scale_x*vanishPt_x.y, scale_y*vanishPt_y.y, scale_z*z0*vanishPt_z.y + Origin.y,
                                       scale_x*vanishPt_x.z, scale_y*vanishPt_y.z, scale_z*z0*vanishPt_z.z + Origin.z);
 
     point_3d = Hz.inv() * point_2d;
 
-    Point3f p = Point3f(point_3d.at<float>(0,0)/point_3d.at<float>(2,0),
-                        point_3d.at<float>(1,0)/point_3d.at<float>(2,0), z0);
+    Point3d p = Point3d(point_3d.at<double>(0,0)/point_3d.at<double>(2,0),
+                        point_3d.at<double>(1,0)/point_3d.at<double>(2,0), z0);
     return p;
 }
 
 // function overload, http://sklin93.github.io/svm.html
 // continue mark the interesting points on the same height
-Point3f MainWindow::get3dCoor(Point3f r, float h){
+Point3d MainWindow::get3dCoor(Point3d r, double h){
 
-    float z0 = h;
+    double z0 = h;
     Mat point_3d;
-    Mat point_2d = ( cv::Mat_<float>(3,1) << r.x, r.y, r.z );
-    Mat Hz = (cv::Mat_<float>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, scale_z*z0*vanishPt_z.x + Origin.x,
+    Mat point_2d = ( cv::Mat_<double>(3,1) << r.x, r.y, r.z );
+    Mat Hz = (cv::Mat_<double>(3,3) << scale_x*vanishPt_x.x, scale_y*vanishPt_y.x, scale_z*z0*vanishPt_z.x + Origin.x,
                                       scale_x*vanishPt_x.y, scale_y*vanishPt_y.y, scale_z*z0*vanishPt_z.y + Origin.y,
                                       scale_x*vanishPt_x.z, scale_y*vanishPt_y.z, scale_z*z0*vanishPt_z.z + Origin.z);
 
     point_3d = Hz.inv() * point_2d;
 
-    Point3f p = Point3f(point_3d.at<float>(0,0)/point_3d.at<float>(2,0),
-                        point_3d.at<float>(1,0)/point_3d.at<float>(2,0), z0);
+    Point3d p = Point3d(point_3d.at<double>(0,0)/point_3d.at<double>(2,0),
+                        point_3d.at<double>(1,0)/point_3d.at<double>(2,0), z0);
     return p;
 }
 
@@ -640,32 +636,55 @@ Point3f MainWindow::get3dCoor(Point3f r, float h){
 void MainWindow::cal3DPosition(){
 
     /* 3d world coordinate, v5 and v6 example
-    Point3f p = get3dCoor(v6, v5);
+    Point3d p = get3dCoor(v6, v5);
     cout << "v6 coordinate is: " << p << endl;
     */
 
     /* 2d image coordinate */
-    Point3f v1 = Point3f(162, 227, 1);
-    Point3f v2 = Point3f(173, 367, 1);
-    Point3f v3 = Point3f(391, 542, 1);
-    Point3f v4 = Point3f(392, 399, 1);
-    Point3f v5 = Point3f(607, 430, 1);
-    Point3f v6 = Point3f(618, 290, 1);
-    Point3f v7 = Point3f(379, 139, 1);
-    Point3f v8 = Point3f(382, 278, 1);
+//    Old Box
+//    Point3d v1 = Point3d(162, 227, 1);
+//    Point3d v2 = Point3d(174, 366, 1);
+//    Point3d v3 = Point3d(391, 542, 1);
+//    Point3d v4 = Point3d(392, 399, 1);
+//    Point3d v5 = Point3d(607, 430, 1);
+//    Point3d v6 = Point3d(618, 290, 1);
+//    Point3d v7 = Point3d(379, 139, 1);
+//    Point3d v8 = Point3d(382, 278, 1);
 
-    Point3f p1, p2, p3, p4, p5, p6, p7, p8;
+    // New Box
+    Point3d v1 = Point3d(770, 1100, 1); // yz, xy
+    Point3d v2 = Point3d(787, 1677, 1); // yz
+    Point3d v3 = Point3d(1393, 2173, 1); // xz, yz
+    Point3d v4 = Point3d(1387, 1430, 1); // xz, yz, xy
+    Point3d v5 = Point3d(2660, 1580, 1); // xz
+    Point3d v6 = Point3d(2737, 1063, 1); // xy, xz
+    Point3d v7 = Point3d(2003, 890, 1); // xy
+    Point3d v8 = Point3d(382, 278, 1);
 
-    p1 = get3dCoor(v1, v2);
-    p6 = get3dCoor(v6, v5);
+    Point3d p1, p2, p3, p4, p5, p6, p7, p8;
+    // Old Box
+    p1 = get3dCoor(v1, REF_LENGTH_Z);
+    p6 = get3dCoor(v6, REF_LENGTH_Z);
 
     p2 = get3dCoor(v2, 0);
     p3 = get3dCoor(v3, 0);
     p5 = get3dCoor(v5, 0);
     p8 = get3dCoor(v8, 0);
 
-    p4 = get3dCoor(v4, 183);
-    p7 = get3dCoor(v7, 183);
+    p4 = get3dCoor(v4, REF_LENGTH_Z);
+    p7 = get3dCoor(v7, REF_LENGTH_Z);
+
+//    // New Box
+//    p1 = get3dCoor(v1, v2);
+//    p6 = get3dCoor(v6, v5);
+
+//    p2 = get3dCoor(v2, 0);
+//    p3 = get3dCoor(v3, 0);
+//    p5 = get3dCoor(v5, 0);
+//    p8 = get3dCoor(v8, 0);
+
+//    p4 = get3dCoor(v4, v3);
+//    p7 = get3dCoor(v7, REF_LENGTH_Z);
 
     cout << "\n\n";
     cout << "v1 coordinate is: " << p1 << endl;
@@ -727,9 +746,9 @@ void MainWindow::generateVRML(const string &prefix)
         ofile << "        coord Coordinate {" << endl;
         ofile << "            point [" << endl;
 
-        vector<Point3f> Coor3 = face.coor3d;
+        vector<Point3d> Coor3 = face.coor3d;
         for(uint j=0; j<Coor3.size(); j++){
-            Point3f p = Coor3[j];
+            Point3d p = Coor3[j];
             ofile << "                   ";
             ofile << p.x << " " << p.y << " " << p.z << "," << endl;
         }
