@@ -488,22 +488,22 @@ void MainWindow::getTextureMap(){
     cv::Mat perspective_matrix;
     cv::Mat tempImage;
 
-//    Point2f v1 = Point2f(162, 227); // yz, xy
-//    Point2f v2 = Point2f(174, 366); // yz
-//    Point2f v3 = Point2f(391, 542); // xz, yz
-//    Point2f v4 = Point2f(392, 399); // xz, yz, xy
-//    Point2f v5 = Point2f(607, 430); // xz
-//    Point2f v6 = Point2f(618, 290); // xy, xz
-//    Point2f v7 = Point2f(379, 139); // xy
-    //Point2f v8 = Point2f(382, 277);
+    Point2f v1 = Point2f(162, 227); // yz, xy
+    Point2f v2 = Point2f(174, 366); // yz
+    Point2f v3 = Point2f(391, 542); // xz, yz
+    Point2f v4 = Point2f(392, 399); // xz, yz, xy
+    Point2f v5 = Point2f(607, 430); // xz
+    Point2f v6 = Point2f(618, 290); // xy, xz
+    Point2f v7 = Point2f(379, 139); // xy
+    Point2f v8 = Point2f(382, 277);
 
-    Point2f v1 = Point2f(770, 1100); // yz, xy
-    Point2f v2 = Point2f(787, 1677); // yz
-    Point2f v3 = Point2f(1393, 2173); // xz, yz
-    Point2f v4 = Point2f(1387, 1430); // xz, yz, xy
-    Point2f v5 = Point2f(2660, 1580); // xz
-    Point2f v6 = Point2f(2737, 1063); // xy, xz
-    Point2f v7 = Point2f(2003, 890); // xy
+//    Point2f v1 = Point2f(770, 1100); // yz, xy
+//    Point2f v2 = Point2f(787, 1677); // yz
+//    Point2f v3 = Point2f(1393, 2173); // xz, yz
+//    Point2f v4 = Point2f(1387, 1430); // xz, yz, xy
+//    Point2f v5 = Point2f(2660, 1580); // xz
+//    Point2f v6 = Point2f(2737, 1063); // xy, xz
+//    Point2f v7 = Point2f(2003, 890); // xy
 //        //Point2f v8 = Point2f(382, 277);
 
     // patch xy
@@ -642,24 +642,24 @@ void MainWindow::cal3DPosition(){
 
     /* 2d image coordinate */
 //    Old Box
-//    Point3d v1 = Point3d(162, 227, 1);
-//    Point3d v2 = Point3d(174, 366, 1);
-//    Point3d v3 = Point3d(391, 542, 1);
-//    Point3d v4 = Point3d(392, 399, 1);
-//    Point3d v5 = Point3d(607, 430, 1);
-//    Point3d v6 = Point3d(618, 290, 1);
-//    Point3d v7 = Point3d(379, 139, 1);
-//    Point3d v8 = Point3d(382, 278, 1);
+    Point3d v1 = Point3d(162, 227, 1);
+    Point3d v2 = Point3d(174, 366, 1);
+    Point3d v3 = Point3d(391, 542, 1);
+    Point3d v4 = Point3d(392, 399, 1);
+    Point3d v5 = Point3d(607, 430, 1);
+    Point3d v6 = Point3d(618, 290, 1);
+    Point3d v7 = Point3d(379, 139, 1);
+    Point3d v8 = Point3d(382, 278, 1);
 
     // New Box
-    Point3d v1 = Point3d(770, 1100, 1); // yz, xy
-    Point3d v2 = Point3d(787, 1677, 1); // yz
-    Point3d v3 = Point3d(1393, 2173, 1); // xz, yz
-    Point3d v4 = Point3d(1387, 1430, 1); // xz, yz, xy
-    Point3d v5 = Point3d(2660, 1580, 1); // xz
-    Point3d v6 = Point3d(2737, 1063, 1); // xy, xz
-    Point3d v7 = Point3d(2003, 890, 1); // xy
-    Point3d v8 = Point3d(382, 278, 1);
+//    Point3d v1 = Point3d(770, 1100, 1); // yz, xy
+//    Point3d v2 = Point3d(787, 1677, 1); // yz
+//    Point3d v3 = Point3d(1393, 2173, 1); // xz, yz
+//    Point3d v4 = Point3d(1387, 1430, 1); // xz, yz, xy
+//    Point3d v5 = Point3d(2660, 1580, 1); // xz
+//    Point3d v6 = Point3d(2737, 1063, 1); // xy, xz
+//    Point3d v7 = Point3d(2003, 890, 1); // xy
+//    Point3d v8 = Point3d(382, 278, 1);
 
     Point3d p1, p2, p3, p4, p5, p6, p7, p8;
     // Old Box

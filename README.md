@@ -120,6 +120,59 @@ Train on the original datasets, collect images which are falsely detected as fac
 
 #### Implement an interesting feature
 Implement Local Binary Pattern (LBP). Instead of using HOG descriptor, we use LBP to extract features from images.
+
+
 ## Single view metrology
+
+### Methodology
+1. calculate the vanishing points by **Bob collins' algorithm**.
+2. Calculate the Projective matrix, where the scales are computed with reference points and vanishing points
+3. Use Homograph Matrix to get the texture map (for simplicity, we directly "hardcode" points this time)
+4. Mark Interesing points and get 3D coordinates
+<img src = "./SingleViewModeling/img/heightCal.png" width = "100%" height = "100%">
+
+5. Generate VMRL
+
+
+### Results
+
+Source Image
+
+<img src = "./SingleViewModeling/img/SVM1.jpg" width = "50%" height = "100%">
+
+Texture Maps
+
+<img src = "./SingleViewModeling/SingleViewModel/result/sony/xy_patch.jpg" width = "33%" height = "100%"><img src = "./SingleViewModeling/SingleViewModel/result/sony/yz_patch.jpg" width = "33%" height = "100%"><img src = "./SingleViewModeling/SingleViewModel/result/sony/xz_patch.jpg" width = "33%" height = "100%">
+
+Results
+
+<img src = "./SingleViewModeling/img/1.png" width = "50%" height = "100%">
+
+Source Image
+
+<img src = "./SingleViewModeling/img/SVM2.jpg" width = "50%" height = "100%">
+
+Texture Maps
+
+<img src = "./SingleViewModeling/SingleViewModel/result/jixin'sbox/xy_patch.jpg" width = "33%" height = "100%"><img src = "./SingleViewModeling/SingleViewModel/result/jixin'sbox/yz_patch.jpg" width = "33%" height = "100%"><img src = "./SingleViewModeling/SingleViewModel/result/jixin'sbox/xz_patch.jpg" width = "33%" height = "100%">
+
+Results
+
+<img src = "./SingleViewModeling/img/3.png" width = "50%" height = "100%">
+
+Source Image
+
+<img src = "./SingleViewModeling/img/rubik.jpg" width = "50%" height = "100%">
+
+Texture Maps
+
+<img src = "./SingleViewModeling/SingleViewModel/result/rubik/corner1.bmp" width = "33%" height = "100%"><img src = "./SingleViewModeling/SingleViewModel/result/rubik/corner2.bmp" width = "33%" height = "100%"><img src = "./SingleViewModeling/SingleViewModel/result/rubik/corner3.bmp" width = "33%" height = "100%">
+<img src = "./SingleViewModeling/SingleViewModel/result/rubik/face_corner.bmp" width = "33%" height = "100%"><img src = "./SingleViewModeling/SingleViewModel/result/rubik/left_top.png" width = "33%" height = "100%"><img src = "./SingleViewModeling/SingleViewModel/result/rubik/face_mid.bmp" width = "33%" height = "100%">
+
+
+Results
+
+<img src = "./SingleViewModeling/img/2.png" width = "50%" height = "100%">
+
 
 ## Multiple view modeling
