@@ -174,5 +174,19 @@ Results
 
 <img src = "./SingleViewModeling/img/2.png" width = "50%" height = "100%">
 
+Source Image
+
+<img src = "./SingleViewModeling/SingleViewModel/result/painting/painting.jpg" width = "50%" height = "100%">
+
+Texture Maps
+
+<img src = "./SingleViewModeling/SingleViewModel/result/painting/deskleftside.jpg" width = "33%" height = "100%"><img src = "./SingleViewModeling/SingleViewModel/result/painting/rightleg.jpg" width = "33%" height = "100%"><img src = "./SingleViewModeling/SingleViewModel/result/painting/leftlegfront.jpg" width = "33%" height = "100%">
+<img src = "./SingleViewModeling/SingleViewModel/result/painting/deskrightslant.jpg" width = "33%" height = "100%"><img src = "./SingleViewModeling/SingleViewModel/result/painting/deskrightside.jpg" width = "33%" height = "100%"><img src = "./SingleViewModeling/SingleViewModel/result/painting/Hxy_image.jpg" width = "33%" height = "100%">
+
+
+Results
+
+<img src = "./SingleViewModeling/img/4.png" width = "50%" height = "100%">
+
 
 ## Multiple view modeling
