@@ -11,15 +11,11 @@ addpath('../lib/gco/matlab', ...
 dataPath = '../data/data02';
 dataType = '/*.bmp';
 
-
 % step 1: uniform resampling
-[ResampledImage, L_o] = resampling(dataPath, dataType);
-
+[resampled_images, L_o] = resampling(dataPath, dataType);
 
 % step 2: find denominator image
-
-
-
+[denominator_image] = find_denominator_image(resampled_images);
 
 % step 3: initial normal estimation
 
