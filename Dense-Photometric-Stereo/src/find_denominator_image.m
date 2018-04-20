@@ -1,4 +1,4 @@
-function [denominator_image] = find_denominator_image(images)
+function [denominator_image, deIndex] = find_denominator_image(images)
 
 %  Selection of the denominator image (least affected by shdows and hightlights): 
 %

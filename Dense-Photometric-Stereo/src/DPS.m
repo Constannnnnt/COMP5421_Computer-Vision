@@ -15,15 +15,13 @@ dataType = '/*.bmp';
 [resampled_images, L_o] = resampling(dataPath, dataType);
 
 % step 2: find denominator image
-[denominator_image] = find_denominator_image(resampled_images);
+[denominator_image, deIndex] = find_denominator_image(resampled_images);
 
 % step 3: initial normal estimation
-
-
+[init_normal] = initial_normal(resampled_images, L_o, denominator_image, deIndex);
 
 
 % step 4: refine normals by MRF graph cut
-
 
 
 
