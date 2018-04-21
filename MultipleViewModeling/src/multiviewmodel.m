@@ -71,4 +71,33 @@ denominator = k_L .* (r_L < H);
 % disp(denominator_idx);
 
 %% Local Normal Estimation by Ratio Images
+% to eliminate p, we divide k - 1 resampled images by the denominator image
+% to obtain k - 1 ratio images
+ratio_images = gray_images;
+% note that in the energy function we should have normals, therefore we
+% should store the normal values now
+denominator_images = ratio_images(:, :, denominator_idx);
+normals = zeros([size(sample_img, 1) size(sample_img, 2) 3]);
+% remove reduntant light vectors
+lightvec = vertices(vertex_IDX, :);
+% get denominator light
+denominator_light = lightvec(denominator_idx, :);
+newlightvec = lightvec(1 : denominator_idx - 1, :);
+newlightvec = [newlightvec; lightvec(denominator_idx + 1 : end, :)];
 
+for i = 1 : size(sample_img, 1),
+    for j =  1 : size(sample_img, 2),
+        denominator_pixel = denominator_images(i, j);
+        ratio_pixel = [squeeze(ratio_images(i, j, 1 : denominator_idx - 1)); ...
+            squeeze(ratio_images(i,j, denominator_idx + 1 : end))];
+        X = ratio_pixel * denominator_light - denominator_pixel * newlightvec;
+        [~, ~, N] = svd(X);
+        if (N(3, 3) > 0),
+            normals(i,j,:) = N(:, 3);
+        else
+            normals(i,j,:) = -N(:, 3);
+        end
+    end
+end
+
+% Minimization via Graph Cuts
