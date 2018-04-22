@@ -81,6 +81,7 @@ function [vertices] = icosahedron(iter)
        face_midpoints = new_face_midpoints;
    end
    
-   vertices = vertices(vertices(:, 3) >= 0, :);
-   
+   vertices = vertices(vertices(:, 3) > 0, :);
+%    disp(size(vertices, 1));
+
 end

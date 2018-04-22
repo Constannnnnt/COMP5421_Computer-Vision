@@ -92,6 +92,7 @@ for i = 1 : size(sample_img, 1),
             squeeze(ratio_images(i,j, denominator_idx + 1 : end))];
         X = ratio_pixel * denominator_light - denominator_pixel * newlightvec;
         [~, ~, N] = svd(X);
+        disp(N);
         if (N(3, 3) > 0),
             normals(i,j,:) = N(:, 3);
         else
@@ -100,4 +101,11 @@ for i = 1 : size(sample_img, 1),
     end
 end
 
-% Minimization via Graph Cuts
+%% Minimization via Graph Cuts
+refine_vertices = icosahedron(5);
+refine_normals = reshape(normals, [], 3);
+refine_IDX = knnsearch(refine_vertices, refine_normals);
+[refine_vertex_IDX, refine_ia, refine_ic] = unique(IDX);
+refine_vertices = refine_vertices(refine_vertex_IDX, :);
+
+E_data 
