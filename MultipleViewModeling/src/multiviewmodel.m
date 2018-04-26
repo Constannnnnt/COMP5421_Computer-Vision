@@ -1,4 +1,5 @@
 clear global;
+clear;
 
 %% setup
 addpath(genpath('../lib/'));
@@ -92,7 +93,6 @@ for i = 1 : size(sample_img, 1),
             squeeze(ratio_images(i,j, denominator_idx + 1 : end))];
         X = ratio_pixel * denominator_light - denominator_pixel * newlightvec;
         [~, ~, N] = svd(X);
-        disp(N);
         if (N(3, 3) > 0),
             normals(i,j,:) = N(:, 3);
         else
@@ -100,12 +100,74 @@ for i = 1 : size(sample_img, 1),
         end
     end
 end
+figure, imshow(normals);
 
 %% Minimization via Graph Cuts
 refine_vertices = icosahedron(5);
 refine_normals = reshape(normals, [], 3);
 refine_IDX = knnsearch(refine_vertices, refine_normals);
-[refine_vertex_IDX, refine_ia, refine_ic] = unique(IDX);
+[refine_vertex_IDX, refine_ia, refine_ic] = unique(refine_IDX);
 refine_vertices = refine_vertices(refine_vertex_IDX, :);
 
-E_data 
+% data term: per-pixel difference between the measured and the estimated
+% ratio images, here, the measured images are icosahedron(5);
+E_data = pdist2(refine_vertices, refine_normals);
+lambda = 0.5; % how to define lambda?
+sigma = 0.85;  % how to define sigma?
+E_smooth = lambda * log(1 + pdist2(refine_vertices, refine_vertices) / (2 * sigma * sigma));
+
+% since the datatype is double in E_data and E_smooth, and the value is
+% small, around 1.xxxx or something. and we need int32 for the GCO lib. 
+% If we directly convert it and use the lib, it will do nothing since it is almost 0 and 1. 
+% We need to scale it so that the edge cost is effective
+E_data = int32(E_data .* 10000);
+E_smooth = int32(E_smooth .* 10000);
+
+labels = refine_vertices;
+L = size(labels, 1);
+norm_size = size(normals);
+% except the denominator image
+img_height = size(sample_img, 1);
+img_width = size(sample_img, 2);
+edge_num = (img_height - 1) * (img_width) + (img_height) * (img_width - 1);
+pixel_num = norm_size(1) * norm_size(2);
+
+% construct neighboring matrix
+Si = zeros(edge_num, 1);
+Sj = zeros(edge_num, 1);
+Sv = ones(edge_num, 1);
+counter = 0;
+
+for i = 1 : (img_height - 1),
+    for j = 1 : img_width,
+        counter = counter + 1;
+        Si(counter) = (i - 1) * img_width + j;
+        Sj(counter) = i * img_width + j;
+    end
+end
+
+for i = 1 : img_height,
+    for j = 1 : (img_width - 1),
+        counter = counter + 1;
+        Si(counter) = (i - 1) * img_width + j;
+        Sj(counter) = (i - 1) * img_width + j + 1;
+    end
+end
+
+neighboring_matrix = sparse(Si, Sj, Sv, pixel_num, pixel_num);
+
+% Using GCO 
+handle = GCO_Create(pixel_num, L);
+GCO_SetDataCost(handle, E_data);
+GCO_SetSmoothCost(handle, E_smooth);
+GCO_SetNeighbors(handle, neighboring_matrix);
+GCO_Expansion(handle);
+optimal_label = GCO_GetLabeling(handle);
+[E, D, S] = GCO_ComputeEnergy(handle);
+GCO_Delete(handle);
+
+optimal_normals = refine_vertices(optimal_label, :);
+optimal_normals = reshape(optimal_normals, [img_height, img_width, 3]);
+figure, imshow((-1/sqrt(3) * optimal_normals(:,:,1) + 1/sqrt(3) * optimal_normals(:,:,2) + 1/sqrt(3) * optimal_normals(:,:,3)) / 1.1);
+
+%% 
