@@ -3,10 +3,13 @@ clear
 clc
 
 %% https://www.mathworks.com/matlabcentral/fileexchange/37004-suite-of-functions-to-perform-uniform-sampling-of-a-sphere
-addpath('../lib/');
+addpath('../lib/gco/matlab', ...
+ 		'../lib/S2_Sampling_Suite/S2 Sampling Toolbox', ...
+		'../lib/nearest_neighbour', ...
+		'../lib/surfPeterKovesi');
 
 %% GCO_UnitTest; % Get GCO lib initialized
-dataPath = '../data/data02';
+dataPath = '../data/data08';
 dataType = '/*.bmp';
 
 %% step 1: uniform resampling
@@ -19,8 +22,8 @@ dataType = '/*.bmp';
 [init_normal] = initial_normal(resampled_images, L_o, denominator_image, deIndex);
 
 %% step 4: refine normals by MRF graph cut
-lambda = 0.5;
-sigma = 0.5;
+lambda = 0.4;
+sigma = 0.6;
 [refined_normal] = refine_normal(init_normal, lambda, sigma);
 
 %% step 5: contruct 3D models
