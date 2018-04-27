@@ -1,5 +1,6 @@
 clear global;
 clear;
+clc;
 
 %% setup
 addpath(genpath('../lib/'));
@@ -128,7 +129,7 @@ labels = refine_vertices;
 L = size(labels, 1);
 norm_size = size(normals);
 % except the denominator image
-[img_height, img_width]= size(sample_img);
+[img_height, img_width, ~]= size(sample_img);
 edge_num = (img_height - 1) * (img_width) + (img_height) * (img_width - 1);
 pixel_num = norm_size(1) * norm_size(2);
 
@@ -137,6 +138,7 @@ Si = zeros(edge_num, 1);
 Sj = zeros(edge_num, 1);
 Sv = ones(edge_num, 1);
 counter = 0;
+
 
 for i = 1 : (img_height - 1),
     for j = 1 : img_width,
@@ -178,7 +180,7 @@ tilt = zeros(optNormals_height, optNormals_width);
 
 for i = 1 : optNormals_height,
     for j = 1 : optNormals_width,
-        normal_vec = squeeze(optimal_normals(i, j, :));
+        normal_vec = squeeze(optimal_normals(optNormals_height + 1 - i, j, :));
         nx = normal_vec(1);
         ny = normal_vec(2);
         nz = normal_vec(3);
@@ -189,6 +191,21 @@ for i = 1 : optNormals_height,
         tilt(i,j) = tilt_v;
     end
 end
-recsurf = shapeletsurf(slant, tilt, 6, 2, 3);
-figure, surf(recsurf);
-title('reconstructed surface');
+recsurf = shapeletsurf(slant, tilt, 6, 1, 2);
+texture = Io(:,:,:,denominator_idx) / 255;
+
+[x, y] = meshgrid(1:optNormals_width, 1:optNormals_height);
+figure('Name','Reconstructed Model'), ...
+    h = surf(x,y,recsurf,'FaceColor',[218/255, 113/255, 183/255],'FaceAlpha',0.9,'EdgeColor','none');
+
+textureFlip = zeros(size(texture));
+for i = 1:3
+    textureFlip(:,:,i) = flipud(texture(:,:,i));
+end
+set(h, 'FaceColor', 'texturemap', 'CData', textureFlip);
+
+camlight left;
+lighting phong;
+axis vis3d;
+daspect([1 1 2])
+axis off;
