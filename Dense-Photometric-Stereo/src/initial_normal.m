@@ -1,16 +1,16 @@
 function [init_normal] = initial_normal(resampled_images, L_o, denominator_image, deIndex)
 
-%	   Initial local normal estimation by ratio images
+%  Initial local normal estimation by ratio images
 %      
-%      Every pixel in an ratio image is expressed by:
-%               I_1     N * L_1
-%              ----- = ---------
-%               I_2     N * L_2
+%  Every pixel in an ratio image is expressed by:
+%           I_1     N * L_1
+%          ----- = ---------
+%           I_2     N * L_2
 %
-%      can be transform into form of A_x*N_x + A_y*N_y + A_z*N_z = 0
-%      where A(k) = I_1 * L_2(k) - I_2*L_1(k)
-%      take denominator image as reference, construct k-1 equations,
-%      ==> Solve AX = 0 by SVD, explicitly enforces ||N|| = 1
+%  can be transform into form of A_x*N_x + A_y*N_y + A_z*N_z = 0
+%  where A(k) = I_1 * L_2(k) - I_2 * L_1(k)
+%  take denominator image as reference, construct k-1 equations,
+%  ==> Solve AX = 0 by SVD, which explicitly enforces ||N|| = 1
 %
 
 rowNum = size(resampled_images,1);

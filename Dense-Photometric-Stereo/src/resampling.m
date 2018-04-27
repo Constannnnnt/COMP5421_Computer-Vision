@@ -3,7 +3,7 @@ function [ResampledImage, L_o] = resampling(dataPath, dataType)
 %  Do uniform resampling on images
 %
 %  See paper section 4.2:
-%  seek the nearest light di-rection L_o at one vertex in the 
+%  seek the nearest light direction L_o at one vertex in the 
 %  subdivided icosahedron for each captured light direction L_i, 
 %  and interpolate the image I_o at L_o by:
 %
