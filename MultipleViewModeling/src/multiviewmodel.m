@@ -101,6 +101,7 @@ for i = 1 : size(sample_img, 1),
     end
 end
 figure, imshow(normals);
+title('initial normals');
 
 %% Minimization via Graph Cuts
 refine_vertices = icosahedron(5);
@@ -127,8 +128,7 @@ labels = refine_vertices;
 L = size(labels, 1);
 norm_size = size(normals);
 % except the denominator image
-img_height = size(sample_img, 1);
-img_width = size(sample_img, 2);
+[img_height, img_width]= size(sample_img);
 edge_num = (img_height - 1) * (img_width) + (img_height) * (img_width - 1);
 pixel_num = norm_size(1) * norm_size(2);
 
@@ -168,6 +168,27 @@ GCO_Delete(handle);
 
 optimal_normals = refine_vertices(optimal_label, :);
 optimal_normals = reshape(optimal_normals, [img_height, img_width, 3]);
-figure, imshow((-1/sqrt(3) * optimal_normals(:,:,1) + 1/sqrt(3) * optimal_normals(:,:,2) + 1/sqrt(3) * optimal_normals(:,:,3)) / 1.1);
+figure, imshow((-1/sqrt(3) * optimal_normals(:,:,1) + 1/sqrt(3) * optimal_normals(:,:,2) + 1/sqrt(3) * optimal_normals(:,:,3)) / 1.1); title('refine normals');
+figure, imshow((-1/sqrt(3) * normals(:,:,1) + 1/sqrt(3) * normals(:,:,2) + 1/sqrt(3) * normals(:,:,3)) / 1.1); title('normals');
 
-%% 
+%% surface reconstruction from refine normals
+[optNormals_height, optNormals_width, ~]= size(optimal_normals);
+slant = zeros(optNormals_height, optNormals_width);
+tilt = zeros(optNormals_height, optNormals_width);
+
+for i = 1 : optNormals_height,
+    for j = 1 : optNormals_width,
+        normal_vec = squeeze(optimal_normals(i, j, :));
+        nx = normal_vec(1);
+        ny = normal_vec(2);
+        nz = normal_vec(3);
+        dzdx = - nx / nz;
+        dzdy = - ny / nz;
+        [slant_v, tilt_v] = grad2slanttilt(dzdx, dzdy);
+        slant(i,j) = slant_v;
+        tilt(i,j) = tilt_v;
+    end
+end
+recsurf = shapeletsurf(slant, tilt, 6, 2, 3);
+figure, surf(recsurf);
+title('reconstructed surface');
