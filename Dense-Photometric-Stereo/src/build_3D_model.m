@@ -17,12 +17,12 @@ for i = 1:rowNum
 	end
 end
 
-recsurf = shapeletsurf(slant, tilt, 6, 1, 2);
+recsurf = shapeletsurf(slant, tilt, 6, 2, 3);
 %figure('Name','surface'), surf(recsurf);
 
 [x, y] = meshgrid(1:colNum, 1:rowNum);
 figure('Name','Reconstructed Model'), ...
-    h = surf(x,y,recsurf,'FaceColor',[218/255, 113/255, 183/255],'FaceAlpha',0.9,'EdgeColor','none');
+    h = surf(x,y,recsurf,'FaceColor', [218/255, 113/225, 183/255],'FaceAlpha',0.9,'EdgeColor','none');
 
 % flip texture image for mapping
 textureFlip = zeros(size(texture));

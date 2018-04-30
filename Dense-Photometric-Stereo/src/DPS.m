@@ -22,8 +22,8 @@ dataType = '/*.bmp';
 [init_normal] = initial_normal(resampled_images, L_o, denominator_image, deIndex);
 
 %% step 4: refine normals by MRF graph cut
-lambda = 0.4;
-sigma = 0.6;
+lambda = 0.5;
+sigma = 0.4;
 [refined_normal] = refine_normal(init_normal, lambda, sigma);
 
 %% step 5: contruct 3D models

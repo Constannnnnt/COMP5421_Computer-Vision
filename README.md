@@ -190,3 +190,25 @@ Results
 
 
 ## Multiple view modeling
+In this part, we include five examples to demonstrate the multiple view modeling.
+
+example 02
+
+<img src = "./Dense-Photometric-Stereo/img/02/1.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/02/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/02/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/02/4.png" width = "50%" height = "100%">
+
+example 03
+
+<img src = "./Dense-Photometric-Stereo/img/03/1.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/03/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/03/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/03/4.png" width = "50%" height = "100%">
+
+example 04
+
+<img src = "./Dense-Photometric-Stereo/img/04/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/04/4.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/04/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/04/1.png" width = "50%" height = "100%">
+
+example 05
+
+<img src = "./Dense-Photometric-Stereo/img/05/4.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/05/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/05/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/05/1.png" width = "50%" height = "100%">
+
+example 06
+
+<img src = "./Dense-Photometric-Stereo/img/06/4.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/06/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/06/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/06/1.png" width = "50%" height = "100%">
+
