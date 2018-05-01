@@ -123,3 +123,6 @@ SingleViewModeling/SingleViewModeling.pro
 build-SingleViewModeling-Desktop_Qt_5_10_0_clang_64bit-Debug/
 SingleViewModeling/SingleViewModeling.pro.user
 data/
+MultipleViewModeling/data/
+test.m
+test_.m
