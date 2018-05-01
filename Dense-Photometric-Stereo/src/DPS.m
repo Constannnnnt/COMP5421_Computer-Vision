@@ -9,7 +9,7 @@ addpath('../lib/gco/matlab', ...
 		'../lib/surfPeterKovesi');
 
 %% GCO_UnitTest; % Get GCO lib initialized
-dataPath = '../data/data08';
+dataPath = '../data/data04';
 dataType = '/*.bmp';
 
 %% step 1: uniform resampling
@@ -22,8 +22,8 @@ dataType = '/*.bmp';
 [init_normal] = initial_normal(resampled_images, L_o, denominator_image, deIndex);
 
 %% step 4: refine normals by MRF graph cut
-lambda = 0.5;
-sigma = 0.4;
+lambda = 0.6;
+sigma = 0.8;
 [refined_normal] = refine_normal(init_normal, lambda, sigma);
 
 %% step 5: contruct 3D models

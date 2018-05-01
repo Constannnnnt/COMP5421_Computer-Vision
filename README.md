@@ -202,13 +202,28 @@ example 03
 
 example 04
 
-<img src = "./Dense-Photometric-Stereo/img/04/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/04/4.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/04/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/04/1.png" width = "50%" height = "100%">
+<img src = "./Dense-Photometric-Stereo/img/04/1.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/04/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/04/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/04/4.png" width = "50%" height = "100%">
 
 example 05
 
-<img src = "./Dense-Photometric-Stereo/img/05/4.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/05/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/05/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/05/1.png" width = "50%" height = "100%">
+<img src = "./Dense-Photometric-Stereo/img/05/1.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/05/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/05/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/05/4.png" width = "50%" height = "100%">
 
 example 06
 
-<img src = "./Dense-Photometric-Stereo/img/06/4.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/06/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/06/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/06/1.png" width = "50%" height = "100%">
+<img src = "./Dense-Photometric-Stereo/img/06/1.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/06/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/06/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/06/4.png" width = "50%" height = "100%">
 
+example 07
+
+<img src = "./Dense-Photometric-Stereo/img/07/1.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/07/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/07/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/07/4.png" width = "50%" height = "100%">
+
+example 08
+
+<img src = "./Dense-Photometric-Stereo/img/08/1.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/08/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/08/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/08/4.png" width = "50%" height = "100%">
+
+example 09
+
+<img src = "./Dense-Photometric-Stereo/img/09/1.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/09/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/09/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/09/4.png" width = "50%" height = "100%">
+
+example 10
+
+<img src = "./Dense-Photometric-Stereo/img/10/1.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/10/2.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/10/3.png" width = "50%" height = "100%"><img src = "./Dense-Photometric-Stereo/img/10/4.png" width = "50%" height = "100%">
